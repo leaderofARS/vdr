@@ -1,4 +1,4 @@
-# SipHeron VDR ⚓ - The Solana Verifiable Data Registry
+# SipHeron VDR - The Verifiable Data Registry
 
 <div align="center">
   <h3>Institutional-Grade Cryptographic Anchoring on the Solana Blockchain</h3>
@@ -14,7 +14,7 @@ Whether you are an institution registering compliance documents locally, or an o
 
 ---
 
-## 🏛️ Comprehensive Protocol Architecture
+## Comprehensive Protocol Architecture
 
 SipHeron VDR is composed of four distinct, highly optimized architectural layers designed for maximum security, ease of use, and infinite scalability.
 
@@ -45,7 +45,7 @@ Located in `web/dashboard/`, a beautiful, responsive frontend built with Next.js
 
 ---
 
-## 🛡️ Supply Chain Security via CI/CD (GitHub Actions)
+## Supply Chain Security via CI/CD (GitHub Actions)
 
 One of SipHeron's primary defensive use cases is stopping Open Source Supply Chain Attacks. When an attacker corrupts a developer's release binary before users download it, disastrous consequences follow. 
 
@@ -75,7 +75,7 @@ When a user downloads your release, they use `sipheron-vdr verify` to pull the t
 
 ---
 
-## 🚀 Getting Started Guide
+## Getting Started Guide
 
 Deploying the entire SipHeron stack locally for development or testing requires a functioning Solana toolchain, Node.js, and Redis.
 
@@ -146,7 +146,7 @@ npm run dev
 
 ---
 
-## 🔐 The SipHeron Security & Privacy Promise
+## The SipHeron Security & Privacy Promise
 
 The most common concern with Web3 registries is data leakage. **SipHeron operates under an Absolute Privacy Architecture.** 
 
