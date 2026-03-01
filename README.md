@@ -1,7 +1,7 @@
 # SipHeron VDR - The Verifiable Data Registry
 
 <div align="center">
-  <h3>Institutional-Grade Cryptographic Anchoring on the Solana Blockchain</h3>
+  <h3>Cryptographic Anchoring on the Solana Blockchain</h3>
 </div>
 
 ---
