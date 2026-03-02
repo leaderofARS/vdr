@@ -50,7 +50,7 @@ This document serves as the central record for all capabilities currently active
 
 ---
 
-## 🔵 Simple MVP / Open Source Grant Focus
+## 🔵 Simple MVP / Open Source
 
 *The following features are designed to be high-impact, low-cost implementations perfect for an open-source utility MVP aiming for a Solana Foundation Grant:*
 
