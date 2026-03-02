@@ -1,0 +1,40 @@
+name: Open Source Binary Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build-and-hash:
+    name: Build & Anchor Binaries
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+        
+      # Example Build Step for a Node.js project or Rust Cargo
+      - name: Setup Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          
+      - name: Compile Distributables
+        run: |
+          npm ci
+          npm run build
+        
+      # SipHeron VDR Anchoring Pipeline
+      - name: Anchor Release Binaries to Solana
+        uses: sipheron/vdr-action@v1
+        with:
+          # Tell the action exactly where your compiled code lives
+          directory: './dist'
+          
+          # Your API Key must be stored safely!
+          # Go to Repo Settings -> Secrets and variables -> Actions
+          # Click "New repository secret" -> Name: SIPHERON_API_KEY
+          api_key: ${{ secrets.SIPHERON_API_KEY }}
+          
+          # Publish strictly to Devnet during testing, change to mainnet for prod
+          network: 'devnet'

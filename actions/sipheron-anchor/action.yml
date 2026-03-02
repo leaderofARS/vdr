@@ -1,0 +1,73 @@
+name: 'SipHeron VDR Anchor'
+description: 'Cryptographically hash your release binaries and anchor them to the Solana blockchain.'
+author: 'SipHeron'
+
+branding:
+  icon: 'anchor'
+  color: 'purple'
+
+inputs:
+  directory:
+    description: 'The directory path containing the build artifacts/binaries to anchor'
+    required: true
+    default: './dist'
+  api_key:
+    description: 'Your SipHeron API Key (Keep secure in GitHub Secrets)'
+    required: true
+  network:
+    description: 'SipHeron Network (localnet, devnet, mainnet)'
+    required: false
+    default: 'devnet'
+  api_url:
+    description: 'Custom SipHeron API URL if self-hosting the backend'
+    required: false
+    default: 'https://api.sipheron.com'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Ensure SipHeron CLI is Installed
+      shell: bash
+      run: |
+        if ! command -v sipheron-vdr &> /dev/null; then
+          echo "Installing SipHeron VDR CLI globally..."
+          npm install -g sipheron-vdr
+        fi
+
+    - name: Configure SipHeron Credentials
+      shell: bash
+      run: |
+        echo "Configuring SipHeron CLI..."
+        sipheron-vdr config set --api-key "${{ inputs.api_key }}" --network "${{ inputs.network }}" --url "${{ inputs.api_url }}"
+        
+        # Verify configuration
+        sipheron-vdr config show
+
+    - name: Stage Build Artifacts
+      shell: bash
+      run: |
+        echo "Staging binaries from directory: ${{ inputs.directory }}"
+        
+        # Ensure directory exists
+        if [ ! -d "${{ inputs.directory }}" ]; then
+          echo "::error::Directory '${{ inputs.directory }}' not found."
+          exit 1
+        fi
+        
+        # Recursively find all files and stage them
+        find "${{ inputs.directory }}" -type f -exec sipheron-vdr stage {} \;
+        
+        sipheron-vdr status
+
+    - name: Anchor Hashes to Solana
+      shell: bash
+      run: |
+        echo "Anchoring staged hashes to the VDR Protocol..."
+        sipheron-vdr anchor
+        
+        echo "::notice::Successfully anchored release binaries to the SipHeron registry!"
