@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite" // Using SQLite for easy local setup, can be trivially swapped to postgres
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  
+  organizations Organization[]
+  apiKeys       ApiKey[]
+}
+
+model Organization {
+  id          String   @id @default(uuid())
+  name        String
+  solanaPubkey String  @unique // The PDA of the org on Solana
+  
+  ownerId     String
+  owner       User     @relation(fields: [ownerId], references: [id])
+  
+  apiKeys     ApiKey[]
+  records     HashRecord[]
+  
+  createdAt   DateTime @default(now())
+}
+
+model ApiKey {
+  id             String   @id @default(uuid())
+  key            String   @unique
+  name           String
+  
+  userId         String
+  user           User     @relation(fields: [userId], references: [id])
+  
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  
+  createdAt      DateTime @default(now())
+  lastUsedAt     DateTime?
+}
+
+model HashRecord {
+  id             String   @id @default(uuid())
+  hash           String   @unique // SHA-256 hex
+  pdaAddress     String   @unique
+  ownerWallet    String
+  
+  metadata       String?
+  timestamp      Int      // Unix timestamp from Solana
+  expiry         Int      @default(0)
+  isRevoked      Boolean  @default(false)
+  txSignature    String
+  
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  
+  createdAt      DateTime @default(now())
+}
