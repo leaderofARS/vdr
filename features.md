@@ -69,5 +69,5 @@ A specialized CLI hook designed explicitly for Metaplex NFT creators to secure t
 ### 5. Drop-in React Verification Portal
 A simple `<SipheronVerify />` React component. Every single developer who downloads your package can drop this onto their website so their users can securely verify files. It acts as a viral growth loop, putting a "Secured by SipHeron" badge on hundreds of websites.
 
-### 6. "Aadhaar for Links" (Digital Identity Verification)
+### 6. Universal Digital Identity Verification
 Solving the phishing and copy-cat problem for official links/downloads. Organizations tie their Public Keys to their real-world identities. When they publish a download link, users can run it through the SipHeron registry. If the Hash + Public Key matches, the user has 100% mathematical proof the link is authentically from the official organization and not a malware clone.
