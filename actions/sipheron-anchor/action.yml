@@ -35,8 +35,8 @@ runs:
       shell: bash
       run: |
         if ! command -v sipheron-vdr &> /dev/null; then
-          echo "Installing SipHeron VDR CLI globally..."
-          npm install -g sipheron-vdr
+          echo "Installing SipHeron VDR CLI globally from local repository..."
+          npm install -g ./cli/vdr-cli
         fi
 
     - name: Configure SipHeron Credentials
