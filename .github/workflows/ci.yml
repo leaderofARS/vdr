@@ -8,7 +8,7 @@ on:
 
 env:
   NODE_VERSION: '20'
-  SOLANA_VERSION: '1.18.26'
+  SOLANA_VERSION: '1.18.22'
   ANCHOR_VERSION: '0.29.0'
 
 jobs:
