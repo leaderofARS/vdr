@@ -43,7 +43,7 @@ jobs:
         run: |
           cargo install --git https://github.com/coral-xyz/anchor avm --force
           rm -f ~/.cargo/bin/anchor
-          avm install ${{ env.ANCHOR_VERSION }}
+          avm install ${{ env.ANCHOR_VERSION }} || true
           avm use ${{ env.ANCHOR_VERSION }}
 
       - name: Configure Solana
@@ -309,7 +309,7 @@ jobs:
         run: |
           cargo install --git https://github.com/coral-xyz/anchor avm --force
           rm -f ~/.cargo/bin/anchor
-          avm install ${{ env.ANCHOR_VERSION }}
+          avm install ${{ env.ANCHOR_VERSION }} || true
           avm use ${{ env.ANCHOR_VERSION }}
 
       - name: Configure Solana
