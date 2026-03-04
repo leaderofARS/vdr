@@ -41,7 +41,9 @@ jobs:
 
       - name: Install Anchor CLI
         run: |
-          cargo install --git https://github.com/coral-xyz/anchor anchor-cli --force --tag v${{ env.ANCHOR_VERSION }}
+          cargo install --git https://github.com/coral-xyz/anchor avm --force --locked
+          avm install ${{ env.ANCHOR_VERSION }}
+          avm use ${{ env.ANCHOR_VERSION }}
           anchor --version
 
       - name: Configure Solana
@@ -307,7 +309,9 @@ jobs:
 
       - name: Install Anchor CLI
         run: |
-          cargo install --git https://github.com/coral-xyz/anchor anchor-cli --force --tag v${{ env.ANCHOR_VERSION }}
+          cargo install --git https://github.com/coral-xyz/anchor avm --force --locked
+          avm install ${{ env.ANCHOR_VERSION }}
+          avm use ${{ env.ANCHOR_VERSION }}
           anchor --version
 
       - name: Configure Solana
