@@ -1,11 +1,21 @@
 "use client";
 
+/**
+ * @file page.js
+ * @module /home/ars0x01/Documents/Github/solana-vdr/web/dashboard/src/app/verify/page.js
+ * @description Next.js App Router pages and layouts.
+ * Part of the SipHeron VDR platform.
+ * @author SipHeron Platform
+ */
+
+
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import FileUploader from "@/components/FileUploader";
 import axios from "axios";
-import { Loader2, ShieldCheck, ShieldAlert, FileSearch } from "lucide-react";
+import { Loader2, ShieldCheck, ShieldAlert, FileSearch, Globe, Activity, Landmark, ExternalLink as ExternalIcon } from "lucide-react";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Verify() {
     const [hash, setHash] = useState(null);
@@ -42,101 +52,143 @@ export default function Verify() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-950 flex flex-col">
+        <div className="min-h-screen bg-[#050505] text-white flex flex-col overflow-hidden relative">
+            {/* Background Effects */}
+            <div className="fixed inset-0 bg-mesh opacity-30 pointer-events-none" />
+            <div className="fixed bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-purple-600/10 blur-[120px] rounded-full pointer-events-none" />
+
             <Navbar />
 
-            <main className="flex-grow flex flex-col items-center justify-center p-4 sm:p-8">
-                <div className="w-full max-w-2xl">
-                    <div className="text-center mb-10">
-                        <h1 className="text-4xl font-extrabold tracking-tight text-white mb-4">
-                            Verify Data Integrity
+            <main className="flex-grow flex flex-col items-center justify-center p-6 sm:p-8 relative z-10">
+                <div className="w-full max-w-3xl">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-center mb-16"
+                    >
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl glass-accent mb-6">
+                            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400">Secure Protocol Verification</span>
+                        </div>
+                        <h1 className="text-5xl font-black tracking-tight mb-4">
+                            Verify <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-500">Integrity</span>
                         </h1>
-                        <p className="text-xl text-gray-400 max-w-xl mx-auto">
-                            Check if a file perfectly matches its original on-chain timestamp.
+                        <p className="text-lg text-gray-400 max-w-xl mx-auto font-medium">
+                            Authenticate your data against the immutable human-history ledger on Solana.
                         </p>
-                    </div>
+                    </motion.div>
 
-                    <div className="bg-gray-900 border border-gray-800 shadow-2xl rounded-2xl p-6 sm:p-8">
-                        <h2 className="text-lg font-semibold text-white mb-6">Select a file to verify</h2>
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="glass border border-white/10 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] rounded-[48px] p-10 sm:p-12 relative overflow-hidden"
+                    >
+                        <h2 className="text-xl font-bold text-white mb-8 flex items-center gap-3">
+                            <Landmark className="w-5 h-5 text-blue-500" />
+                            Select Asset for Analysis
+                        </h2>
 
                         <FileUploader onHashComputed={handleHashComputed} />
 
-                        {status === "verifying" && (
-                            <div className="mt-8 flex flex-col items-center justify-center text-gray-400 py-8">
-                                <Loader2 className="w-12 h-12 mb-4 animate-spin text-blue-500" />
-                                <p className="text-lg font-medium">Querying Solana Registry...</p>
-                            </div>
-                        )}
+                        <AnimatePresence mode="wait">
+                            {status === "verifying" && (
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    className="mt-12 flex flex-col items-center justify-center text-gray-400 py-12"
+                                >
+                                    <div className="relative">
+                                        <Loader2 className="w-20 h-20 animate-spin text-blue-500 opacity-20" />
+                                        <Activity className="w-8 h-8 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-400" />
+                                    </div>
+                                    <p className="text-xl font-black mt-6 tracking-tight text-white">Querying Solana Registry...</p>
+                                    <p className="text-sm font-medium text-gray-500 mt-2 italic">Computing SHA-256 Protocol Seeds</p>
+                                </motion.div>
+                            )}
 
-                        {status === "success" && result && (
-                            <div className="mt-8 bg-green-900/10 border border-green-500/30 rounded-xl p-8 slide-up-fade-in text-center">
-                                <div className="flex flex-col items-center justify-center text-green-400 mb-6">
-                                    <ShieldCheck className="w-20 h-20 mb-4" />
-                                    <h3 className="text-2xl font-bold">Verified Authentic</h3>
-                                    <p className="text-green-300/70 mt-2">The exact hash of this file was found in the VDR registry.</p>
-                                </div>
+                            {status === "success" && result && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="mt-12 space-y-8"
+                                >
+                                    <div className="flex flex-col items-center text-center">
+                                        <div className="w-24 h-24 rounded-[32px] bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-6 shadow-2xl shadow-emerald-500/20">
+                                            <ShieldCheck className="w-12 h-12 text-emerald-400" />
+                                        </div>
+                                        <h3 className="text-3xl font-black text-white mb-2 tracking-tight">Verified Authentic</h3>
+                                        <p className="text-emerald-400/80 font-bold uppercase tracking-widest text-[10px]">On-Chain Match Confirmed</p>
+                                    </div>
 
-                                <div className="bg-gray-900 rounded-lg p-6 text-left border border-green-500/20 font-mono text-sm">
-                                    <table className="w-full">
-                                        <tbody>
-                                            <tr className="border-b border-gray-800">
-                                                <td className="py-3 text-gray-500">Registered By</td>
-                                                <td className="py-3 text-gray-200 break-all">{result.owner}</td>
-                                            </tr>
-                                            <tr className="border-b border-gray-800">
-                                                <td className="py-3 text-gray-500">Timestamp UTC</td>
-                                                <td className="py-3 text-gray-200">{new Date(result.timestamp * 1000).toUTCString()}</td>
-                                            </tr>
-                                            <tr className="border-b border-gray-800">
-                                                <td className="py-3 text-gray-500">Metadata</td>
-                                                <td className="py-3 text-gray-200 break-all">{result.metadata || "—"}</td>
-                                            </tr>
-                                            <tr>
-                                                <td className="py-3 text-gray-500">PDA Address</td>
-                                                <td className="py-3 text-gray-200 break-all">{result.pdaAddress}</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        )}
+                                    <div className="glass rounded-3xl p-8 border border-emerald-500/20 shadow-inner">
+                                        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-8 text-sm">
+                                            <div className="space-y-1">
+                                                <dt className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Issuer Identity</dt>
+                                                <dd className="font-mono text-gray-200 break-all">{result.owner}</dd>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <dt className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Temporal Anchor</dt>
+                                                <dd className="font-bold text-white">{new Date(result.timestamp * 1000).toLocaleString()}</dd>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <dt className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Provenance Record</dt>
+                                                <dd className="font-mono text-blue-400 flex items-center gap-2">
+                                                    {result.pdaAddress.slice(0, 16)}...
+                                                    <a href={`https://explorer.solana.com/address/${result.pdaAddress}?cluster=devnet`} target="_blank">
+                                                        <ExternalIcon className="w-3 h-3" />
+                                                    </a>
+                                                </dd>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <dt className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Registry Metadata</dt>
+                                                <dd className="font-medium text-gray-300 italic">{result.metadata || "No metadata provisioned"}</dd>
+                                            </div>
+                                        </dl>
+                                    </div>
+                                </motion.div>
+                            )}
 
-                        {status === "tampered" && (
-                            <div className="mt-8 bg-red-900/10 border border-red-500/30 rounded-xl p-8 slide-up-fade-in text-center">
-                                <div className="flex flex-col items-center justify-center text-red-500 mb-6">
-                                    <ShieldAlert className="w-20 h-20 mb-4" />
-                                    <h3 className="text-2xl font-bold">Not Registered or Tampered</h3>
-                                    <p className="text-red-400/80 mt-2">We could not find a matching record on the Solana blockchain. The file has either been modified or was never registered.</p>
-                                </div>
-                            </div>
-                        )}
+                            {status === "tampered" && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="mt-12 flex flex-col items-center justify-center text-center"
+                                >
+                                    <div className="w-24 h-24 rounded-[32px] bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-6 shadow-2xl shadow-red-500/20">
+                                        <ShieldAlert className="w-12 h-12 text-red-500" />
+                                    </div>
+                                    <h3 className="text-3xl font-black text-white mb-3 tracking-tight">Verification Failed</h3>
+                                    <p className="text-gray-400 font-medium max-w-md mx-auto leading-relaxed">
+                                        This file's unique signature does not match any record in the SipHeron registry.
+                                        The data may have been <span className="text-red-400 font-bold">modified</span> or was never anchored on-chain.
+                                    </p>
+                                </motion.div>
+                            )}
 
-                        {status === "error" && (
-                            <div className="mt-8 bg-orange-900/10 border border-orange-500/30 rounded-xl p-8 slide-up-fade-in text-center">
-                                <div className="flex flex-col items-center justify-center text-orange-500 mb-6">
-                                    <FileSearch className="w-20 h-20 mb-4" />
-                                    <h3 className="text-2xl font-bold">Network Error</h3>
-                                    <p className="text-orange-400/80 mt-2">Could not connect to the Backend API. Please try again later.</p>
-                                </div>
-                            </div>
-                        )}
+                            {status === "error" && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="mt-12 flex flex-col items-center justify-center text-center"
+                                >
+                                    <div className="w-20 h-20 rounded-[32px] bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mb-6">
+                                        <FileSearch className="w-10 h-10 text-amber-500" />
+                                    </div>
+                                    <h3 className="text-2xl font-black text-white mb-2 tracking-tight">Node Connection Failure</h3>
+                                    <p className="text-gray-400 font-medium">Unable to synchronize with the institutional API.</p>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
 
-                        <div className="mt-6 flex justify-center">
-                            <Link href="/explorer" className="text-sm text-blue-400 hover:underline flex items-center">
-                                Can't find it? Check the global Hash Explorer <ExternalLink className="w-3 h-3 ml-1" />
+                        <div className="mt-12 flex justify-center pt-8 border-t border-white/5">
+                            <Link href="/explorer" className="text-xs font-black text-blue-500 hover:text-blue-400 transition-colors uppercase tracking-[0.2em] flex items-center gap-2">
+                                Query Global Explorer <ExternalIcon className="w-3.5 h-3.5" />
                             </Link>
                         </div>
-                    </div>
+                    </motion.div>
                 </div>
             </main>
         </div>
     );
 }
-
-const ExternalLink = ({ className }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-        <polyline points="15 3 21 3 21 9"></polyline>
-        <line x1="10" y1="14" x2="21" y2="3"></line>
-    </svg>
-);

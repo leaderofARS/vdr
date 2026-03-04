@@ -1,164 +1,131 @@
 "use client";
 
-import { useState } from "react";
-import Navbar from "@/components/Navbar";
-import FileUploader from "@/components/FileUploader";
-import { useWallet } from "@solana/wallet-adapter-react";
-import axios from "axios";
-import { Loader2, ExternalLink, CheckCircle } from "lucide-react";
-import Link from "next/link";
+/**
+ * @file page.js
+ * @module /home/ars0x01/Documents/Github/solana-vdr/web/dashboard/src/app/page.js
+ * @description Next.js App Router pages and layouts.
+ * Part of the SipHeron VDR platform.
+ * @author SipHeron Platform
+ */
 
-export default function Register() {
-  const { connected } = useWallet();
-  const [hash, setHash] = useState(null);
-  const [filename, setFilename] = useState("");
-  const [metadata, setMetadata] = useState("");
-  const [status, setStatus] = useState("idle"); // idle, registering, success, error
-  const [result, setResult] = useState(null);
-  const [errorMessage, setErrorMessage] = useState("");
+import Link from 'next/link';
+import { motion } from 'framer-motion';
+import { ShieldLink, Zap, Lock, Globe, ArrowRight, ShieldCheck, Activity } from 'lucide-react';
 
-  const handleHashComputed = (computedHash, name) => {
-    setHash(computedHash);
-    setFilename(name);
-    setMetadata(name || "");
-    setStatus("idle");
-    setResult(null);
-  };
-
-  const handleRegister = async () => {
-    if (!hash) return;
-
-    setStatus("registering");
-    try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-      const res = await axios.post(`${apiUrl}/register`, {
-        hash,
-        metadata
-      });
-
-      setResult(res.data);
-      setStatus("success");
-    } catch (err) {
-      if (err.response?.status === 409) {
-        setErrorMessage("This file hash has already been registered on VDR.");
-      } else {
-        setErrorMessage(err.response?.data?.error || "An unknown error occurred during registration.");
-      }
-      setStatus("error");
-    }
-  };
-
+export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-gray-950 flex flex-col">
-      <Navbar />
+    <div className="min-h-screen bg-mesh relative overflow-hidden flex flex-col">
+      {/* Background Decorations */}
+      <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-blue-600/10 blur-[150px] rounded-full" />
+      <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-purple-600/10 blur-[150px] rounded-full" />
 
-      <main className="flex-grow flex flex-col items-center justify-center p-4 sm:p-8">
-        <div className="w-full max-w-2xl">
-          <div className="text-center mb-10">
-            <h1 className="text-4xl font-extrabold tracking-tight text-white mb-4">
-              Register Data Integrity
-            </h1>
-            <p className="text-xl text-gray-400 max-w-xl mx-auto">
-              Cryptographically anchor your files to Solana without trusting a middleman.
-            </p>
+      {/* Navigation */}
+      <nav className="relative z-20 px-6 py-8 flex justify-between items-center max-w-7xl mx-auto w-full">
+        <div className="flex items-center gap-2">
+          <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shadow-[0_0_20px_rgba(37,99,235,0.4)]">
+            <ShieldCheck className="text-white w-6 h-6" />
+          </div>
+          <span className="text-xl font-bold tracking-tight text-white">SipHeron VDR</span>
+        </div>
+        <div className="hidden md:flex items-center gap-8">
+          <Link href="/verify" className="text-sm font-medium text-gray-400 hover:text-white transition-colors">Public Verifier</Link>
+          <Link href="/explorer" className="text-sm font-medium text-gray-400 hover:text-white transition-colors">Global Explorer</Link>
+          <Link href="/auth/login" className="px-5 py-2.5 rounded-xl border border-white/10 glass text-sm font-bold text-white hover:bg-white/5 transition-all">
+            Institutional Login
+          </Link>
+        </div>
+      </nav>
+
+      {/* Hero Section */}
+      <main className="relative z-10 flex-grow flex flex-col items-center justify-center px-6 text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="max-w-4xl"
+        >
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 mb-8">
+            <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-blue-400">Verifiable Data Registry v2.0</span>
           </div>
 
-          <div className="bg-gray-900 border border-gray-800 shadow-2xl rounded-2xl p-6 sm:p-8">
-            <h2 className="text-lg font-semibold text-white mb-6">Select a file to register</h2>
+          <h1 className="text-5xl md:text-7xl font-extrabold text-white tracking-tight mb-6 leading-tight">
+            Immutable Truth for the <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">Digital Era.</span>
+          </h1>
 
-            <FileUploader onHashComputed={handleHashComputed} />
+          <p className="text-xl text-gray-400 max-w-2xl mx-auto mb-12 leading-relaxed">
+            SipHeron VDR is the institutional backbone for content provenance. Cryptographically anchor, manage, and verify digital assets on Solana with zero-knowledge privacy.
+          </p>
 
-            {hash && status !== "success" && (
-              <div className="mt-8 space-y-6 slide-up-fade-in">
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">
-                    Optional Metadata Label
-                  </label>
-                  <input
-                    type="text"
-                    value={metadata}
-                    onChange={(e) => setMetadata(e.target.value)}
-                    className="w-full px-4 py-3 bg-gray-950 border border-gray-800 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    placeholder="e.g. contract-v2-final.pdf"
-                    maxLength={200}
-                  />
-                  <p className="text-xs text-gray-500 mt-2">Maximum 200 characters. Visible publicly on-chain.</p>
-                </div>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link
+              href="/auth/register"
+              className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-blue-600 text-white font-bold text-lg shadow-[0_0_30px_rgba(37,99,235,0.3)] hover:shadow-[0_0_40px_rgba(37,99,235,0.5)] transition-all flex items-center justify-center group"
+            >
+              Provision Organization
+              <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+            </Link>
+            <Link
+              href="/verify"
+              className="w-full sm:w-auto px-8 py-4 rounded-2xl glass border border-white/10 text-white font-bold text-lg hover:bg-white/5 transition-all flex items-center justify-center"
+            >
+              Verify a File
+            </Link>
+          </div>
+        </motion.div>
 
-                {status === "error" && (
-                  <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-lg text-sm">
-                    {errorMessage}
-                  </div>
-                )}
-
-                <button
-                  onClick={handleRegister}
-                  disabled={status === "registering"}
-                  className={`w-full py-4 px-6 rounded-xl font-bold text-lg flex items-center justify-center transition-all ${status === "registering"
-                      ? "bg-gray-800 text-gray-500 cursor-not-allowed"
-                      : "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white shadow-[0_0_20px_rgba(59,130,246,0.5)] cursor-pointer"
-                    }`}
-                >
-                  {status === "registering" ? (
-                    <>
-                      <Loader2 className="w-6 h-6 mr-2 animate-spin" />
-                      Registering on Solana...
-                    </>
-                  ) : (
-                    "Register to Solana"
-                  )}
-                </button>
+        {/* Features Grid */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.4, duration: 0.8 }}
+          className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl w-full mt-32 mb-20 px-4"
+        >
+          {[
+            { icon: Zap, title: "Extreme Velocity", desc: "Anchored in seconds on Solana. Blazing fast off-chain indexing for instant resolution." },
+            { icon: Lock, title: "Deep Privacy", desc: "ZKP Staging. Your raw data never leaves your infrastructure; only cryptographic proofs persist." },
+            { icon: Globe, title: "Global Trust", desc: "Unforgeable. Every record is cryptographically timestamped and immutable by the cluster." }
+          ].map((feature, i) => (
+            <div key={i} className="glass p-8 rounded-3xl text-left border border-white/5 hover:border-white/10 transition-all hover:translate-y-[-5px]">
+              <div className="p-3 rounded-2xl bg-white/5 w-fit mb-6">
+                <feature.icon className="w-6 h-6 text-blue-400" />
               </div>
-            )}
+              <h3 className="text-xl font-bold text-white mb-3">{feature.title}</h3>
+              <p className="text-gray-400 text-sm leading-relaxed">{feature.desc}</p>
+            </div>
+          ))}
+        </motion.div>
 
-            {status === "success" && result && (
-              <div className="mt-8 bg-green-900/10 border border-green-500/20 rounded-xl p-6 slide-up-fade-in">
-                <div className="flex items-center text-green-400 mb-4">
-                  <CheckCircle className="w-8 h-8 mr-3" />
-                  <h3 className="text-xl font-bold">Successfully Registered</h3>
-                </div>
-
-                <div className="space-y-3 font-mono text-sm mt-6">
-                  <div className="flex flex-col">
-                    <span className="text-gray-500 uppercase tracking-wider text-xs mb-1">Transaction Signature</span>
-                    <a
-                      href={result.explorerUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-400 hover:text-blue-300 flex items-center truncate break-all"
-                    >
-                      {result.txSignature} <ExternalLink className="w-3 h-3 ml-1 flex-shrink-0" />
-                    </a>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-gray-500 uppercase tracking-wider text-xs mb-1">Owner Address</span>
-                    <span className="text-gray-300 truncate">{result.owner}</span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-gray-500 uppercase tracking-wider text-xs mb-1">Timestamp</span>
-                    <span className="text-gray-300">{new Date(result.timestamp * 1000).toUTCString()}</span>
-                  </div>
-                </div>
-
-                <div className="mt-8 flex gap-4">
-                  <button
-                    onClick={() => handleHashComputed(null, "")}
-                    className="flex-1 py-3 px-4 bg-gray-800 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors text-center"
-                  >
-                    Register Another
-                  </button>
-                  <Link
-                    href="/verify"
-                    className="flex-1 py-3 px-4 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium transition-colors text-center"
-                  >
-                    Verify a File
-                  </Link>
-                </div>
-              </div>
-            )}
+        {/* Stats Section */}
+        <div className="pb-20 flex flex-wrap justify-center gap-12 md:gap-24">
+          <div className="text-center">
+            <div className="text-4xl font-black text-white mb-1 tracking-tighter">400ms</div>
+            <div className="text-[10px] uppercase font-bold tracking-[0.2em] text-gray-500">Block Time</div>
+          </div>
+          <div className="text-center">
+            <div className="text-4xl font-black text-white mb-1 tracking-tighter">0.0003$</div>
+            <div className="text-[10px] uppercase font-bold tracking-[0.2em] text-gray-500">Avg. Fee</div>
+          </div>
+          <div className="text-center">
+            <div className="text-4xl font-black text-white mb-1 tracking-tighter">65,000+</div>
+            <div className="text-[10px] uppercase font-bold tracking-[0.2em] text-gray-500">Peak TPS</div>
           </div>
         </div>
       </main>
+
+      {/* Footer */}
+      <footer className="relative z-10 px-6 py-12 border-t border-white/5 bg-black/20">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+          <div className="text-gray-500 text-sm font-medium">
+            © 2026 SipHeron VDR Protocol. Built on Solana for Creators.
+          </div>
+          <div className="flex items-center gap-6">
+            <a href="#" className="text-gray-500 hover:text-white transition-colors"><Activity className="w-5 h-5" /></a>
+            <a href="#" className="text-gray-500 hover:text-white transition-colors"><ShieldCheck className="w-5 h-5" /></a>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

@@ -1,84 +1,153 @@
 "use client";
+
+/**
+ * @file layout.js
+ * @module /home/ars0x01/Documents/Github/solana-vdr/web/dashboard/src/app/dashboard/layout.js
+ * @description Next.js App Router pages and layouts.
+ * Part of the SipHeron VDR platform.
+ * @author SipHeron Platform
+ */
+
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { LayoutDashboard, Key, LogOut, Shield } from 'lucide-react';
-import { logout } from '@/utils/api';
+import { LayoutDashboard, Key, LogOut, ShieldCheck, Settings, ChevronRight, Menu, X, Landmark } from 'lucide-react';
+import { logout, isAuthenticated } from '@/utils/api';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function DashboardLayout({ children }) {
     const router = useRouter();
     const pathname = usePathname();
     const [mounted, setMounted] = useState(false);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
     useEffect(() => {
-        setMounted(true);
-        const token = localStorage.getItem('vdr_token');
-        if (!token) {
-            router.push('/auth/login');
+        let cancelled = false;
+        async function verifySession() {
+            const valid = await isAuthenticated();
+            if (!cancelled) {
+                if (!valid) {
+                    router.push('/auth/login');
+                }
+                setMounted(true);
+            }
         }
+        verifySession();
+        return () => { cancelled = true; };
     }, [router]);
 
-    if (!mounted) return null; // Prevent hydration errors
+    if (!mounted) return null;
 
     const navItems = [
         { name: 'Analytics', href: '/dashboard', icon: LayoutDashboard },
-        { name: 'API Keys', href: '/dashboard/keys', icon: Key },
-        { name: 'Registries', href: '/explorer', icon: Shield },
+        { name: 'API Key Management', href: '/dashboard/keys', icon: Key },
+        { name: 'Global Explorer', href: '/explorer', icon: ShieldCheck },
+        { name: 'Node Settings', href: '/dashboard/settings', icon: Settings },
     ];
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex">
+        <div className="min-h-screen bg-[#050505] text-white flex overflow-hidden">
+            {/* Background Mesh */}
+            <div className="fixed inset-0 bg-mesh opacity-40 pointer-events-none" />
+
             {/* Sidebar */}
-            <aside className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 hidden md:flex flex-col">
-                <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                    <h1 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 tracking-tight">VDR Admin</h1>
-                    <p className="text-xs text-gray-500 font-medium mt-1 uppercase tracking-wider">SipHeron Mode</p>
+            <motion.aside
+                initial={false}
+                animate={{ width: isSidebarOpen ? 280 : 80 }}
+                className="relative z-30 border-r border-white/5 glass flex flex-col transition-all duration-300"
+            >
+                <div className="p-6 h-20 flex items-center justify-between border-b border-white/5">
+                    <AnimatePresence mode="wait">
+                        {isSidebarOpen && (
+                            <motion.div
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -10 }}
+                                className="flex items-center gap-2"
+                            >
+                                <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-600/20">
+                                    <ShieldCheck className="w-5 h-5 text-white" />
+                                </div>
+                                <span className="font-bold tracking-tight text-lg">SipHeron VDR</span>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                    <button
+                        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                        className="p-2 hover:bg-white/5 rounded-xl transition-colors text-gray-400 hover:text-white"
+                    >
+                        {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                    </button>
                 </div>
 
-                <nav className="flex-1 px-4 py-6 space-y-1">
+                <div className="flex-1 px-4 py-8 space-y-2 overflow-y-auto scrollbar-hide">
                     {navItems.map((item) => {
                         const isActive = pathname === item.href;
                         return (
-                            <Link
-                                key={item.href}
-                                href={item.href}
-                                className={`flex items-center px-4 py-3 text-sm font-semibold rounded-xl transition-all ${isActive
-                                        ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 shadow-sm'
-                                        : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700/50'
-                                    }`}
-                            >
-                                <item.icon className={`w-5 h-5 mr-3 ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400'}`} />
-                                {item.name}
+                            <Link key={item.href} href={item.href}>
+                                <motion.div
+                                    whileHover={{ x: 4 }}
+                                    className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all cursor-pointer group ${isActive
+                                        ? 'bg-blue-600/10 text-blue-400 border border-blue-600/20 shadow-lg shadow-blue-600/5'
+                                        : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+                                >
+                                    <item.icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-blue-400' : 'group-hover:text-blue-400 transition-colors'}`} />
+                                    {isSidebarOpen && (
+                                        <div className="flex flex-1 justify-between items-center whitespace-nowrap overflow-hidden">
+                                            <span className="font-bold text-sm">{item.name}</span>
+                                            {isActive && <ChevronRight className="w-4 h-4" />}
+                                        </div>
+                                    )}
+                                </motion.div>
                             </Link>
                         );
                     })}
-                </nav>
+                </div>
 
-                <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+                <div className="p-4 border-t border-white/5 space-y-4">
+                    <div className="flex items-center gap-3 px-4 py-3">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-purple-600 flex items-center justify-center text-[10px] font-bold">
+                            AD
+                        </div>
+                        {isSidebarOpen && (
+                            <div className="flex-1 overflow-hidden">
+                                <p className="text-xs font-bold truncate">Organization Admin</p>
+                                <p className="text-[10px] text-gray-500 truncate">Solana Devnet Node</p>
+                            </div>
+                        )}
+                    </div>
+
                     <button
                         onClick={() => {
                             logout();
                             router.push('/auth/login');
                         }}
-                        className="flex w-full items-center px-4 py-3 text-sm font-semibold text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 rounded-xl transition-all"
+                        className="flex w-full items-center gap-4 px-4 py-3.5 text-sm font-bold text-red-500/80 hover:text-red-400 hover:bg-red-500/5 rounded-2xl transition-all group"
                     >
-                        <LogOut className="w-5 h-5 mr-3" />
-                        Sign Out
+                        <LogOut className="w-5 h-5 flex-shrink-0 group-hover:translate-x-[-2px] transition-transform" />
+                        {isSidebarOpen && <span className="whitespace-nowrap">Sign Out</span>}
                     </button>
                 </div>
-            </aside>
+            </motion.aside>
 
-            {/* Main Content */}
-            <main className="flex-1 flex flex-col overflow-hidden">
-                {/* Mobile Header */}
-                <header className="md:hidden bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex justify-between items-center">
-                    <h1 className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">VDR Admin</h1>
-                    <button onClick={() => { logout(); router.push('/auth/login'); }} className="text-red-500">
-                        <LogOut className="w-6 h-6" />
-                    </button>
+            {/* Main Content Area */}
+            <main className="flex-1 flex flex-col relative z-10 overflow-hidden">
+                <header className="h-20 w-full px-8 flex items-center justify-between border-b border-white/5 glass">
+                    <div className="flex items-center gap-4">
+                        <Landmark className="w-5 h-5 text-gray-500" />
+                        <div className="h-4 w-[1px] bg-white/10" />
+                        <span className="text-sm font-medium text-gray-400">Institutional Dashboard</span>
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            <span className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-400">Mainnet Ready</span>
+                        </div>
+                    </div>
                 </header>
 
-                <div className="flex-1 overflow-auto p-4 md:p-8">
+                <div className="flex-1 overflow-y-auto p-8 relative scrollbar-hide">
                     {children}
                 </div>
             </main>

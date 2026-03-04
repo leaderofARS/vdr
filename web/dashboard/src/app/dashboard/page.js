@@ -1,18 +1,32 @@
 "use client";
+
+/**
+ * @file page.js
+ * @module /home/ars0x01/Documents/Github/solana-vdr/web/dashboard/src/app/dashboard/page.js
+ * @description Next.js App Router pages and layouts.
+ * Part of the SipHeron VDR platform.
+ * @author SipHeron Platform
+ */
+
 import { useState, useEffect } from 'react';
 import { api } from '@/utils/api';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { AlertCircle, FileDigit, Building, Users, Activity } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { AlertCircle, FileDigit, Building, Users, Activity, ShieldCheck, Plus, ExternalLink, Hash, Globe, MousePointer2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function AnalyticsDashboard() {
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [showWizard, setShowWizard] = useState(false);
 
     useEffect(() => {
         const fetchStats = async () => {
             try {
                 const { data } = await api.get('/analytics/stats');
                 setStats(data);
+                if (data.noOrganization) {
+                    setShowWizard(true);
+                }
             } catch (e) {
                 console.error("Failed to load analytics");
             } finally {
@@ -23,82 +37,309 @@ export default function AnalyticsDashboard() {
     }, []);
 
     if (loading) return (
-        <div className="flex items-center justify-center min-h-[50vh]">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="flex items-center justify-center min-h-[60vh]">
+            <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                className="w-12 h-12 border-t-2 border-r-2 border-blue-500 rounded-full"
+            />
         </div>
     );
 
+    if (showWizard) {
+        return <OnboardingWizard onComplete={() => window.location.reload()} />;
+    }
+
     return (
-        <div className="space-y-6 max-w-7xl mx-auto">
-            <div className="flex items-center justify-between">
-                <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">Platform Analytics</h1>
-                <div className="flex items-center text-sm font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">
-                    <Activity className="w-4 h-4 mr-2" />
-                    Live Network Sync
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-8 max-w-7xl mx-auto"
+        >
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                    <h1 className="text-4xl font-black tracking-tight text-white mb-2">
+                        {stats?.organizationName || 'Institutional Overview'}
+                    </h1>
+                    <div className="flex items-center gap-3 text-gray-500 font-medium text-sm">
+                        <span className="flex items-center gap-1.5 bg-white/5 px-2 py-0.5 rounded-md border border-white/5">
+                            <Globe className="w-3.5 h-3.5" />
+                            Solana Devnet
+                        </span>
+                        <div className="w-1 h-1 rounded-full bg-gray-700" />
+                        <span className="font-mono text-[11px] py-0.5 px-2 bg-blue-500/10 text-blue-400 rounded-md border border-blue-500/20">
+                            {stats?.solanaPubkey?.slice(0, 8)}...{stats?.solanaPubkey?.slice(-8)}
+                        </span>
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-3 px-4 py-2 rounded-2xl glass-accent animate-pulse-slow">
+                    <Activity className="w-4 h-4 text-blue-400" />
+                    <span className="text-xs font-bold uppercase tracking-widest text-blue-400">Live Network Sync</span>
                 </div>
             </div>
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <StatCard title="Total Hashes Anchored" value={stats?.totalHashes || 0} icon={FileDigit} color="blue" />
-                <StatCard title="Active Integrity Rate" value={`${stats?.activeRate || 100}%`} icon={ShieldCheck} color="emerald" />
-                <StatCard title="Organizations" value={stats?.totalOrganizations || 0} icon={Building} color="purple" />
-                <StatCard title="Admin Accounts" value={stats?.totalUsers || 0} icon={Users} color="orange" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <StatCard
+                    title="Total Anchored Proofs"
+                    value={stats?.totalHashes || 0}
+                    icon={Hash}
+                    trend="+12% from last week"
+                    color="blue"
+                />
+                <StatCard
+                    title="Verification Integrity"
+                    value={`${stats?.activeRate || 100}%`}
+                    icon={ShieldCheck}
+                    trend="Optimal Health"
+                    color="emerald"
+                />
+                <StatCard
+                    title="Revocation events"
+                    value={stats?.revokedHashes || 0}
+                    icon={AlertCircle}
+                    trend="No recent spikes"
+                    color="amber"
+                />
             </div>
 
             {/* Charts Array */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
-                    <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-6 font-sans">Recent Anchor Volume</h3>
-                    <div className="h-72 w-full">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={stats?.recentRecords?.map((r, i) => ({ name: `Record ${i + 1}`, val: 1 })) || []}>
-                                <XAxis dataKey="name" hide />
-                                <YAxis hide />
-                                <Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-                                <Bar dataKey="val" fill="#4f46e5" radius={[4, 4, 0, 0]} />
-                            </BarChart>
-                        </ResponsiveContainer>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-12">
+                <div className="lg:col-span-2 glass p-8 rounded-[32px] border border-white/5 relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+                        <BarChart width={100} height={100} data={[{ v: 1 }, { v: 2 }, { v: 3 }]}>
+                            <Bar dataKey="v" fill="#3b82f6" />
+                        </BarChart>
+                    </div>
+                    <div className="relative z-10">
+                        <h3 className="text-xl font-bold text-white mb-8 flex items-center gap-3">
+                            <Activity className="w-5 h-5 text-blue-500" />
+                            Anchoring Velocity
+                        </h3>
+                        <div className="h-[300px] w-full">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={stats?.recentRecords?.length ? stats.recentRecords.reverse().map((r, i) => ({ name: i + 1, value: 1 })) : [{ name: '0', value: 0 }]}>
+                                    <XAxis dataKey="name" hide />
+                                    <YAxis hide />
+                                    <Tooltip
+                                        cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+                                        contentStyle={{
+                                            backgroundColor: 'rgba(10,10,10,0.9)',
+                                            borderRadius: '16px',
+                                            border: '1px solid rgba(255,255,255,0.1)',
+                                            backdropFilter: 'blur(10px)',
+                                            color: '#fff'
+                                        }}
+                                    />
+                                    <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+                                        {(stats?.recentRecords || []).map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={index % 2 === 0 ? '#3b82f6' : '#2563eb'} />
+                                        ))}
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col justify-center items-center text-center">
-                    <AlertCircle className="w-16 h-16 text-yellow-500 mb-4 opacity-80" />
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Revocation Index</h3>
-                    <p className="text-gray-500 dark:text-gray-400 max-w-xs">{stats?.revokedHashes || 0} hashes have been cryptographically revoked by Authoritative Issuers.</p>
+                <div className="glass p-8 rounded-[32px] border border-white/5 flex flex-col items-center justify-center text-center relative overflow-hidden group">
+                    {/* Background Glow */}
+                    <div className="absolute inset-0 bg-blue-600/5 blur-[80px] group-hover:bg-blue-600/10 transition-colors" />
+
+                    <div className="relative z-10">
+                        <div className="w-20 h-20 rounded-3xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mx-auto mb-6 shadow-2xl">
+                            <Plus className="w-10 h-10 text-blue-400 group-hover:rotate-90 transition-transform duration-500" />
+                        </div>
+                        <h3 className="text-2xl font-black text-white mb-3 tracking-tight">Anchor New Asset</h3>
+                        <p className="text-gray-400 text-sm mb-8 leading-relaxed">
+                            Initialize a new cryptographic proof for high-value intellectual property.
+                        </p>
+                        <button className="w-full h-14 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold transition-all shadow-lg shadow-blue-600/20 hover:scale-[1.02] active:scale-[0.98]">
+                            Open Anchor Lab
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
+
+            {/* Recent Activity Table */}
+            <div className="mt-12">
+                <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-xl font-bold text-white flex items-center gap-3">
+                        <MousePointer2 className="w-5 h-5 text-purple-500" />
+                        Recent Registry Entries
+                    </h3>
+                    <button className="text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors uppercase tracking-[0.2em]">View All Activity &rarr;</button>
+                </div>
+
+                <div className="glass rounded-[32px] border border-white/5 overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left">
+                            <thead>
+                                <tr className="border-b border-white/5 bg-white/[0.02]">
+                                    <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Asset Identity</th>
+                                    <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Immutable Hash</th>
+                                    <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Status</th>
+                                    <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Provenance</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-white/5">
+                                {stats?.recentRecords?.length ? stats.recentRecords.map((record, i) => (
+                                    <tr key={i} className="group hover:bg-white/[0.02] transition-colors">
+                                        <td className="px-8 py-6">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
+                                                    <FileDigit className="w-5 h-5 text-blue-400" />
+                                                </div>
+                                                <span className="font-bold text-sm text-gray-200">{record.metadata || 'Unnamed Proof'}</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-8 py-6">
+                                            <code className="text-xs text-gray-500 font-mono bg-white/5 px-3 py-1.5 rounded-lg border border-white/5">
+                                                {record.hash.slice(0, 16)}...
+                                            </code>
+                                        </td>
+                                        <td className="px-8 py-6">
+                                            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 w-fit">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                                <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">Anchored</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-8 py-6">
+                                            <a
+                                                href={`https://explorer.solana.com/address/${record.pdaAddress}?cluster=devnet`}
+                                                target="_blank"
+                                                className="p-2 rounded-lg bg-white/5 border border-white/5 hover:border-blue-500/50 hover:text-blue-400 transition-all inline-block"
+                                            >
+                                                <ExternalLink className="w-4 h-4" />
+                                            </a>
+                                        </td>
+                                    </tr>
+                                )) : (
+                                    <tr>
+                                        <td colSpan="4" className="px-8 py-12 text-center text-gray-500 font-medium italic">
+                                            No recent activity detected on the cluster.
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </motion.div>
     );
 }
 
-function StatCard({ title, value, icon: Icon, color }) {
-    const colorMap = {
-        blue: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400',
-        emerald: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400',
-        purple: 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400',
-        orange: 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400',
+function StatCard({ title, value, icon: Icon, trend, color }) {
+    const colors = {
+        blue: 'text-blue-400 bg-blue-400/10 border-blue-400/20',
+        emerald: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20',
+        amber: 'text-amber-400 bg-amber-400/10 border-amber-400/20',
+        purple: 'text-purple-400 bg-purple-400/10 border-purple-400/20',
     };
 
     return (
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{title}</h3>
-                <div className={`p-3 rounded-xl ${colorMap[color]}`}>
-                    <Icon className="w-5 h-5" />
+        <motion.div
+            whileHover={{ y: -5 }}
+            className="glass p-8 rounded-[32px] border border-white/5 relative overflow-hidden group"
+        >
+            <div className="absolute top-0 right-0 p-8 opacity-5">
+                <Icon className="w-24 h-24" />
+            </div>
+            <div className="relative z-10 flex flex-col h-full">
+                <div className="flex items-center justify-between mb-8">
+                    <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">{title}</h3>
+                    <div className={`p-3 rounded-2xl border ${colors[color]}`}>
+                        <Icon className="w-5 h-5" />
+                    </div>
+                </div>
+                <p className="text-4xl font-black text-white tracking-tighter mb-4">{value}</p>
+                <div className="mt-auto flex items-center gap-2">
+                    <span className={`text-[10px] font-bold uppercase tracking-wider ${colors[color].split(' ')[0]}`}>{trend}</span>
                 </div>
             </div>
-            <p className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">{value}</p>
-        </div>
+        </motion.div>
     );
 }
 
-// Temporary icon stub for ShieldCheck if missing
-function ShieldCheck(props) {
+function OnboardingWizard({ onComplete }) {
+    const [name, setName] = useState('');
+    const [pubkey, setPubkey] = useState(''); // PDA Or Wallet
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+
+    const handleInit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError('');
+        try {
+            await api.post('/organizations', { name, solanaPubkey: pubkey });
+            onComplete();
+        } catch (err) {
+            setError(err.response?.data?.error || "Provisioning failed. Verify your Solana identity.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
-        <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
-            <path d="m9 12 2 2 4-4" />
-        </svg>
+        <div className="min-h-[70vh] flex items-center justify-center">
+            <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="max-w-xl w-full glass p-12 rounded-[40px] border border-white/10 shadow-2xl relative overflow-hidden"
+            >
+                <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none">
+                    <Building className="w-48 h-48" />
+                </div>
+
+                <div className="relative z-10">
+                    <div className="w-16 h-16 rounded-2xl bg-blue-600 flex items-center justify-center mb-8 shadow-xl shadow-blue-600/20">
+                        <Landmark className="w-8 h-8 text-white" />
+                    </div>
+
+                    <h2 className="text-3xl font-black text-white mb-4 tracking-tight">Provision Institutional Node</h2>
+                    <p className="text-gray-400 mb-10 leading-relaxed font-medium">
+                        Your account is currently orphaned. To begin anchoring assets, you must provision an organization identity on the Solana cluster.
+                    </p>
+
+                    <form onSubmit={handleInit} className="space-y-6">
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] ml-1">Entity Nomenclature</label>
+                            <input
+                                type="text"
+                                required
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                placeholder="e.g. Acme Corp Institutional"
+                                className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all placeholder:text-gray-600 font-bold"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] ml-1">Solana Ledger Identity (PDA/Wallet)</label>
+                            <input
+                                type="text"
+                                required
+                                value={pubkey}
+                                onChange={(e) => setPubkey(e.target.value)}
+                                placeholder="Public key for on-chain seeds"
+                                className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all placeholder:text-gray-600 font-mono text-sm"
+                            />
+                        </div>
+
+                        {error && <p className="text-red-400 text-xs font-bold px-2">{error}</p>}
+
+                        <button
+                            disabled={loading}
+                            className="w-full h-16 rounded-2xl bg-white text-black font-black text-lg hover:bg-gray-200 transition-all shadow-xl disabled:bg-gray-800 disabled:text-gray-500 mt-4"
+                        >
+                            {loading ? 'Processing Protocol Seeds...' : 'Finalize Onboarding'}
+                        </button>
+                    </form>
+                </div>
+            </motion.div>
+        </div>
     );
 }

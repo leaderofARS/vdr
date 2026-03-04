@@ -1,36 +1,40 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# SipHeron VDR — Dashboard Reference
 
-## Getting Started
+This directory contains the frontend web application built with **Next.js (App Router)** and **React**.
 
-First, run the development server:
+## Architecture & Directory Structure
+
+The dashboard is a modern React application utilizing Server Components and Client Components where appropriate.
+
+- **`src/app/`**: Next.js App Router definitions.
+  - `layout.js` & `page.js`: The root unauthenticated landing page.
+  - `auth/`: Login and registration routes.
+  - `dashboard/`: The main authenticated workspace. 
+    - `layout.js`: Acts as the security perimeter. It calls the backend API to verify the `HttpOnly` session cookie before rendering child routes.
+    - `page.js`: The analytics and overview hub. Fetches statistics and displays the "Onboarding Wizard" if the user hasn't created an organization yet.
+  - `verify/`: A public tool allowing anyone to upload a file into their browser memory to calculate its hash and mathematically verify its existence on the Solana ledger.
+  - `explorer/`: A public ledger interface viewing recent anchors.
+- **`src/components/`**: Reusable React components.
+  - `FileUploader.jsx`: A drag-and-drop component that calculates SHA-256 hashes locally in the browser using the Web Crypto API. Fits the Zero-Knowledge model.
+  - `WalletContextProvider.jsx`: Solana wallet adapter integration (Phantom, Solflare) for future decentralization features.
+- **`src/utils/`**: Frontend helpers.
+  - `api.js`: An Axios instance pre-configured with `withCredentials: true` to handle secure `HttpOnly` cookies. It includes a response interceptor that automatically calls `/auth/refresh` on 401 errors and retries failed requests.
+  - `hash.js`: Web Crypto API hashing functions.
+- **`src/middleware.js`**: Next.js Edge Middleware. Enforces HTTPS in production environments by actively rewriting standard HTTP requests and attaching strict HSTS/CSP security headers at the edge router level.
+
+## Authentication & Security
+
+The frontend **does not** store JWTs or sensitive tokens in `localStorage`. 
+
+All session management is handled via `HttpOnly`, `Secure`, `SameSite=Strict` cookies issued by the backend API. The Axios client (`utils/api.js`) automatically attaches these cookies to every request. If an access token expires (15m TTL), the response interceptor seamlessly uses the refresh token (7d TTL) to obtain a new access cookie and replays the original request entirely transparently to the user.
+
+## Running Locally
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+For production testing:
+```bash
+npm run build && npm start
+```

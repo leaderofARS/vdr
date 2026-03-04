@@ -1,3 +1,11 @@
+/**
+ * @file layout.js
+ * @module /home/ars0x01/Documents/Github/solana-vdr/web/dashboard/src/app/layout.js
+ * @description Next.js App Router pages and layouts.
+ * Part of the SipHeron VDR platform.
+ * @author SipHeron Platform
+ */
+
 import { Geist, Geist_Mono } from "next/font/google";
 import { WalletContextProvider } from "@/components/WalletContextProvider";
 import "./globals.css";
