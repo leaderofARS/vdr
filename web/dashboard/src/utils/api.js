@@ -15,7 +15,6 @@ export const api = axios.create({
     withCredentials: true,  // Fix 1.16: Enable cookie support for HttpOnly cookies
 });
 
-// Fix 1.16: Remove localStorage token handling - JWT now in HttpOnly cookie
 // Request interceptor - cookies are automatically sent by browser
 api.interceptors.request.use((config) => {
     // Cookies are automatically included with withCredentials: true
