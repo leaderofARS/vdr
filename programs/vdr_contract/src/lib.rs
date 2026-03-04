@@ -6,11 +6,20 @@
 
 use anchor_lang::prelude::*;
 
-pub mod instructions;
+pub mod init_protocol;
+pub mod init_organization;
+pub mod register_hash;
+pub mod verify_hash;
+pub mod revoke_hash;
+pub mod update_protocol_config;
 pub mod state;
 
-// Bring instructions into scope for the #[program] macro
-use crate::instructions::*;
+use crate::init_protocol::*;
+use crate::init_organization::*;
+use crate::register_hash::*;
+use crate::verify_hash::*;
+use crate::revoke_hash::*;
+use crate::update_protocol_config::*;
 
 // This is the generated program ID for Localnet & Devnet
 // Ensure this matches the `vdr_contract` key in Anchor.toml
@@ -26,23 +35,23 @@ pub mod vdr_contract {
         metadata: String,
         expiry: i64 // V2 param
     ) -> Result<()> {
-        crate::instructions::register_hash::handler(ctx, hash, metadata, expiry)
+        crate::register_hash::handler(ctx, hash, metadata, expiry)
     }
 
     pub fn verify_hash(ctx: Context<VerifyHash>) -> Result<()> {
-        crate::instructions::verify_hash::handler(ctx)
+        crate::verify_hash::handler(ctx)
     }
 
     pub fn init_protocol(ctx: Context<InitProtocol>, registration_fee: u64) -> Result<()> {
-        crate::instructions::init_protocol::handler(ctx, registration_fee)
+        crate::init_protocol::handler(ctx, registration_fee)
     }
 
     pub fn init_organization(ctx: Context<InitOrganization>, name: String) -> Result<()> {
-        crate::instructions::init_organization::handler(ctx, name)
+        crate::init_organization::handler(ctx, name)
     }
 
     pub fn revoke_hash(ctx: Context<RevokeHash>) -> Result<()> {
-        crate::instructions::revoke_hash::handler(ctx)
+        crate::revoke_hash::handler(ctx)
     }
 
     pub fn update_protocol_config(
@@ -52,6 +61,6 @@ pub mod vdr_contract {
         new_treasury: Option<Pubkey>,
         is_paused: Option<bool>,
     ) -> Result<()> {
-        crate::instructions::update_protocol_config::handler(ctx, new_admin, new_fee, new_treasury, is_paused)
+        crate::update_protocol_config::handler(ctx, new_admin, new_fee, new_treasury, is_paused)
     }
 }
