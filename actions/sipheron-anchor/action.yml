@@ -41,12 +41,13 @@ runs:
 
     - name: Configure SipHeron Credentials
       shell: bash
+      env:
+        SIPHERON_API_KEY: ${{ inputs.api_key }}
       run: |
         echo "Configuring SipHeron CLI..."
-        sipheron-vdr config set --api-key "${{ inputs.api_key }}" --network "${{ inputs.network }}" --url "${{ inputs.api_url }}"
-        
-        # Verify configuration
-        sipheron-vdr config show
+        sipheron-vdr config set apiUrl "${{ inputs.api_url }}"
+        sipheron-vdr config set network "${{ inputs.network }}"
+        # API Key is picked up automatically from the environment variable
 
     - name: Stage Build Artifacts
       shell: bash
@@ -66,6 +67,8 @@ runs:
 
     - name: Anchor Hashes to Solana
       shell: bash
+      env:
+        SIPHERON_API_KEY: ${{ inputs.api_key }}
       run: |
         echo "Anchoring staged hashes to the VDR Protocol..."
         sipheron-vdr anchor

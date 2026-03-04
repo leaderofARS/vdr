@@ -1,0 +1,120 @@
+services:
+  # ─── Backend API (Cluster-Ready) ──────────────
+  api:
+    build:
+      context: ./backend/api-server
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DATABASE_URL=postgresql://vdr:${DB_PASSWORD}@postgres:5432/sipheron_vdr
+      - SOLANA_RPC_URL=${SOLANA_RPC_URL:-https://api.devnet.solana.com}
+      - SOLANA_NETWORK=${SOLANA_NETWORK:-devnet}
+      - PROGRAM_ID=${PROGRAM_ID}
+      - JWT_SECRET=${JWT_SECRET}
+      - FRONTEND_URL=${FRONTEND_URL:-https://app.sipheron.com}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-https://app.sipheron.com}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    deploy:
+      replicas: 4
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3001/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # ─── Dashboard (Next.js) ──────────────────────
+  dashboard:
+    build:
+      context: ./web/dashboard
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=${API_URL:-https://api.sipheron.com}
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  # ─── PostgreSQL ───────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_DB=sipheron_vdr
+      - POSTGRES_USER=vdr
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vdr -d sipheron_vdr"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Redis (BullMQ / Session Cache) ───────────
+  redis:
+    image: redis:7-alpine
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru --appendonly yes
+    volumes:
+      - redis_data:/data
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Nginx Reverse Proxy / Load Balancer ──────
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+    depends_on:
+      - api
+      - dashboard
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:

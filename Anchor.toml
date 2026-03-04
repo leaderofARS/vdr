@@ -1,18 +1,22 @@
 [toolchain]
-anchor_version = "0.32.1"
+anchor_version = "0.30.1"
 
 [features]
 resolution = true
 skip-lint = false
+idl = true
 
 [programs.localnet]
+vdr_contract = "6ecWPUK87zxwZP2pARJ75wbpCka92mYSGP1szrJxzAwo"
+
+[programs.devnet]
 vdr_contract = "6ecWPUK87zxwZP2pARJ75wbpCka92mYSGP1szrJxzAwo"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "localnet"
+cluster = "devnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
