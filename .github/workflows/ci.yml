@@ -50,9 +50,7 @@ jobs:
           solana config set --url localhost
 
       - name: Build Program
-        run: |
-          rm -f Cargo.lock
-          anchor build
+        run: anchor build
 
       - name: Run Anchor Tests
         run: anchor test --skip-local-validator || echo "Tests require local validator"
@@ -316,9 +314,7 @@ jobs:
           solana config set --url localhost
 
       - name: Build Smart Contract
-        run: |
-          rm -f Cargo.lock
-          anchor build
+        run: anchor build
 
       # Build the dashboard
       - name: Install Dashboard Dependencies
