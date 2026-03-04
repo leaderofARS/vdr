@@ -31,13 +31,14 @@ runs:
       with:
         node-version: '20'
 
-    - name: Ensure SipHeron CLI is Installed
+    - name: Install SipHeron CLI Dependencies
       shell: bash
       run: |
-        if ! command -v sipheron-vdr &> /dev/null; then
-          echo "Installing SipHeron VDR CLI globally from local repository..."
-          npm install -g ./cli/vdr-cli
-        fi
+        echo "Installing SipHeron VDR CLI dependencies..."
+        cd ${{ github.workspace }}/cli/vdr-cli
+        npm install
+        echo "${{ github.workspace }}/cli/vdr-cli/bin" >> $GITHUB_PATH
+        echo "CLI dependencies installed successfully."
 
     - name: Configure SipHeron Credentials
       shell: bash
@@ -45,25 +46,25 @@ runs:
         SIPHERON_API_KEY: ${{ inputs.api_key }}
       run: |
         echo "Configuring SipHeron CLI..."
-        sipheron-vdr config set apiUrl "${{ inputs.api_url }}"
-        sipheron-vdr config set network "${{ inputs.network }}"
-        # API Key is picked up automatically from the environment variable
+        node ${{ github.workspace }}/cli/vdr-cli/src/index.js config set apiUrl "${{ inputs.api_url }}"
+        node ${{ github.workspace }}/cli/vdr-cli/src/index.js config set network "${{ inputs.network }}"
 
     - name: Stage Build Artifacts
       shell: bash
       run: |
         echo "Staging binaries from directory: ${{ inputs.directory }}"
-        
+
         # Ensure directory exists
         if [ ! -d "${{ inputs.directory }}" ]; then
           echo "::error::Directory '${{ inputs.directory }}' not found."
           exit 1
         fi
-        
+
         # Recursively find all files and stage them
-        find "${{ inputs.directory }}" -type f -exec sipheron-vdr stage {} \;
-        
-        sipheron-vdr status
+        find "${{ inputs.directory }}" -type f -exec \
+          node ${{ github.workspace }}/cli/vdr-cli/src/index.js stage {} \;
+
+        node ${{ github.workspace }}/cli/vdr-cli/src/index.js status
 
     - name: Anchor Hashes to Solana
       shell: bash
@@ -71,6 +72,6 @@ runs:
         SIPHERON_API_KEY: ${{ inputs.api_key }}
       run: |
         echo "Anchoring staged hashes to the VDR Protocol..."
-        sipheron-vdr anchor
-        
+        node ${{ github.workspace }}/cli/vdr-cli/src/index.js anchor
+
         echo "::notice::Successfully anchored release binaries to the SipHeron registry!"
