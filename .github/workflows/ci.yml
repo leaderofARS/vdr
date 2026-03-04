@@ -41,11 +41,11 @@ jobs:
           sh -c "$(curl -sSfL https://release.anza.xyz/v${{ env.SOLANA_VERSION }}/install)"
           echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
 
-      - name: Install Anchor CLI (AVM)
+      - name: Install Anchor CLI (Binary)
         run: |
-          cargo install --git https://github.com/coral-xyz/anchor avm --locked --force
-          avm install ${{ env.ANCHOR_VERSION }}
-          avm use ${{ env.ANCHOR_VERSION }}
+          wget https://github.com/coral-xyz/anchor/releases/download/v${{ env.ANCHOR_VERSION }}/anchor-cli-x86_64-unknown-linux-gnu.tar.gz
+          tar -xzf anchor-cli-x86_64-unknown-linux-gnu.tar.gz
+          mv anchor-cli-x86_64-unknown-linux-gnu/anchor ~/.local/share/solana/install/active_release/bin/
           anchor --version
 
       - name: Configure Solana
@@ -311,11 +311,11 @@ jobs:
           sh -c "$(curl -sSfL https://release.anza.xyz/v${{ env.SOLANA_VERSION }}/install)"
           echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
 
-      - name: Install Anchor CLI (AVM)
+      - name: Install Anchor CLI (Binary)
         run: |
-          cargo install --git https://github.com/coral-xyz/anchor avm --locked --force
-          avm install ${{ env.ANCHOR_VERSION }}
-          avm use ${{ env.ANCHOR_VERSION }}
+          wget https://github.com/coral-xyz/anchor/releases/download/v${{ env.ANCHOR_VERSION }}/anchor-cli-x86_64-unknown-linux-gnu.tar.gz
+          tar -xzf anchor-cli-x86_64-unknown-linux-gnu.tar.gz
+          mv anchor-cli-x86_64-unknown-linux-gnu/anchor ~/.local/share/solana/install/active_release/bin/
           anchor --version
 
       - name: Configure Solana
