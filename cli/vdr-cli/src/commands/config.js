@@ -1,3 +1,11 @@
+/**
+ * @file config.js
+ * @module /home/ars0x01/Documents/Github/solana-vdr/cli/vdr-cli/src/commands/config.js
+ * @description CLI command modules deployed via Commander.js.
+ * Part of the SipHeron VDR platform.
+ * @author SipHeron Platform
+ */
+
 const { Command } = require('commander');
 const chalk = require('chalk');
 const { loadConfig, saveConfig } = require('../utils/configManager');
@@ -20,8 +28,16 @@ function createConfigCommand() {
         .description('View current configuration')
         .action(() => {
             const config = loadConfig();
+
+            // Mask sensitive API Key for log security
+            const maskedConfig = { ...config };
+            if (maskedConfig.apiKey && typeof maskedConfig.apiKey === 'string') {
+                const key = maskedConfig.apiKey;
+                maskedConfig.apiKey = `${key.slice(0, 6)}...${key.slice(-4)}`;
+            }
+
             console.log('\n--- Current VDR Configuration ---');
-            console.log(JSON.stringify(config, null, 2));
+            console.log(JSON.stringify(maskedConfig, null, 2));
             console.log('');
         });
 

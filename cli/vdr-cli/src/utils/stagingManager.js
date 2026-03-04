@@ -1,3 +1,11 @@
+/**
+ * @file stagingManager.js
+ * @module /home/ars0x01/Documents/Github/solana-vdr/cli/vdr-cli/src/utils/stagingManager.js
+ * @description CLI utilities for encryption, formatting, and file management.
+ * Part of the SipHeron VDR platform.
+ * @author SipHeron Platform
+ */
+
 const fs = require('fs');
 const path = require('path');
 const os = require('os');

@@ -1,3 +1,11 @@
+/**
+ * @file verify.js
+ * @module /home/ars0x01/Documents/Github/solana-vdr/cli/vdr-cli/src/commands/verify.js
+ * @description CLI command modules deployed via Commander.js.
+ * Part of the SipHeron VDR platform.
+ * @author SipHeron Platform
+ */
+
 const { Command } = require("commander");
 const axios = require("axios");
 const ora = require("ora");

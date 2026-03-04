@@ -1,3 +1,11 @@
+/**
+ * @file hash.js
+ * @module /home/ars0x01/Documents/Github/solana-vdr/cli/vdr-cli/src/utils/hash.js
+ * @description CLI utilities for encryption, formatting, and file management.
+ * Part of the SipHeron VDR platform.
+ * @author SipHeron Platform
+ */
+
 const crypto = require("crypto");
 const fs = require("fs");
 

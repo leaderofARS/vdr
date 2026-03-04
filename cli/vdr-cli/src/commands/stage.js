@@ -1,3 +1,11 @@
+/**
+ * @file stage.js
+ * @module /home/ars0x01/Documents/Github/solana-vdr/cli/vdr-cli/src/commands/stage.js
+ * @description CLI command modules deployed via Commander.js.
+ * Part of the SipHeron VDR platform.
+ * @author SipHeron Platform
+ */
+
 const { Command } = require("commander");
 const ora = require("ora");
 const chalk = require("chalk");
