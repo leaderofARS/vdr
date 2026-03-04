@@ -1,3 +1,11 @@
+/**
+ * @file indexer.js
+ * @module /home/ars0x01/Documents/Github/solana-vdr/backend/api-server/src/services/indexer.js
+ * @description Core business logic and external service integrations.
+ * Part of the SipHeron VDR platform.
+ * @author SipHeron Platform
+ */
+
 const anchor = require('@coral-xyz/anchor');
 const { PrismaClient } = require('@prisma/client');
 const solanaService = require('./solana');
@@ -11,19 +19,27 @@ const prisma = new PrismaClient();
  */
 class VdrIndexer {
     constructor() {
-        this.connection = solanaService.program.provider.connection;
-        this.program = solanaService.program;
+        this.connection = null;
+        this.program = null;
         this.subscriptionId = null;
+        this.lastRecordCount = -1;
     }
 
     async start() {
-        console.log("Starting VDR Protocol Indexer...");
+        console.log(`Indexer: Background sync service started. Target: ${process.env.SOLANA_RPC_URL}`);
 
-        // In a real production system, this would listen to program logs using onLogs
-        // For this boilerplate, we'll poll the accounts list every X seconds or use Anchor event listeners if defined.
+        // Lazy initialization — solanaService.program may not be ready at import time
+        try {
+            if (solanaService.program && solanaService.program.provider) {
+                this.connection = solanaService.program.provider.connection;
+                this.program = solanaService.program;
+            } else {
+                console.warn('Indexer: Solana program not initialized yet. Will retry on next sync cycle.');
+            }
+        } catch (err) {
+            console.warn('Indexer: Failed to connect to Solana service:', err.message);
+        }
 
-        // Let's use Anchor Event Listeners if we had `#[event]` macros, but since we rely on plain accounts:
-        // We will poll new instances of HashRecord occasionally to sync.
         this.subscriptionId = setInterval(async () => {
             await this.syncDatabase();
         }, 60000); // 1 minute interval
@@ -33,14 +49,36 @@ class VdrIndexer {
 
     async syncDatabase() {
         try {
+            // Retry lazy initialization if program wasn't ready at start
+            if (!this.program) {
+                if (solanaService.program && solanaService.program.provider) {
+                    this.connection = solanaService.program.provider.connection;
+                    this.program = solanaService.program;
+                    console.log('Indexer: Solana connection established.');
+                } else {
+                    return; // Skip sync cycle — Solana not available
+                }
+            }
+
             // Fetch all PDA accounts of type HashRecord
             const records = await this.program.account.hashRecord.all();
 
-            console.log(`Indexer: Found ${records.length} hash records on-chain. Syncing database...`);
+            if (records.length !== this.lastRecordCount) {
+                this.lastRecordCount = records.length;
+            }
 
             for (const record of records) {
                 const hashStr = Buffer.from(record.account.hash).toString('hex');
                 const pdaStr = record.publicKey.toBase58();
+                const ownerWallet = record.account.owner.toBase58();
+
+                const org = await prisma.organization.findUnique({
+                    where: { solanaPubkey: ownerWallet }
+                });
+
+                if (!org) {
+                    continue;
+                }
 
                 await prisma.hashRecord.upsert({
                     where: { pdaAddress: pdaStr },
@@ -50,12 +88,13 @@ class VdrIndexer {
                     create: {
                         hash: hashStr,
                         pdaAddress: pdaStr,
-                        ownerWallet: record.account.owner.toBase58(),
+                        ownerWallet: ownerWallet,
                         timestamp: record.account.timestamp.toNumber(),
                         expiry: record.account.expiry.toNumber(),
                         isRevoked: record.account.isRevoked,
                         metadata: record.account.metadata,
-                        txSignature: "indexed_background" // Could fetch getSignaturesForAddress
+                        txSignature: "indexed_background",
+                        organizationId: org.id
                     }
                 });
             }
@@ -71,3 +110,4 @@ class VdrIndexer {
 }
 
 module.exports = new VdrIndexer();
+

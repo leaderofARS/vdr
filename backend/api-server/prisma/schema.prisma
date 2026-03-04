@@ -58,8 +58,22 @@ model HashRecord {
   isRevoked      Boolean  @default(false)
   txSignature    String
   
-  organizationId String?
-  organization   Organization? @relation(fields: [organizationId], references: [id])
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
   
   createdAt      DateTime @default(now())
+}
+
+model CliSession {
+  id             String   @id @default(uuid())
+  code           String   @unique // Human readable code (e.g. 6 digits)
+  status         String   @default("PENDING") // PENDING, AUTHORIZED, EXPIRED
+  
+  userId         String?
+  organizationId String?
+  
+  token          String?  @unique // The generated API key
+  
+  createdAt      DateTime @default(now())
+  expiresAt      DateTime
 }

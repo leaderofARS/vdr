@@ -1,23 +1,58 @@
+/**
+ * @file auth.js
+ * @module /home/ars0x01/Documents/Github/solana-vdr/backend/api-server/src/routes/auth.js
+ * @description Express API route handlers.
+ * Part of the SipHeron VDR platform.
+ * @author SipHeron Platform
+ */
+
 const express = require('express');
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
 const { PrismaClient } = require('@prisma/client');
 const authenticate = require('../middleware/auth');
+const { sanitizeEmail } = require('../utils/sanitizer');
+const { generateToken, generateRefreshToken, verifyToken } = require('../services/jwt');
 
 const router = express.Router();
 const prisma = new PrismaClient();
 
-// Register a new SipHeron Admin User
+// Cookie configuration for HttpOnly JWT storage
+const ACCESS_COOKIE_OPTIONS = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 15 * 60 * 1000,  // 15 minutes (short-lived access token)
+    path: '/'
+};
+
+const REFRESH_COOKIE_OPTIONS = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 7 * 24 * 60 * 60 * 1000,  // 7 days
+    path: '/auth'  // Only sent to auth endpoints
+};
+
+// Register a new user
 router.post('/register', async (req, res, next) => {
     try {
         const { email, password } = req.body;
 
-        const existing = await prisma.user.findUnique({ where: { email } });
+        const sanitizedEmail = sanitizeEmail(email);
+        if (!sanitizedEmail) {
+            return res.status(400).json({ error: 'Invalid email format' });
+        }
+
+        if (!password || password.length < 12) {
+            return res.status(400).json({ error: 'Password must be at least 12 characters long' });
+        }
+
+        const existing = await prisma.user.findUnique({ where: { email: sanitizedEmail } });
         if (existing) return res.status(400).json({ error: 'User already exists' });
 
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const hashedPassword = await bcrypt.hash(password, 12);
         const user = await prisma.user.create({
-            data: { email, password: hashedPassword }
+            data: { email: sanitizedEmail, password: hashedPassword }
         });
 
         res.status(201).json({ message: 'User created successfully', userId: user.id });
@@ -26,21 +61,73 @@ router.post('/register', async (req, res, next) => {
     }
 });
 
-// Login and get JWT
+// Login — issues access token (15m) and refresh token (7d) via HttpOnly cookies
 router.post('/login', async (req, res, next) => {
     try {
         const { email, password } = req.body;
-        const user = await prisma.user.findUnique({ where: { email } });
+
+        const sanitizedEmail = sanitizeEmail(email);
+        if (!sanitizedEmail) {
+            return res.status(401).json({ error: 'Invalid credentials' });
+        }
+
+        const user = await prisma.user.findUnique({ where: { email: sanitizedEmail } });
 
         if (!user || !(await bcrypt.compare(password, user.password))) {
             return res.status(401).json({ error: 'Invalid credentials' });
         }
 
-        const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '24h' });
-        res.json({ token });
+        const accessToken = generateToken(user.id, user.email);
+        const refreshToken = generateRefreshToken(user.id);
+
+        res.cookie('vdr_token', accessToken, ACCESS_COOKIE_OPTIONS);
+        res.cookie('vdr_refresh', refreshToken, REFRESH_COOKIE_OPTIONS);
+
+        res.json({
+            success: true,
+            message: 'Login successful',
+            user: {
+                id: user.id,
+                email: user.email
+            }
+        });
     } catch (error) {
         next(error);
     }
+});
+
+// Refresh — exchanges a valid refresh token for a new access token
+router.post('/refresh', async (req, res, next) => {
+    try {
+        const refreshToken = req.cookies && req.cookies.vdr_refresh;
+        if (!refreshToken) {
+            return res.status(401).json({ error: 'No refresh token provided' });
+        }
+
+        const decoded = verifyToken(refreshToken);
+        if (decoded.type !== 'refresh') {
+            return res.status(401).json({ error: 'Invalid token type' });
+        }
+
+        const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
+        if (!user) {
+            return res.status(401).json({ error: 'User not found' });
+        }
+
+        const newAccessToken = generateToken(user.id, user.email);
+        res.cookie('vdr_token', newAccessToken, ACCESS_COOKIE_OPTIONS);
+
+        res.json({ success: true, message: 'Token refreshed' });
+    } catch (error) {
+        return res.status(401).json({ error: 'Token refresh failed' });
+    }
+});
+
+// Logout — clears both cookies
+router.post('/logout', (req, res) => {
+    res.clearCookie('vdr_token', { path: '/' });
+    res.clearCookie('vdr_refresh', { path: '/auth' });
+    res.json({ success: true, message: 'Logged out successfully' });
 });
 
 // Generate an API Key for an Organization
@@ -48,7 +135,21 @@ router.post('/api-key', authenticate, async (req, res, next) => {
     try {
         const { name, organizationId } = req.body;
 
-        // Simple hex key generation
+        if (organizationId) {
+            const org = await prisma.organization.findFirst({
+                where: {
+                    id: organizationId,
+                    ownerId: req.user.id
+                }
+            });
+
+            if (!org) {
+                return res.status(403).json({
+                    error: 'Unauthorized: You do not have management rights for this organization'
+                });
+            }
+        }
+
         const key = require('crypto').randomBytes(32).toString('hex');
 
         const apiKey = await prisma.apiKey.create({
@@ -60,10 +161,16 @@ router.post('/api-key', authenticate, async (req, res, next) => {
             }
         });
 
-        res.json({ message: 'API Key Created', key: apiKey.key, id: apiKey.id });
+        res.status(201).json({
+            success: true,
+            apiKey: apiKey.key,
+            id: apiKey.id,
+            message: 'Store this API key securely. It will not be shown again.'
+        });
     } catch (error) {
         next(error);
     }
 });
 
 module.exports = router;
+
