@@ -9,7 +9,7 @@
     "audit:all": "npm audit && cd backend/api-server && npm audit && cd ../../cli/vdr-cli && npm audit && cd ../../web/dashboard && npm audit"
   },
   "dependencies": {
-    "@coral-xyz/anchor": "^0.32.1",
+    "@coral-xyz/anchor": "^0.30.1",
     "@solana/web3.js": "^1.98.4"
   },
   "devDependencies": {
