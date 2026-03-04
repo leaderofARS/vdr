@@ -41,11 +41,11 @@ jobs:
 
       - name: Install Anchor CLI
         run: |
-          cargo install --git https://github.com/coral-xyz/anchor avm --force --locked
-          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-          export PATH="$HOME/.cargo/bin:$PATH"
-          avm install ${{ env.ANCHOR_VERSION }} --force
-          avm use ${{ env.ANCHOR_VERSION }}
+          cargo install --git https://github.com/solana-foundation/anchor \
+            --tag v${{ env.ANCHOR_VERSION }} \
+            --force \
+            --locked \
+            anchor-cli
           anchor --version
 
       - name: Configure Solana
@@ -300,7 +300,6 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      # Build the smart contract artifacts
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
 
@@ -311,11 +310,11 @@ jobs:
 
       - name: Install Anchor CLI
         run: |
-          cargo install --git https://github.com/coral-xyz/anchor avm --force --locked
-          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-          export PATH="$HOME/.cargo/bin:$PATH"
-          avm install ${{ env.ANCHOR_VERSION }} --force
-          avm use ${{ env.ANCHOR_VERSION }}
+          cargo install --git https://github.com/solana-foundation/anchor \
+            --tag v${{ env.ANCHOR_VERSION }} \
+            --force \
+            --locked \
+            anchor-cli
           anchor --version
 
       - name: Configure Solana
@@ -328,7 +327,6 @@ jobs:
           sed -i 's/^version = 4$/version = 3/' Cargo.lock
           anchor build --skip-lint
 
-      # Build the dashboard
       - name: Install Dashboard Dependencies
         working-directory: web/dashboard
         run: npm ci
@@ -337,7 +335,6 @@ jobs:
         working-directory: web/dashboard
         run: npm run build
 
-      # Anchor all build artifacts to Solana
       - name: Anchor Smart Contract to VDR
         uses: ./actions/sipheron-anchor
         with:
@@ -351,4 +348,3 @@ jobs:
           directory: './web/dashboard/.next'
           api_key: ${{ secrets.SIPHERON_API_KEY }}
           network: 'devnet'
-
