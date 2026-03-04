@@ -42,12 +42,13 @@ jobs:
       - name: Install Anchor CLI
         run: |
           rm -f ~/.cargo/bin/anchor
-          rm -f ~/.avm/bin/anchor
+          rm -rf ~/.avm
           cargo install --git https://github.com/solana-foundation/anchor \
             --tag v${{ env.ANCHOR_VERSION }} \
             --force \
             --locked \
             anchor-cli
+          which anchor
           anchor --version
 
       - name: Configure Solana
@@ -57,6 +58,9 @@ jobs:
 
       - name: Build Program
         run: |
+          export PATH=$(echo "$PATH" | tr ':' '\n' | grep -v '.avm' | tr '\n' ':')
+          which anchor
+          anchor --version
           sed -i 's/^version = 4$/version = 3/' Cargo.lock
           anchor build --skip-lint
 
@@ -313,12 +317,13 @@ jobs:
       - name: Install Anchor CLI
         run: |
           rm -f ~/.cargo/bin/anchor
-          rm -f ~/.avm/bin/anchor
+          rm -rf ~/.avm
           cargo install --git https://github.com/solana-foundation/anchor \
             --tag v${{ env.ANCHOR_VERSION }} \
             --force \
             --locked \
             anchor-cli
+          which anchor
           anchor --version
 
       - name: Configure Solana
@@ -328,6 +333,9 @@ jobs:
 
       - name: Build Smart Contract
         run: |
+          export PATH=$(echo "$PATH" | tr ':' '\n' | grep -v '.avm' | tr '\n' ':')
+          which anchor
+          anchor --version
           sed -i 's/^version = 4$/version = 3/' Cargo.lock
           anchor build --skip-lint
 
