@@ -41,9 +41,11 @@ jobs:
           sh -c "$(curl -sSfL https://release.anza.xyz/v${{ env.SOLANA_VERSION }}/install)"
           echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
 
-      - name: Install Anchor CLI
+      - name: Install Anchor CLI (AVM)
         run: |
-          cargo install --git https://github.com/coral-xyz/anchor anchor-cli --force --tag v${{ env.ANCHOR_VERSION }}
+          cargo install --git https://github.com/coral-xyz/anchor avm --locked --force
+          avm install ${{ env.ANCHOR_VERSION }}
+          avm use ${{ env.ANCHOR_VERSION }}
           anchor --version
 
       - name: Configure Solana
@@ -309,9 +311,11 @@ jobs:
           sh -c "$(curl -sSfL https://release.anza.xyz/v${{ env.SOLANA_VERSION }}/install)"
           echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
 
-      - name: Install Anchor CLI
+      - name: Install Anchor CLI (AVM)
         run: |
-          cargo install --git https://github.com/coral-xyz/anchor anchor-cli --force --tag v${{ env.ANCHOR_VERSION }}
+          cargo install --git https://github.com/coral-xyz/anchor avm --locked --force
+          avm install ${{ env.ANCHOR_VERSION }}
+          avm use ${{ env.ANCHOR_VERSION }}
           anchor --version
 
       - name: Configure Solana
