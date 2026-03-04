@@ -59,7 +59,7 @@ jobs:
       - name: Generate Program Keypair
         run: |
           mkdir -p ${{ github.workspace }}/target/deploy
-          solana-keygen new --no-bip39-passphrase --silent \
+          solana-keygen new --no-bip39-passphrase --silent --force \
             --outfile ${{ github.workspace }}/target/deploy/vdr_contract-keypair.json
 
       - name: Build Program
@@ -341,7 +341,7 @@ jobs:
       - name: Generate Program Keypair
         run: |
           mkdir -p ${{ github.workspace }}/target/deploy
-          solana-keygen new --no-bip39-passphrase --silent \
+          solana-keygen new --no-bip39-passphrase --silent --force \
             --outfile ${{ github.workspace }}/target/deploy/vdr_contract-keypair.json
 
       - name: Build Smart Contract
