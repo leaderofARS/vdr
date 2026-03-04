@@ -32,20 +32,16 @@ jobs:
           restore-keys: cargo-${{ runner.os }}-
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: 1.79.0
+        uses: dtolnay/rust-toolchain@stable
 
       - name: Install Solana CLI
         run: |
           sh -c "$(curl -sSfL https://release.anza.xyz/v${{ env.SOLANA_VERSION }}/install)"
           echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
 
-      - name: Install Anchor CLI (Binary)
+      - name: Install Anchor CLI
         run: |
-          wget https://github.com/coral-xyz/anchor/releases/download/v${{ env.ANCHOR_VERSION }}/anchor-cli-x86_64-unknown-linux-gnu.tar.gz
-          tar -xzf anchor-cli-x86_64-unknown-linux-gnu.tar.gz
-          mv anchor-cli-x86_64-unknown-linux-gnu/anchor ~/.local/share/solana/install/active_release/bin/
+          cargo install --git https://github.com/coral-xyz/anchor anchor-cli --force --tag v${{ env.ANCHOR_VERSION }}
           anchor --version
 
       - name: Configure Solana
@@ -302,20 +298,16 @@ jobs:
 
       # Build the smart contract artifacts
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: 1.79.0
+        uses: dtolnay/rust-toolchain@stable
 
       - name: Install Solana CLI
         run: |
           sh -c "$(curl -sSfL https://release.anza.xyz/v${{ env.SOLANA_VERSION }}/install)"
           echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
 
-      - name: Install Anchor CLI (Binary)
+      - name: Install Anchor CLI
         run: |
-          wget https://github.com/coral-xyz/anchor/releases/download/v${{ env.ANCHOR_VERSION }}/anchor-cli-x86_64-unknown-linux-gnu.tar.gz
-          tar -xzf anchor-cli-x86_64-unknown-linux-gnu.tar.gz
-          mv anchor-cli-x86_64-unknown-linux-gnu/anchor ~/.local/share/solana/install/active_release/bin/
+          cargo install --git https://github.com/coral-xyz/anchor anchor-cli --force --tag v${{ env.ANCHOR_VERSION }}
           anchor --version
 
       - name: Configure Solana
