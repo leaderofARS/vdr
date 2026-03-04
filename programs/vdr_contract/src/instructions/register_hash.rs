@@ -1,3 +1,9 @@
+//! @file register_hash.rs
+//! @module /home/ars0x01/Documents/Github/solana-vdr/programs/vdr_contract/src/instructions/register_hash.rs
+//! @description Solana Anchor instruction handlers (smart contract endpoints).
+//! This file is part of the SipHeron VDR smart contract.
+//! @author SipHeron Platform
+
 use anchor_lang::prelude::*;
 use crate::state::hash_record::*;
 use crate::state::protocol_config::*;
@@ -40,6 +46,10 @@ pub struct RegisterHash<'info> {
 pub enum VDRError {
     #[msg("Metadata must be 200 characters or less")]
     MetadataTooLong,
+    #[msg("You are not authorized to perform actions for this organization")]
+    UnauthorizedOrganizationAction,
+    #[msg("Protocol is currently paused for maintenance or security reasons")]
+    ProtocolPaused,
 }
 
 pub fn handler(
@@ -48,21 +58,19 @@ pub fn handler(
     metadata: String, 
     expiry: i64
 ) -> Result<()> {
+    require!(!ctx.accounts.protocol_config.is_paused, VDRError::ProtocolPaused);
     require!(metadata.len() <= 200, VDRError::MetadataTooLong);
 
-    // Pay registration fee if it's > 0
-    let fee = ctx.accounts.protocol_config.registration_fee;
-    if fee > 0 {
-        let cpi_context = CpiContext::new(
-            ctx.accounts.system_program.to_account_info(),
-            system_program::Transfer {
-                from: ctx.accounts.owner.to_account_info(),
-                to: ctx.accounts.treasury.to_account_info(),
-            },
+    // Hardening: If organization is provided, the owner must be the admin
+    if let Some(org) = &ctx.accounts.organization {
+        require_keys_eq!(
+            org.admin, 
+            ctx.accounts.owner.key(), 
+            VDRError::UnauthorizedOrganizationAction
         );
-        system_program::transfer(cpi_context, fee)?;
     }
 
+    // Finalize state update BEFORE CPI to ensure no stale data issues
     let record = &mut ctx.accounts.hash_record;
     record.owner = ctx.accounts.owner.key();
     record.hash = hash;
@@ -75,6 +83,20 @@ pub fn handler(
         record.organization = Some(org.key());
     } else {
         record.organization = None;
+    }
+
+    // Perform CPI as the final action. If this fails, the whole TX reverts.
+    // This follows the 'Check-Act-Interact' pattern.
+    let fee = ctx.accounts.protocol_config.registration_fee;
+    if fee > 0 {
+        let cpi_context = CpiContext::new(
+            ctx.accounts.system_program.to_account_info(),
+            system_program::Transfer {
+                from: ctx.accounts.owner.to_account_info(),
+                to: ctx.accounts.treasury.to_account_info(),
+            },
+        );
+        system_program::transfer(cpi_context, fee)?;
     }
 
     msg!("Hash Registered: {:?}", hash);

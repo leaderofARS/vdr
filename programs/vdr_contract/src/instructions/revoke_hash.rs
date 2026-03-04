@@ -1,16 +1,33 @@
+//! @file revoke_hash.rs
+//! @module /home/ars0x01/Documents/Github/solana-vdr/programs/vdr_contract/src/instructions/revoke_hash.rs
+//! @description Solana Anchor instruction handlers (smart contract endpoints).
+//! This file is part of the SipHeron VDR smart contract.
+//! @author SipHeron Platform
+
 use anchor_lang::prelude::*;
 use crate::state::hash_record::*;
 use crate::state::organization::*;
+use crate::state::protocol_config::*;
 
 #[derive(Accounts)]
 pub struct RevokeHash<'info> {
-    #[account(mut)]
+    #[account(
+        mut,
+        seeds = [b"hash_record", hash_record.hash.as_ref(), hash_record.owner.as_ref()],
+        bump
+    )]
     pub hash_record: Account<'info, HashRecord>,
     
     // Optional organization context if the hash belongs to one
     pub organization: Option<Account<'info, Organization>>,
 
     pub revoker: Signer<'info>,
+
+    #[account(
+        seeds = [b"protocol_config"],
+        bump
+    )]
+    pub protocol_config: Account<'info, ProtocolConfig>,
 }
 
 #[error_code]
@@ -19,9 +36,12 @@ pub enum RevokeError {
     Unauthorized,
     #[msg("Record is already revoked")]
     AlreadyRevoked,
+    #[msg("Protocol is currently paused")]
+    ProtocolPaused,
 }
 
 pub fn handler(ctx: Context<RevokeHash>) -> Result<()> {
+    require!(!ctx.accounts.protocol_config.is_paused, RevokeError::ProtocolPaused);
     let record = &mut ctx.accounts.hash_record;
 
     require!(!record.is_revoked, RevokeError::AlreadyRevoked);

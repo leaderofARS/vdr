@@ -1,3 +1,9 @@
+//! @file verify_hash.rs
+//! @module /home/ars0x01/Documents/Github/solana-vdr/programs/vdr_contract/src/instructions/verify_hash.rs
+//! @description Solana Anchor instruction handlers (smart contract endpoints).
+//! This file is part of the SipHeron VDR smart contract.
+//! @author SipHeron Platform
+
 use anchor_lang::prelude::*;
 use crate::state::hash_record::*;
 

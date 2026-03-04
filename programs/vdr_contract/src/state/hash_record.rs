@@ -1,3 +1,9 @@
+//! @file hash_record.rs
+//! @module /home/ars0x01/Documents/Github/solana-vdr/programs/vdr_contract/src/state/hash_record.rs
+//! @description Solana Anchor account structures and state definitions.
+//! This file is part of the SipHeron VDR smart contract.
+//! @author SipHeron Platform
+
 use anchor_lang::prelude::*;
 
 #[account]
