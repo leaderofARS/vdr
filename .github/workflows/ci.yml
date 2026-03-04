@@ -51,7 +51,7 @@ jobs:
 
       - name: Build Program
         run: |
-          rm -f Cargo.lock
+          find . -name "Cargo.lock" -type f -delete
           anchor build
 
       - name: Run Anchor Tests
@@ -317,7 +317,7 @@ jobs:
 
       - name: Build Smart Contract
         run: |
-          rm -f Cargo.lock
+          find . -name "Cargo.lock" -type f -delete
           anchor build
 
       # Build the dashboard
