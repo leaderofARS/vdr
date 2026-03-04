@@ -32,7 +32,9 @@ jobs:
           restore-keys: cargo-${{ runner.os }}-
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.79.0
 
       - name: Install Solana CLI
         run: |
@@ -298,7 +300,9 @@ jobs:
 
       # Build the smart contract artifacts
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.79.0
 
       - name: Install Solana CLI
         run: |
