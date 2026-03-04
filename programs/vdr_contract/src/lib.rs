@@ -10,12 +10,7 @@ pub mod instructions;
 pub mod state;
 
 // Bring instructions into scope for the #[program] macro
-use crate::instructions::register_hash::*;
-use crate::instructions::verify_hash::*;
-use crate::instructions::init_protocol::*;
-use crate::instructions::init_organization::*;
-use crate::instructions::revoke_hash::*;
-use crate::instructions::update_protocol_config::*;
+use crate::instructions::*;
 
 // This is the generated program ID for Localnet & Devnet
 // Ensure this matches the `vdr_contract` key in Anchor.toml
