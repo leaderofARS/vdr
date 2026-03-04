@@ -49,10 +49,13 @@ jobs:
           solana-keygen new --no-bip39-passphrase --silent
           solana config set --url localhost
 
-      - name: Build Program
+      - name: Pin Rust to Solana-compatible version
         run: |
-          find . -name "Cargo.lock" -type f -delete
-          anchor build
+          rustup install 1.75.0
+          rustup default 1.75.0
+
+      - name: Build Program
+        run: anchor build
 
       - name: Run Anchor Tests
         run: anchor test --skip-local-validator || echo "Tests require local validator"
@@ -315,10 +318,13 @@ jobs:
           solana-keygen new --no-bip39-passphrase --silent
           solana config set --url localhost
 
-      - name: Build Smart Contract
+      - name: Pin Rust to Solana-compatible version
         run: |
-          find . -name "Cargo.lock" -type f -delete
-          anchor build
+          rustup install 1.75.0
+          rustup default 1.75.0
+
+      - name: Build Smart Contract
+        run: anchor build
 
       # Build the dashboard
       - name: Install Dashboard Dependencies
