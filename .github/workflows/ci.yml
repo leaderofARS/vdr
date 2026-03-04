@@ -32,7 +32,7 @@ jobs:
           restore-keys: cargo-${{ runner.os }}-
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@1.79.0
 
       - name: Install Solana CLI
         run: |
@@ -301,7 +301,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@1.79.0
 
       - name: Install Solana CLI
         run: |
