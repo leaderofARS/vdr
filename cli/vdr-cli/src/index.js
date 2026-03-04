@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /**
  * @file index.js
  * @module /home/ars0x01/Documents/Github/solana-vdr/cli/vdr-cli/src/index.js
@@ -5,8 +6,6 @@
  * Part of the SipHeron VDR platform.
  * @author SipHeron Platform
  */
-
-#!/usr/bin/env node
 
 const { Command } = require("commander");
 const chalk = require("chalk");

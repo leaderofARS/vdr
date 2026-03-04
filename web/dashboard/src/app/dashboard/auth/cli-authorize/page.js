@@ -12,7 +12,7 @@ import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { ShieldCheck, Monitor, ArrowRight, CheckCircle2, XCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
-import api from '@/utils/api';
+import { api } from '@/utils/api';
 
 function AuthContent() {
     const searchParams = useSearchParams();

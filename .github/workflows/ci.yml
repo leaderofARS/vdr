@@ -42,6 +42,7 @@ jobs:
       - name: Install Anchor CLI
         run: |
           cargo install --git https://github.com/coral-xyz/anchor avm --force
+          rm -f ~/.cargo/bin/anchor
           avm install ${{ env.ANCHOR_VERSION }}
           avm use ${{ env.ANCHOR_VERSION }}
 
@@ -307,6 +308,7 @@ jobs:
       - name: Install Anchor CLI
         run: |
           cargo install --git https://github.com/coral-xyz/anchor avm --force
+          rm -f ~/.cargo/bin/anchor
           avm install ${{ env.ANCHOR_VERSION }}
           avm use ${{ env.ANCHOR_VERSION }}
 
