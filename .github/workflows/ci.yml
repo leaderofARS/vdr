@@ -67,9 +67,9 @@ jobs:
         run: |
           export PATH=$(echo "$PATH" | tr ':' '\n' | grep -v '.avm' | tr '\n' ':')
           which anchor
-          anchor --version
-          sed -i 's/^version = 4$/version = 3/' Cargo.lock
-          ANCHOR_WORKSPACE=${{ github.workspace }} anchor build --skip-lint
+          cargo build-sbf \
+            --manifest-path programs/vdr_contract/Cargo.toml \
+            --features no-entrypoint
 
       - name: Run Anchor Tests
         run: anchor test --skip-local-validator || echo "Tests require local validator"
@@ -349,9 +349,9 @@ jobs:
         run: |
           export PATH=$(echo "$PATH" | tr ':' '\n' | grep -v '.avm' | tr '\n' ':')
           which anchor
-          anchor --version
-          sed -i 's/^version = 4$/version = 3/' Cargo.lock
-          ANCHOR_WORKSPACE=${{ github.workspace }} anchor build --skip-lint
+          cargo build-sbf \
+            --manifest-path programs/vdr_contract/Cargo.toml \
+            --features no-entrypoint
 
       - name: Install Dashboard Dependencies
         working-directory: web/dashboard

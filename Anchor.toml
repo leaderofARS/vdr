@@ -4,7 +4,7 @@ anchor_version = "0.29.0"
 [features]
 resolution = true
 skip-lint = false
-idl = true
+idl = false
 
 [programs.localnet]
 vdr_contract = "6ecWPUK87zxwZP2pARJ75wbpCka92mYSGP1szrJxzAwo"
