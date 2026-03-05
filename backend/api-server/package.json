@@ -1,8 +1,10 @@
 {
   "name": "api-server",
   "version": "0.9.0-beta",
-  "main": "index.js",
+  "main": "src/server.js",
   "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "audit": "npm audit",
     "audit:fix": "npm audit fix --force"
@@ -21,7 +23,7 @@
     "bullmq": "^5.70.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
-    "csurf": "^1.11.0",
+    "csurf": "^1.2.2",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "express-rate-limit": "^8.2.1",
