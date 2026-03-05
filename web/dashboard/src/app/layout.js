@@ -8,6 +8,7 @@
 
 import { Geist, Geist_Mono } from "next/font/google";
 import { WalletContextProvider } from "@/components/WalletContextProvider";
+import Navbar from "@/components/Navbar";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -32,6 +33,7 @@ export default function RootLayout({ children }) {
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-950 text-gray-50 flex flex-col min-h-screen`}
       >
         <WalletContextProvider>
+          <Navbar />
           {children}
         </WalletContextProvider>
       </body>

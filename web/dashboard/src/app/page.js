@@ -19,25 +19,9 @@ export default function LandingPage() {
       <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-blue-600/10 blur-[150px] rounded-full" />
       <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-purple-600/10 blur-[150px] rounded-full" />
 
-      {/* Navigation */}
-      <nav className="relative z-20 px-6 py-8 flex justify-between items-center max-w-7xl mx-auto w-full">
-        <div className="flex items-center gap-2">
-          <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shadow-[0_0_20px_rgba(37,99,235,0.4)]">
-            <ShieldCheck className="text-white w-6 h-6" />
-          </div>
-          <span className="text-xl font-bold tracking-tight text-white">SipHeron VDR</span>
-        </div>
-        <div className="hidden md:flex items-center gap-8">
-          <Link href="/verify" className="text-sm font-medium text-gray-400 hover:text-white transition-colors">Public Verifier</Link>
-          <Link href="/explorer" className="text-sm font-medium text-gray-400 hover:text-white transition-colors">Global Explorer</Link>
-          <Link href="/auth/login" className="px-5 py-2.5 rounded-xl border border-white/10 glass text-sm font-bold text-white hover:bg-white/5 transition-all">
-            Institutional Login
-          </Link>
-        </div>
-      </nav>
 
       {/* Hero Section */}
-      <main className="relative z-10 flex-grow flex flex-col items-center justify-center px-6 text-center">
+      <main className="relative z-10 flex-grow flex flex-col items-center justify-center px-6 text-center pt-32">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}

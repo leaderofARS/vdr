@@ -10,7 +10,6 @@
 
 
 import { useState } from "react";
-import Navbar from "@/components/Navbar";
 import { Search, Hash, Clock, User, ExternalLink, ShieldCheck, Globe, Activity, Fingerprint } from "lucide-react";
 import axios from "axios";
 import { api } from "@/utils/api";
@@ -56,9 +55,7 @@ export default function Explorer() {
             <div className="fixed inset-0 bg-mesh opacity-30 pointer-events-none" />
             <div className="fixed top-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
 
-            <Navbar />
-
-            <main className="flex-grow max-w-7xl mx-auto px-6 lg:px-8 py-20 w-full relative z-10">
+            <main className="flex-grow max-w-7xl mx-auto px-6 lg:px-8 py-20 pt-32 w-full relative z-10">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}

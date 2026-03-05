@@ -6,8 +6,11 @@
  * @author SipHeron Platform
  */
 
+"use client";
+
 import Link from "next/link";
 import dynamic from "next/dynamic";
+import { usePathname } from "next/navigation";
 import { ShieldCheck, Globe, Activity } from "lucide-react";
 
 const WalletMultiButton = dynamic(
@@ -16,6 +19,12 @@ const WalletMultiButton = dynamic(
 );
 
 export default function Navbar() {
+    const pathname = usePathname();
+
+    if (pathname && pathname.startsWith('/dashboard')) {
+        return null;
+    }
+
     return (
         <nav className="fixed top-0 left-0 right-0 z-[100] border-b border-white/5 bg-black/20 backdrop-blur-xl transition-all duration-300">
             <div className="max-w-7xl mx-auto px-6 lg:px-8">

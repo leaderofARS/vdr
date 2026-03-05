@@ -10,7 +10,6 @@
 
 
 import { useState } from "react";
-import Navbar from "@/components/Navbar";
 import FileUploader from "@/components/FileUploader";
 import axios from "axios";
 import { Loader2, ShieldCheck, ShieldAlert, FileSearch, Globe, Activity, Landmark, ExternalLink as ExternalIcon } from "lucide-react";
@@ -57,9 +56,7 @@ export default function Verify() {
             <div className="fixed inset-0 bg-mesh opacity-30 pointer-events-none" />
             <div className="fixed bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-purple-600/10 blur-[120px] rounded-full pointer-events-none" />
 
-            <Navbar />
-
-            <main className="flex-grow flex flex-col items-center justify-center p-6 sm:p-8 relative z-10">
+            <main className="flex-grow flex flex-col items-center justify-center p-6 sm:p-8 relative z-10 pt-32">
                 <div className="w-full max-w-3xl">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
