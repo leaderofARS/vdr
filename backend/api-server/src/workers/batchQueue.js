@@ -10,8 +10,18 @@ const { Queue, Worker } = require('bullmq');
 const Redis = require('ioredis');
 const solanaService = require('../services/solana');
 
-// Assume Redis is running locally on default port
-const connection = new Redis({ maxRetriesPerRequest: null });
+// Use REDIS_URL from environment — falls back to localhost for local dev
+const connection = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
+    maxRetriesPerRequest: null
+});
+
+connection.on('connect', () => {
+    console.log('[Redis] Connected successfully');
+});
+
+connection.on('error', (err) => {
+    console.error('[Redis] Connection error:', err.message);
+});
 
 const hashQueue = new Queue('HashRegistration', { connection });
 
@@ -42,7 +52,7 @@ const worker = new Worker('HashRegistration', async job => {
                     hash,
                     pdaAddress,
                     ownerWallet: owner,
-                    timestamp: Math.floor(Date.now() / 1000), // Approximate until indexer confirms exact block time
+                    timestamp: Math.floor(Date.now() / 1000),
                     expiry: expiry || 0,
                     metadata: metadata,
                     txSignature: tx,
