@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mail, MessageSquare, Globe, Send, CheckCircle2, ArrowRight, Building2, User } from "lucide-react";
+import Link from "next/link";
 
 export default function ContactPage() {
     const [status, setStatus] = useState("idle"); // idle, loading, success
