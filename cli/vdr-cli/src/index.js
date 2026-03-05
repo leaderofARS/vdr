@@ -20,6 +20,7 @@ const createConfigCommand = require("./commands/config");
 const createBatchCommand = require("./commands/batch");
 const createLinkCommand = require("./commands/link");
 const { createLoginCommand } = require("./commands/login");
+const createDoctorCommand = require("./commands/doctor");
 
 const program = new Command();
 
@@ -43,6 +44,7 @@ program.addCommand(createConfigCommand());
 program.addCommand(createBatchCommand());
 program.addCommand(createLinkCommand());
 program.addCommand(createLoginCommand());
+program.addCommand(createDoctorCommand());
 
 const { loadConfig } = require("./utils/configManager");
 const { performLogin } = require("./commands/login");
