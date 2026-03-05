@@ -70,9 +70,9 @@ export default function Navbar() {
                     </div>
 
                     <div className="flex items-center gap-6">
-                        <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                            <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400">Mainnet Ready</span>
+                        <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20">
+                            <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                            <span className="text-[10px] font-black uppercase tracking-widest text-blue-400">Beta Version</span>
                         </div>
                         <WalletMultiButton className="!bg-white !text-black !rounded-xl !font-black !text-xs !px-6 !h-11 !transition-all hover:!bg-blue-500 hover:!text-white border-none shadow-lg" />
                     </div>
