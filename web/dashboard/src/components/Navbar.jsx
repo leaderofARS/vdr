@@ -44,16 +44,12 @@ export default function Navbar() {
                             </div>
                             <span className="text-xl font-black tracking-tight text-white flex items-center gap-1.5">
                                 SipHeron
-                                <div className="px-2 py-0.5 rounded-md bg-blue-500/20 border border-blue-500/30">
-                                    <span className="text-xs text-blue-400">VDR</span>
-                                </div>
                             </span>
                         </Link>
 
                         <div className="hidden lg:flex items-center gap-8">
                             <NavLink href="/verify">Verify Integrity</NavLink>
                             <NavLink href="/explorer">Global Explorer</NavLink>
-                            <NavLink href="/dashboard">Institutional Portal</NavLink>
                         </div>
                     </div>
 
