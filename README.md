@@ -152,4 +152,4 @@ The most common concern with Web3 registries is data leakage. **SipHeron operate
 
 At no point in the lifecycle across the Dashboard, the CLI, the GitHub Action, or the Backend API does your actual file leave your physical device. The system *only* computes the mathematical `SHA-256` digest locally. The only payload transmitted to the REST API and the Solana RPC Network is the resulting obscure 64-character hex string.
 
-To attackers, the blockchain simply shows meaningless, randomized data. But to you and your authorized verifiers possessing the original file, it executes the ultimate proof of chronological truth.
+To attackers, the blockchain simply shows meaningless, randomized data. But to you and your authorized verifiers possessing the original file, it executes the ultimate proof of chronological truth.# deployment complete
