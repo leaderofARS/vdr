@@ -9,6 +9,7 @@
  */
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { ShieldLink, Zap, Lock, Globe, ArrowRight, ShieldCheck, Activity, Database, Key, CheckCircle, FileText } from 'lucide-react';
 
@@ -28,6 +29,22 @@ export default function LandingPage() {
           transition={{ duration: 0.8 }}
           className="max-w-4xl"
         >
+          <motion.div
+            initial={{ scale: 0.5, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.8, type: "spring", bounce: 0.5 }}
+            className="mb-10 w-32 h-32 mx-auto relative group"
+          >
+            <div className="absolute inset-0 bg-blue-500/20 blur-[40px] rounded-full group-hover:bg-blue-400/30 transition-colors duration-500" />
+            <Image
+              src="/sipheron_vdap_logo.png"
+              alt="SipHeron Logo"
+              fill
+              className="object-contain relative z-10 drop-shadow-[0_0_30px_rgba(37,99,235,0.8)] filter brightness-110"
+              priority
+            />
+          </motion.div>
+
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 mb-8">
             <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
             <span className="text-[10px] font-bold uppercase tracking-widest text-blue-400">Verifiable Data Registry v2.0</span>

@@ -9,6 +9,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { ShieldCheck, Globe, Activity } from "lucide-react";
@@ -30,11 +31,23 @@ export default function Navbar() {
             <div className="max-w-7xl mx-auto px-6 lg:px-8">
                 <div className="flex justify-between items-center h-20">
                     <div className="flex items-center gap-12">
-                        <Link href="/" className="flex items-center gap-3 group">
-                            <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-600/20 group-hover:scale-110 transition-transform">
-                                <ShieldCheck className="w-6 h-6 text-white" />
+                        <Link href="/" className="flex items-center gap-4 group">
+                            <div className="w-12 h-12 rounded-xl bg-blue-600/10 flex items-center justify-center p-1 group-hover:bg-blue-600/20 transition-colors">
+                                <Image
+                                    src="/sipheron_vdap_logo.png"
+                                    alt="SipHeron Logo"
+                                    width={36}
+                                    height={36}
+                                    className="object-contain drop-shadow-[0_0_15px_rgba(37,99,235,0.6)] group-hover:scale-110 transition-transform duration-300"
+                                    priority
+                                />
                             </div>
-                            <span className="text-xl font-black tracking-tight text-white">SipHeron <span className="text-blue-500">VDR</span></span>
+                            <span className="text-xl font-black tracking-tight text-white flex items-center gap-1.5">
+                                SipHeron
+                                <div className="px-2 py-0.5 rounded-md bg-blue-500/20 border border-blue-500/30">
+                                    <span className="text-xs text-blue-400">VDR</span>
+                                </div>
+                            </span>
                         </Link>
 
                         <div className="hidden lg:flex items-center gap-8">

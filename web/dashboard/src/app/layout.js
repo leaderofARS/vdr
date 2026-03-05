@@ -22,7 +22,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "VDR | Verifiable Data Registry",
+  title: "SipHeron VDR",
   description: "A lightweight integrity layer on Solana that lets developers timestamp and verify any data.",
 };
 

@@ -29,6 +29,7 @@ export default function DashboardLayout({ children }) {
                 if (!valid) {
                     router.push('/auth/login');
                 }
+                document.title = "VDR Dashboard";
                 setMounted(true);
             }
         }
