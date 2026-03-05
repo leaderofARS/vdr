@@ -1,6 +1,6 @@
 /**
  * @file app.js
- * @module /home/ars0x01/Documents/Github/solana-vdr/backend/api-server/src/app.js
+ * @module backend/api-server/src/app.js
  * @description Core component of the SipHeron VDR platform.
  * Part of the SipHeron VDR platform.
  * @author SipHeron Platform
@@ -12,7 +12,6 @@ const dotenv = require("dotenv");
 const rateLimit = require("express-rate-limit");
 const cookieParser = require("cookie-parser");
 const helmetConfig = require("./middleware/helmet-config");
-const csrfProtection = require("./middleware/csrf");
 
 dotenv.config();
 
@@ -34,11 +33,10 @@ const indexer = require("./services/indexer");
 
 const app = express();
 
-// Fix 1.8: Apply Security Headers (Helmet Configuration)
-// Provides institutional-grade security headers for production deployment
+// Apply Security Headers
 app.use(helmetConfig);
 
-// Fix 1.16: Enable cookie parsing for HttpOnly JWT cookies
+// Enable cookie parsing for HttpOnly JWT cookies
 app.use(cookieParser());
 
 app.use(cors({
@@ -60,12 +58,13 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key', 'X-CSRF-Token']
 }));
+
 app.use(express.json());
 
 // Apply High-Level Rate Limiting
 const apiLimiter = rateLimit({
-    windowMs: 1 * 60 * 1000, // 1 minute window
-    max: 60, // Limit each IP to 60 requests per window (1/sec avg)
+    windowMs: 1 * 60 * 1000,
+    max: 60,
     message: { error: 'Too many requests from this IP, please try again after a minute.' },
     standardHeaders: true,
     legacyHeaders: false,
@@ -75,8 +74,8 @@ app.use(apiLimiter);
 
 // Specific limiter for Auth (Login/Register)
 const authLimiter = rateLimit({
-    windowMs: 1 * 60 * 1000, // 1 minute window for dev
-    max: 50, // 50 attempts
+    windowMs: 1 * 60 * 1000,
+    max: 50,
     message: { error: 'Too many auth attempts, please try again in 1 minute.' },
     standardHeaders: true,
     legacyHeaders: false,
@@ -84,29 +83,31 @@ const authLimiter = rateLimit({
 
 // Specific limiter for Hash Registration (Treasury Protection)
 const registrationLimiter = rateLimit({
-    windowMs: 1 * 60 * 1000, // 1 minute
-    max: 10, // 10 registrations per minute
+    windowMs: 1 * 60 * 1000,
+    max: 10,
     message: { error: 'Registration limit reached. Please wait a minute.' },
     standardHeaders: true,
     legacyHeaders: false,
 });
 
-// CSRF token endpoint — clients fetch this before making state-changing requests
-app.get("/api/csrf-token", csrfProtection, (req, res) => {
-    res.json({ csrfToken: req.csrfToken() });
+// CSRF token endpoint — returns null since API uses stateless JWT auth
+// csurf removed: incompatible with Express 5
+app.get("/api/csrf-token", (req, res) => {
+    res.json({ csrfToken: null });
 });
 
-// Routes with CSRF protection on state-changing endpoints
-app.post("/register", csrfProtection, registrationLimiter, registerRoute);
+// Routes
+app.post("/register", registrationLimiter, registerRoute);
 app.post("/verify", verifyRoute);
 app.get("/record/:hash", authenticate, recordRoute);
 
-// Auth routes do not use CSRF (login/register need to work without prior token)
+// Auth routes
 app.use("/auth", authLimiter, authRoute);
-app.use("/api", csrfProtection, registrationLimiter, batchRoute);
+app.use("/api", registrationLimiter, batchRoute);
 app.use("/analytics", analyticsRoute);
-app.use("/organizations", csrfProtection, organizationRoute);
+app.use("/organizations", organizationRoute);
 
+// Root endpoint
 app.get("/", (req, res) => {
     res.status(200).json({
         name: "SipHeron VDR API",
@@ -116,6 +117,7 @@ app.get("/", (req, res) => {
     });
 });
 
+// Health check endpoint
 app.get("/health", (req, res) => {
     res.status(200).json({
         status: "ok",
@@ -125,16 +127,16 @@ app.get("/health", (req, res) => {
     });
 });
 
-// Setup Error Middleware
+// Error Middleware
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 3001;
 
-// Only bind to port if not running in test mode
+// Only bind to port if not running in test mode — server.js handles this in production
 if (require.main === module) {
     app.listen(PORT, () => {
         console.log(`VDR Backend API running on port ${PORT}`);
-        indexer.start(); // Start Database syncing
+        indexer.start();
     });
 }
 
