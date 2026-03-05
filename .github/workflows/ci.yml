@@ -80,6 +80,29 @@ jobs:
   backend:
     name: Backend API
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: vdr_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     defaults:
       run:
         working-directory: backend/api-server
@@ -107,8 +130,9 @@ jobs:
 
       - name: Module Load Test
         env:
-          JWT_SECRET: ci-test-secret-key-minimum-length
-          DATABASE_URL: file:./prisma/dev.db
+          JWT_SECRET: ci-test-secret-key-minimum-length-32chars
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/vdr_test
+          REDIS_URL: redis://localhost:6379
           SOLANA_RPC_URL: https://api.devnet.solana.com
           SOLANA_NETWORK: devnet
           PROGRAM_ID: 6ecWPUK87zxwZP2pARJ75wbpCka92mYSGP1szrJxzAwo
@@ -121,8 +145,9 @@ jobs:
 
       - name: Run Security Tests
         env:
-          JWT_SECRET: ci-test-secret-key-minimum-length
-          DATABASE_URL: file:./prisma/dev.db
+          JWT_SECRET: ci-test-secret-key-minimum-length-32chars
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/vdr_test
+          REDIS_URL: redis://localhost:6379
           SOLANA_RPC_URL: https://api.devnet.solana.com
           SOLANA_NETWORK: devnet
           PROGRAM_ID: 6ecWPUK87zxwZP2pARJ75wbpCka92mYSGP1szrJxzAwo
@@ -135,8 +160,9 @@ jobs:
 
       - name: Verify Security Headers
         env:
-          JWT_SECRET: ci-test-secret-key-minimum-length
-          DATABASE_URL: file:./prisma/dev.db
+          JWT_SECRET: ci-test-secret-key-minimum-length-32chars
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/vdr_test
+          REDIS_URL: redis://localhost:6379
           SOLANA_RPC_URL: https://api.devnet.solana.com
           SOLANA_NETWORK: devnet
           PROGRAM_ID: 6ecWPUK87zxwZP2pARJ75wbpCka92mYSGP1szrJxzAwo
