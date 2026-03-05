@@ -67,6 +67,7 @@ jobs:
         run: |
           export PATH=$(echo "$PATH" | tr ':' '\n' | grep -v '.avm' | tr '\n' ':')
           which anchor
+          sed -i 's/^version = 4$/version = 3/' Cargo.lock
           cargo build-sbf \
             --manifest-path programs/vdr_contract/Cargo.toml \
             --features no-entrypoint
@@ -375,6 +376,7 @@ jobs:
         run: |
           export PATH=$(echo "$PATH" | tr ':' '\n' | grep -v '.avm' | tr '\n' ':')
           which anchor
+          sed -i 's/^version = 4$/version = 3/' Cargo.lock
           cargo build-sbf \
             --manifest-path programs/vdr_contract/Cargo.toml \
             --features no-entrypoint
