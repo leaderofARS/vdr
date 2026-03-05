@@ -51,20 +51,20 @@ export default function Navbar() {
                             <NavDropdown title="Product" links={[
                                 { name: "Global Explorer", href: "/explorer" },
                                 { name: "Public Verifier", href: "/verify" },
-                                { name: "Institutional Portal", href: "/dashboard" },
-                                { name: "Network Status", href: "#" }
+                                { name: "Organization Auth", href: "/auth/login" },
+                                { name: "Network Status", href: "/status" }
                             ]} />
                             <NavDropdown title="Resources" links={[
-                                { name: "Documentation", href: "#" },
-                                { name: "API Reference", href: "#" },
-                                { name: "Security Audits", href: "#" },
-                                { name: "Whitepaper", href: "#" }
+                                { name: "Documentation", href: "/docs" },
+                                { name: "API Reference", href: "/api-reference" },
+                                { name: "Security Audits", href: "/audits" },
+                                { name: "Whitepaper", href: "/whitepaper" }
                             ]} />
                             <NavDropdown title="Company" links={[
-                                { name: "About SipHeron", href: "#" },
-                                { name: "Careers", href: "#" },
-                                { name: "Blog", href: "#" },
-                                { name: "Contact", href: "#" }
+                                { name: "About SipHeron", href: "/about" },
+                                { name: "Careers", href: "/careers" },
+                                { name: "Blog", href: "/blog" },
+                                { name: "Contact", href: "/contact" }
                             ]} />
                         </div>
                     </div>
