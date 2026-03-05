@@ -10,7 +10,7 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ShieldLink, Zap, Lock, Globe, ArrowRight, ShieldCheck, Activity } from 'lucide-react';
+import { ShieldLink, Zap, Lock, Globe, ArrowRight, ShieldCheck, Activity, Database, Key, CheckCircle, FileText } from 'lucide-react';
 
 export default function LandingPage() {
   return (
@@ -95,6 +95,39 @@ export default function LandingPage() {
               <p className="text-gray-400 text-sm leading-relaxed">{feature.desc}</p>
             </div>
           ))}
+        </motion.div>
+
+        {/* How it Works Section */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="max-w-6xl w-full mx-auto px-4 mb-32"
+        >
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">How SipHeron VDR Works</h2>
+            <p className="text-gray-400 max-w-2xl mx-auto text-lg">Secure your digital assets with enterprise-grade cryptography and Solana's high-performance blockchain.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 relative">
+            <div className="absolute top-1/2 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-blue-500/30 to-transparent -translate-y-1/2 hidden md:block" />
+
+            {[
+              { icon: FileText, title: "1. Asset Ingestion", desc: "Submit your document, binary, or dataset. SipHeron processes it locally." },
+              { icon: Key, title: "2. Cryptographic Proof", desc: "Generating a secure, zero-knowledge hash signature without extracting raw data." },
+              { icon: Database, title: "3. Decentralized Anchoring", desc: "The proof is permanently anchored to the Solana network as an immutable record." },
+              { icon: CheckCircle, title: "4. Global Verification", desc: "Anyone can instantly and independently verify the asset's authenticity globally." }
+            ].map((step, i) => (
+              <div key={i} className="relative z-10 flex flex-col items-center text-center group">
+                <div className="w-20 h-20 rounded-2xl glass flex items-center justify-center border border-white/10 mb-6 group-hover:scale-110 group-hover:bg-blue-600/20 group-hover:border-blue-500/40 transition-all duration-300 shadow-xl">
+                  <step.icon className="w-10 h-10 text-blue-400" />
+                </div>
+                <h4 className="text-xl font-bold text-white mb-3">{step.title}</h4>
+                <p className="text-sm text-gray-400 leading-relaxed px-2">{step.desc}</p>
+              </div>
+            ))}
+          </div>
         </motion.div>
 
         {/* Stats Section */}
