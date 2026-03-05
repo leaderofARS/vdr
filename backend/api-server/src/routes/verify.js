@@ -17,9 +17,10 @@ module.exports = async (req, res, next) => {
             return res.status(400).json({ success: false, error: "Invalid SHA-256 hash provided. Must be a 64-character hex string" });
         }
 
-        const record = await solanaService.verifyHash(hash);
+        const verification = await solanaService.verifyHash(hash);
 
-        if (record) {
+        if (verification.valid) {
+            const { record } = verification;
             res.status(200).json({
                 verified: true,
                 record: {
@@ -37,7 +38,7 @@ module.exports = async (req, res, next) => {
             res.status(200).json({
                 verified: false,
                 hash,
-                message: "Hash not found in registry"
+                reason: verification.reason || "Hash not found in registry"
             });
         }
     } catch (err) {
