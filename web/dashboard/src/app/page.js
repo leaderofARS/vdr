@@ -88,16 +88,19 @@ export default function LandingPage() {
               <div className="w-3 h-3 rounded-full bg-red-500/80" />
               <div className="w-3 h-3 rounded-full bg-amber-500/80" />
               <div className="w-3 h-3 rounded-full bg-green-500/80" />
-              <span className="ml-4 text-xs font-mono text-gray-500">vdr-cli anchor asset.bin</span>
+              <span className="ml-4 text-[10px] font-mono text-gray-500 uppercase tracking-widest">sipheron-vdr v0.9.0-beta</span>
             </div>
-            <div className="p-6 font-mono text-sm leading-relaxed overflow-x-auto">
-              <div className="text-gray-400"><span className="text-blue-400">➜</span>  <span className="text-white">vdr</span> anchor ./dataset_v2.csv --sign</div>
-              <div className="text-gray-500 mt-2">Computing SHA-256 local entropy... [██████████] 100%</div>
-              <div className="text-gray-500">Hash: <span className="text-emerald-400">e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</span></div>
-              <div className="text-gray-500 mt-2">Connecting to Solana Mainnet-Beta...</div>
-              <div className="text-gray-500">Submitting CPI instruction to SipHeron Registry...</div>
-              <div className="text-white mt-2 font-bold">✓ Asset anchored successfully</div>
-              <div className="text-gray-500">Tx: <span className="text-blue-400 underline cursor-pointer">4fG29...8Pqm</span></div>
+            <div className="p-6 font-mono text-sm leading-relaxed overflow-x-auto whitespace-pre">
+              <div className="text-gray-400"><span className="text-blue-400">➜</span>  <span className="text-white">sipheron-vdr</span> stage ./TermSheet.pdf</div>
+              <div className="text-emerald-400 mt-1">✔ Hash computed locally: 15808cc3a80fd265c207efcb7709232fd65005067e9df50c31103565e6fb9f26</div>
+              <div className="text-gray-500">Privacy check: Raw file data never leaves your machine.</div>
+              <div className="text-emerald-400 mt-1">✓ Staged 1 file successfully.</div>
+
+              <div className="text-gray-400 mt-4"><span className="text-blue-400">➜</span>  <span className="text-white">sipheron-vdr</span> anchor</div>
+              <div className="text-white font-bold mt-1">Preparing to push 1 hashes to SipHeron Registry...</div>
+              <div className="text-emerald-400 mt-1">✔ Successfully dispatched 1 hashes to the blockchain!</div>
+              <div className="text-gray-300 mt-2">Job ID: <span className="text-blue-400 underline">71f2-9cad-0e1f</span></div>
+              <div className="text-gray-500 text-xs">The SipHeron Indexer is currently mapping these PDAs to the Smart Contract...</div>
             </div>
           </div>
         </motion.div>
