@@ -110,10 +110,22 @@ app.use("/organizations", organizationRoute);
 // Root endpoint
 app.get("/", (req, res) => {
     res.status(200).json({
-        name: "SipHeron VDR API",
-        version: "0.9.0-beta",
+        name: "SipHeron VDR (Verifiable Data Registry) API",
+        version: process.env.npm_package_version || "0.9.0-beta",
+        description: "Cryptographic anchoring and verification layer for the SipHeron platform on Solana.",
         network: process.env.SOLANA_NETWORK || "devnet",
-        status: "operational"
+        status: "operational",
+        documentation: "https://docs.sipheron.com",
+        endpoints: {
+            health: "/health",
+            auth: "/auth",
+            register: "/register",
+            verify: "/verify",
+            batch: "/api/batch",
+            analytics: "/analytics",
+            organizations: "/organizations"
+        },
+        timestamp: new Date().toISOString()
     });
 });
 
