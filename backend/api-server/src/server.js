@@ -7,8 +7,6 @@
  * - Cluster-ready (works with PM2 cluster mode)
  * - Connection tracking for zero-downtime deploys
  */
-const app = require('./app');
-const indexer = require('./services/indexer');
 
 // Catch uncaught exceptions before anything else
 process.on('uncaughtException', (err) => {
@@ -22,6 +20,27 @@ process.on('unhandledRejection', (reason, promise) => {
     console.error('[FATAL] Reason:', reason);
     process.exit(1);
 });
+
+// Wrap module loading in try/catch to expose any import-time crashes
+console.log('[STARTUP] Loading app module...');
+let app, indexer;
+try {
+    app = require('./app');
+    console.log('[STARTUP] app.js loaded successfully');
+} catch (err) {
+    console.error('[FATAL] Failed to load app.js:', err.message);
+    console.error(err.stack);
+    process.exit(1);
+}
+
+try {
+    indexer = require('./services/indexer');
+    console.log('[STARTUP] indexer.js loaded successfully');
+} catch (err) {
+    console.error('[FATAL] Failed to load indexer.js:', err.message);
+    console.error(err.stack);
+    process.exit(1);
+}
 
 const PORT = process.env.PORT || 3001;
 const connections = new Set();
