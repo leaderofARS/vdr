@@ -10,12 +10,34 @@
 const app = require('./app');
 const indexer = require('./services/indexer');
 
+// Catch uncaught exceptions before anything else
+process.on('uncaughtException', (err) => {
+    console.error('[FATAL] Uncaught Exception:', err.message);
+    console.error(err.stack);
+    process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('[FATAL] Unhandled Rejection at:', promise);
+    console.error('[FATAL] Reason:', reason);
+    process.exit(1);
+});
+
 const PORT = process.env.PORT || 3001;
 const connections = new Set();
+
+console.log(`[STARTUP] Starting VDR API server on port ${PORT}...`);
+console.log(`[STARTUP] NODE_ENV: ${process.env.NODE_ENV}`);
+console.log(`[STARTUP] SOLANA_NETWORK: ${process.env.SOLANA_NETWORK}`);
+console.log(`[STARTUP] PROGRAM_ID: ${process.env.PROGRAM_ID}`);
 
 const server = app.listen(PORT, () => {
     console.log(`[PID ${process.pid}] VDR API running on port ${PORT}`);
     indexer.start();
+}).on('error', (err) => {
+    console.error('[FATAL] Failed to start server:', err.message);
+    console.error(err.stack);
+    process.exit(1);
 });
 
 // Track open connections for graceful shutdown
@@ -48,8 +70,3 @@ function shutdown(signal) {
 
 process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('SIGINT', () => shutdown('SIGINT'));
-
-// Prevent unhandled rejections from crashing the process
-process.on('unhandledRejection', (reason) => {
-    console.error('[FATAL] Unhandled Rejection:', reason);
-});
