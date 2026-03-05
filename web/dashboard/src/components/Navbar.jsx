@@ -12,7 +12,7 @@ import Link from "next/link";
 import Image from "next/image";
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
-import { ShieldCheck, Globe, Activity } from "lucide-react";
+import { ShieldCheck, Globe, Activity, ChevronDown } from "lucide-react";
 
 const WalletMultiButton = dynamic(
     async () => (await import("@solana/wallet-adapter-react-ui")).WalletMultiButton,
@@ -48,8 +48,24 @@ export default function Navbar() {
                         </Link>
 
                         <div className="hidden lg:flex items-center gap-8">
-                            <NavLink href="/verify">Verify Integrity</NavLink>
-                            <NavLink href="/explorer">Global Explorer</NavLink>
+                            <NavDropdown title="Product" links={[
+                                { name: "Global Explorer", href: "/explorer" },
+                                { name: "Public Verifier", href: "/verify" },
+                                { name: "Institutional Portal", href: "/dashboard" },
+                                { name: "Network Status", href: "#" }
+                            ]} />
+                            <NavDropdown title="Resources" links={[
+                                { name: "Documentation", href: "#" },
+                                { name: "API Reference", href: "#" },
+                                { name: "Security Audits", href: "#" },
+                                { name: "Whitepaper", href: "#" }
+                            ]} />
+                            <NavDropdown title="Company" links={[
+                                { name: "About SipHeron", href: "#" },
+                                { name: "Careers", href: "#" },
+                                { name: "Blog", href: "#" },
+                                { name: "Contact", href: "#" }
+                            ]} />
                         </div>
                     </div>
 
@@ -63,6 +79,33 @@ export default function Navbar() {
                 </div>
             </div>
         </nav>
+    );
+}
+
+function NavDropdown({ title, links }) {
+    return (
+        <div className="relative group">
+            <button className="flex items-center gap-1.5 text-sm font-bold text-gray-400 hover:text-white transition-colors py-6 pl-1 pr-1">
+                {title}
+                <ChevronDown className="w-4 h-4 text-gray-500 transition-transform duration-300 group-hover:rotate-180" />
+            </button>
+            <div className="absolute top-[80%] left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 w-64 pointer-events-none group-hover:pointer-events-auto">
+                <div className="p-2 bg-[#050505] border border-white/10 rounded-2xl shadow-[0_20px_40px_-10px_rgba(0,0,0,0.8)] flex flex-col gap-1">
+                    {links.map((link) => (
+                        <Link
+                            key={link.name}
+                            href={link.href}
+                            className="px-4 py-2.5 text-sm font-medium text-gray-400 hover:text-white hover:bg-white/[0.04] rounded-xl transition-colors flex items-center justify-between group/link"
+                        >
+                            {link.name}
+                            <span className="text-gray-500 opacity-0 -translate-x-2 transition-all group-hover/link:opacity-100 group-hover/link:translate-x-0">
+                                →
+                            </span>
+                        </Link>
+                    ))}
+                </div>
+            </div>
+        </div>
     );
 }
 
