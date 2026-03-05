@@ -88,16 +88,6 @@ export default function ContactPage() {
                                 </div>
                             </div>
 
-                            <div className="flex gap-6 items-start">
-                                <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
-                                    <Globe className="w-5 h-5 text-purple-400" />
-                                </div>
-                                <div>
-                                    <h4 className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-1">Global Presence</h4>
-                                    <p className="text-xl font-bold text-white tracking-tight">Remote-First Infrastructure</p>
-                                    <p className="text-sm text-gray-500 mt-1">Distributed teams across San Francisco, London, and Singapore.</p>
-                                </div>
-                            </div>
                         </div>
                     </motion.div>
 
