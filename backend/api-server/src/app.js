@@ -33,6 +33,9 @@ const indexer = require("./services/indexer");
 
 const app = express();
 
+// Trust Railway/Vercel proxy (required for rate limiting behind load balancers)
+app.set('trust proxy', 1);
+
 // Apply Security Headers
 app.use(helmetConfig);
 
