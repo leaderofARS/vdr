@@ -2,7 +2,7 @@
 
 /**
  * @file layout.js
- * @module /home/ars0x01/Documents/Github/solana-vdr/web/dashboard/src/app/dashboard/layout.js
+ * @module web/dashboard/src/app/dashboard/layout.js
  * @description Next.js App Router pages and layouts.
  * Part of the SipHeron VDR platform.
  * @author SipHeron Platform
@@ -28,16 +28,23 @@ export default function DashboardLayout({ children }) {
             if (!cancelled) {
                 if (!valid) {
                     router.push('/auth/login');
+                } else {
+                    document.title = "VDR Dashboard";
+                    setMounted(true);
                 }
-                document.title = "VDR Dashboard";
-                setMounted(true);
             }
         }
         verifySession();
         return () => { cancelled = true; };
     }, [router]);
 
-    if (!mounted) return null;
+    // Show loading spinner instead of blank screen while verifying session
+    if (!mounted) return (
+        <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center gap-4">
+            <div className="w-12 h-12 border-t-2 border-r-2 border-blue-500 rounded-full animate-spin" />
+            <p className="text-gray-500 text-sm font-medium tracking-widest uppercase">Verifying session...</p>
+        </div>
+    );
 
     const navItems = [
         { name: 'Analytics', href: '/dashboard', icon: LayoutDashboard },

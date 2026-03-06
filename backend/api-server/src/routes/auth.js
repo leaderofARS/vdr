@@ -1,6 +1,6 @@
 /**
  * @file auth.js
- * @module /home/ars0x01/Documents/Github/solana-vdr/backend/api-server/src/routes/auth.js
+ * @module backend/api-server/src/routes/auth.js
  * @description Express API route handlers.
  * Part of the SipHeron VDR platform.
  * @author SipHeron Platform
@@ -17,20 +17,21 @@ const router = express.Router();
 const prisma = new PrismaClient();
 
 // Cookie configuration for HttpOnly JWT storage
+// sameSite: 'none' required for cross-site requests (Vercel → Railway)
 const ACCESS_COOKIE_OPTIONS = {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    maxAge: 15 * 60 * 1000,  // 15 minutes (short-lived access token)
+    secure: true, // always true — required when sameSite: 'none'
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    maxAge: 15 * 60 * 1000,  // 15 minutes
     path: '/'
 };
 
 const REFRESH_COOKIE_OPTIONS = {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    secure: true, // always true — required when sameSite: 'none'
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000,  // 7 days
-    path: '/auth'  // Only sent to auth endpoints
+    path: '/'  // Changed from '/auth' — path scoping unreliable in cross-site context
 };
 
 // Register a new user
@@ -125,8 +126,8 @@ router.post('/refresh', async (req, res, next) => {
 
 // Logout — clears both cookies
 router.post('/logout', (req, res) => {
-    res.clearCookie('vdr_token', { path: '/' });
-    res.clearCookie('vdr_refresh', { path: '/auth' });
+    res.clearCookie('vdr_token', { path: '/', sameSite: 'none', secure: true });
+    res.clearCookie('vdr_refresh', { path: '/', sameSite: 'none', secure: true });
     res.json({ success: true, message: 'Logged out successfully' });
 });
 
@@ -173,4 +174,3 @@ router.post('/api-key', authenticate, async (req, res, next) => {
 });
 
 module.exports = router;
-
