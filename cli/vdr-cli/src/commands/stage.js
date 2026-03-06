@@ -1,6 +1,6 @@
 /**
  * @file stage.js
- * @module /home/ars0x01/Documents/Github/solana-vdr/cli/vdr-cli/src/commands/stage.js
+ * @module cli/vdr-cli/src/commands/stage.js
  * @description CLI command modules deployed via Commander.js.
  * Part of the SipHeron VDR platform.
  * @author SipHeron Platform
@@ -20,7 +20,7 @@ function createStageCommand() {
         .argument("<file>", "Path to the file you wish to stage")
         .option("-m, --metadata <metadata>", "Optional metadata to store with the hash", "")
         .option("-e, --expiry <seconds>", "Unix expiration time for hashes (0 for infinite)", "0")
-        .action((file, options) => {
+        .action(async (file, options) => {
             const absolutePath = path.resolve(process.cwd(), file);
             if (!fs.existsSync(absolutePath)) {
                 console.error(chalk.red(`Error: File not found at path '${file}'`));
@@ -30,7 +30,7 @@ function createStageCommand() {
             const spinner = ora("Computing local SHA-256 hash...").start();
 
             try {
-                const hexHash = computeFileHash(absolutePath);
+                const hexHash = await computeFileHash(absolutePath);
                 const stats = fs.statSync(absolutePath);
 
                 spinner.succeed(`Hash computed locally: ${chalk.cyan(hexHash)}`);

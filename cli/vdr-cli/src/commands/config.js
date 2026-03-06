@@ -1,6 +1,6 @@
 /**
  * @file config.js
- * @module /home/ars0x01/Documents/Github/solana-vdr/cli/vdr-cli/src/commands/config.js
+ * @module cli/vdr-cli/src/commands/config.js
  * @description CLI command modules deployed via Commander.js.
  * Part of the SipHeron VDR platform.
  * @author SipHeron Platform
@@ -10,6 +10,10 @@ const { Command } = require('commander');
 const chalk = require('chalk');
 const { loadConfig, saveConfig } = require('../utils/configManager');
 
+// FIX H-3: Whitelist of allowed configuration keys to prevent prototype pollution
+// and arbitrary key injection via `config set`
+const ALLOWED_KEYS = ['apiUrl', 'network', 'apiKey', 'defaultWallet', 'organizationId', 'organizationName'];
+
 function createConfigCommand() {
     const configCmd = new Command('config').description('Configure VDR API and Network settings');
 
@@ -17,6 +21,13 @@ function createConfigCommand() {
         .command('set <key> <value>')
         .description('Set a configuration value (e.g., apiUrl, network, apiKey)')
         .action((key, value) => {
+            // FIX H-3: Validate the key against the whitelist before setting
+            if (!ALLOWED_KEYS.includes(key)) {
+                console.error(chalk.red(`Error: Invalid config key '${key}'.`));
+                console.log(chalk.gray(`Allowed keys: ${ALLOWED_KEYS.join(', ')}`));
+                return;
+            }
+
             const config = loadConfig();
             config[key] = value;
             saveConfig(config);

@@ -1,6 +1,6 @@
 /**
  * @file verify.js
- * @module /home/ars0x01/Documents/Github/solana-vdr/cli/vdr-cli/src/commands/verify.js
+ * @module cli/vdr-cli/src/commands/verify.js
  * @description CLI command modules deployed via Commander.js.
  * Part of the SipHeron VDR platform.
  * @author SipHeron Platform
@@ -27,7 +27,7 @@ const verifyCmd = new Command("verify")
         const spinner = ora("Computing local SHA-256 hash...").start();
 
         try {
-            const hexHash = computeFileHash(file);
+            const hexHash = await computeFileHash(file);
             spinner.succeed(`Local hash: ${chalk.cyan(hexHash)}`);
 
             spinner.start("Querying VDR SipHeron Registry...");
@@ -57,6 +57,11 @@ const verifyHashCmd = new Command("verify-hash")
     .description("Verify a raw hex hash directly against the VDR registry")
     .argument("<hash>", "SHA-256 hex string")
     .action(async (hash) => {
+        if (!/^[a-f0-9]{64}$/i.test(hash)) {
+            console.error(chalk.red('Error: Invalid SHA-256 hash. Expected 64 lowercase hex characters.'));
+            process.exit(1);
+        }
+
         const config = loadConfig();
         const spinner = ora("Querying VDR SipHeron Registry...").start();
 

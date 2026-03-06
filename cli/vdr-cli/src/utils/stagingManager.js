@@ -1,6 +1,6 @@
 /**
  * @file stagingManager.js
- * @module /home/ars0x01/Documents/Github/solana-vdr/cli/vdr-cli/src/utils/stagingManager.js
+ * @module cli/vdr-cli/src/utils/stagingManager.js
  * @description CLI utilities for encryption, formatting, and file management.
  * Part of the SipHeron VDR platform.
  * @author SipHeron Platform
@@ -14,7 +14,7 @@ const CONFIG_DIR = path.join(os.homedir(), '.vdr');
 const STAGED_FILE = path.join(CONFIG_DIR, 'staged.json');
 
 function getStagedItems() {
-    if (!fs.existsSync(CONFIG_DIR)) fs.mkdirSync(CONFIG_DIR);
+    if (!fs.existsSync(CONFIG_DIR)) fs.mkdirSync(CONFIG_DIR, { recursive: true, mode: 0o700 });
     if (!fs.existsSync(STAGED_FILE)) return [];
 
     try {
@@ -25,8 +25,9 @@ function getStagedItems() {
 }
 
 function saveStagedItems(items) {
-    if (!fs.existsSync(CONFIG_DIR)) fs.mkdirSync(CONFIG_DIR);
-    fs.writeFileSync(STAGED_FILE, JSON.stringify(items, null, 2));
+    // FIX M-1: Create directory and file with restrictive permissions
+    if (!fs.existsSync(CONFIG_DIR)) fs.mkdirSync(CONFIG_DIR, { recursive: true, mode: 0o700 });
+    fs.writeFileSync(STAGED_FILE, JSON.stringify(items, null, 2), { mode: 0o600 });
 }
 
 function addStagedItem(item) {

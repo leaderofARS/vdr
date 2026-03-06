@@ -1,6 +1,6 @@
 /**
  * @file configManager.js
- * @module /home/ars0x01/Documents/Github/solana-vdr/cli/vdr-cli/src/utils/configManager.js
+ * @module cli/vdr-cli/src/utils/configManager.js
  * @description CLI utilities for encryption, formatting, and file management.
  * Part of the SipHeron VDR platform.
  * @author SipHeron Platform
@@ -133,6 +133,15 @@ function saveConfig(config) {
         fs.mkdirSync(CONFIG_DIR, { mode: 0o700 });
     }
 
+    if (config.apiUrl
+        && config.apiUrl.startsWith('http://')
+        && !config.apiUrl.includes('localhost')
+        && !config.apiUrl.includes('127.0.0.1')) {
+        const chalk = require('chalk');
+        console.warn(chalk.yellow('⚠ Warning: API URL is not HTTPS. Your API key will be transmitted in plaintext.'));
+        console.warn(chalk.yellow('  Use: sipheron-vdr config set apiUrl https://...'));
+    }
+
     // Validate permissions before saving
     const validator = new PermissionValidator();
 
@@ -177,4 +186,3 @@ module.exports = {
     getWalletPath,
     CONFIG_DIR
 };
-

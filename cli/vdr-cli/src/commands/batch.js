@@ -1,6 +1,6 @@
 /**
  * @file batch.js
- * @module /home/ars0x01/Documents/Github/solana-vdr/cli/vdr-cli/src/commands/batch.js
+ * @module cli/vdr-cli/src/commands/batch.js
  * @description CLI command modules deployed via Commander.js.
  * Part of the SipHeron VDR platform.
  * @author SipHeron Platform
@@ -30,13 +30,17 @@ function createBatchCommand() {
                 const absolutePath = path.resolve(process.cwd(), directory);
                 if (!fs.existsSync(absolutePath)) throw new Error('Directory not found');
 
-                // Simple recursive scan
+                // Uses lstatSync instead of statSync to detect symlinks before following them.
+                // Symlinks are skipped to prevent path traversal attacks that could expose
+                // sensitive system files (e.g., /etc/, ~/.ssh/) in batch metadata.
                 const filesToHash = [];
                 const scanDir = (dir) => {
                     const files = fs.readdirSync(dir);
                     for (const file of files) {
                         const fullPath = path.join(dir, file);
-                        if (fs.statSync(fullPath).isDirectory()) {
+                        const stats = fs.lstatSync(fullPath); // lstat, not stat
+                        if (stats.isSymbolicLink()) continue; // Skip symlinks
+                        if (stats.isDirectory()) {
                             scanDir(fullPath);
                         } else {
                             filesToHash.push(fullPath);
@@ -50,7 +54,7 @@ function createBatchCommand() {
 
                 const hashes = [];
                 for (const file of filesToHash) {
-                    hashes.push(computeFileHash(file));
+                    hashes.push(await computeFileHash(file));
                 }
 
                 spinner.text = 'Submitting hash batch to VDR Queue...';
