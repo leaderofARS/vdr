@@ -44,7 +44,7 @@ async function initialize() {
         });
 
         // Program ID and IDL loading
-        const idl = require("../../../../target/idl/vdr_contract.json");
+        const idl = require("./vdr_contract.json");
         programId = new PublicKey(programIdStr);
         program = new anchor.Program(idl, provider);
 
