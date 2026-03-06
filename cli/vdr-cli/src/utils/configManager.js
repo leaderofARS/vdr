@@ -79,7 +79,7 @@ function loadConfig() {
 
     if (!fs.existsSync(CONFIG_FILE)) {
         const defaultConfig = {
-            apiUrl: 'http://localhost:3001',
+            apiUrl: 'https://api.sipheron.com',
             network: 'localnet',
             apiKey: null,
             defaultWallet: null

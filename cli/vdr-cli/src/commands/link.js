@@ -18,7 +18,7 @@ function createLinkCommand() {
         .argument("<apiKey>", "Institutional API Key from the SipHeron Dashboard")
         .action(async (apiKey) => {
             const config = loadConfig();
-            const apiUrl = config.apiUrl || "http://localhost:3001";
+            const apiUrl = config.apiUrl || "https://api.sipheron.com";
 
             const spinner = ora("Verifying Institutional API Key...").start();
 
