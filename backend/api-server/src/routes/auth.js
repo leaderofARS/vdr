@@ -173,4 +173,32 @@ router.post('/api-key', authenticate, async (req, res, next) => {
     }
 });
 
+// Verify API Key — used by CLI link command
+router.get('/verify-key', authenticate, async (req, res, next) => {
+    try {
+        const apiKey = await prisma.apiKey.findUnique({
+            where: { key: req.headers['x-api-key'] },
+            include: {
+                organization: true,
+                user: true
+            }
+        });
+
+        if (!apiKey) {
+            return res.status(401).json({ error: 'Invalid API Key' });
+        }
+
+        res.json({
+            success: true,
+            organization: apiKey.organization,
+            user: {
+                id: apiKey.user.id,
+                email: apiKey.user.email
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
 module.exports = router;

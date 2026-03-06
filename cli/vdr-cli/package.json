@@ -1,9 +1,9 @@
 {
-  "name": "vdr-cli",
+  "name": "sipheron-vdr",
   "version": "0.9.0-beta",
   "main": "src/index.js",
   "bin": {
-    "sipheron-vdr": "./src/index.js"
+    "sipheron-vdr": "src/index.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
