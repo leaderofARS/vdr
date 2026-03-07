@@ -1,0 +1,282 @@
+{
+    "version": "0.1.0",
+    "name": "vdr_contract",
+    "instructions": [
+        {
+            "name": "initProtocol",
+            "accounts": [
+                {
+                    "name": "protocolConfig",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "admin",
+                    "isMut": true,
+                    "isSigner": true
+                },
+                {
+                    "name": "treasury",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "systemProgram",
+                    "isMut": false,
+                    "isSigner": false
+                }
+            ],
+            "args": [
+                {
+                    "name": "registrationFee",
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "registerHash",
+            "accounts": [
+                {
+                    "name": "hashRecord",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "protocolConfig",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "treasury",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "organization",
+                    "isMut": false,
+                    "isSigner": false,
+                    "isOptional": true
+                },
+                {
+                    "name": "owner",
+                    "isMut": true,
+                    "isSigner": true
+                },
+                {
+                    "name": "systemProgram",
+                    "isMut": false,
+                    "isSigner": false
+                }
+            ],
+            "args": [
+                {
+                    "name": "hash",
+                    "type": {
+                        "array": [
+                            "u8",
+                            32
+                        ]
+                    }
+                },
+                {
+                    "name": "metadata",
+                    "type": "string"
+                },
+                {
+                    "name": "expiry",
+                    "type": "i64"
+                }
+            ]
+        },
+        {
+            "name": "verifyHash",
+            "accounts": [
+                {
+                    "name": "hashRecord",
+                    "isMut": false,
+                    "isSigner": false
+                }
+            ],
+            "args": []
+        },
+        {
+            "name": "revokeHash",
+            "accounts": [
+                {
+                    "name": "hashRecord",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "owner",
+                    "isMut": true,
+                    "isSigner": true
+                }
+            ],
+            "args": []
+        },
+        {
+            "name": "initOrganization",
+            "accounts": [
+                {
+                    "name": "organization",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "admin",
+                    "isMut": true,
+                    "isSigner": true
+                },
+                {
+                    "name": "protocolConfig",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "systemProgram",
+                    "isMut": false,
+                    "isSigner": false
+                }
+            ],
+            "args": [
+                {
+                    "name": "name",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "updateProtocolConfig",
+            "accounts": [
+                {
+                    "name": "protocolConfig",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "admin",
+                    "isMut": true,
+                    "isSigner": true
+                }
+            ],
+            "args": [
+                {
+                    "name": "newAdmin",
+                    "type": {
+                        "option": "publicKey"
+                    }
+                }
+            ]
+        }
+    ],
+    "accounts": [
+        {
+            "name": "HashRecord",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    {
+                        "name": "owner",
+                        "type": "publicKey"
+                    },
+                    {
+                        "name": "organization",
+                        "type": {
+                            "option": "publicKey"
+                        }
+                    },
+                    {
+                        "name": "hash",
+                        "type": {
+                            "array": [
+                                "u8",
+                                32
+                            ]
+                        }
+                    },
+                    {
+                        "name": "timestamp",
+                        "type": "i64"
+                    },
+                    {
+                        "name": "expiry",
+                        "type": "i64"
+                    },
+                    {
+                        "name": "isRevoked",
+                        "type": "bool"
+                    },
+                    {
+                        "name": "metadata",
+                        "type": "string"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Organization",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    {
+                        "name": "admin",
+                        "type": "publicKey"
+                    },
+                    {
+                        "name": "name",
+                        "type": "string"
+                    },
+                    {
+                        "name": "issuerCount",
+                        "type": "u64"
+                    },
+                    {
+                        "name": "createdAt",
+                        "type": "i64"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "ProtocolConfig",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    {
+                        "name": "admin",
+                        "type": "publicKey"
+                    },
+                    {
+                        "name": "registrationFee",
+                        "type": "u64"
+                    },
+                    {
+                        "name": "treasury",
+                        "type": "publicKey"
+                    }
+                ]
+            }
+        }
+    ],
+    "errors": [
+        {
+            "code": 6000,
+            "name": "MetadataTooLong",
+            "msg": "Metadata must be 200 characters or less"
+        },
+        {
+            "code": 6001,
+            "name": "UnauthorizedOrganizationAction",
+            "msg": "You are not authorized to perform actions for this organization"
+        },
+        {
+            "code": 6002,
+            "name": "ProtocolPaused",
+            "msg": "Protocol is currently paused for maintenance or security reasons"
+        }
+    ],
+    "metadata": {
+        "address": "6ecWPUK87zxwZP2pARJ75wbpCka92mYSGP1szrJxzAwo"
+    }
+}
