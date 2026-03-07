@@ -27,7 +27,7 @@ const program = new Command();
 program
     .name("sipheron-vdr")
     .description("SipHeron-VDR cli")
-    .version("0.9.0-beta");
+    .version(require("../package.json").version);
 
 // Core Execution pipeline (Git-style)
 program.addCommand(createStageCommand());
@@ -76,7 +76,7 @@ async function start() {
     const commandName = process.argv[2];
 
     // List of commands that are allowed without a login
-    const setupCommands = ['login', 'config', 'wallet', '--version', '-V', '--help', '-h', 'help'];
+    const setupCommands = ['login', 'config', 'wallet', 'link', '--version', '-V', '--help', '-h', 'help'];
 
     if (commandName && !setupCommands.includes(commandName) && !config.apiKey && !process.env.SIPHERON_API_KEY) {
         const success = await runOnboarding(config);

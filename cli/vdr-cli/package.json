@@ -1,6 +1,6 @@
 {
   "name": "sipheron-vdr",
-  "version": "0.9.0-beta",
+  "version": "0.9.4",
   "main": "src/index.js",
   "bin": {
     "sipheron-vdr": "src/index.js"
