@@ -54,9 +54,8 @@ pub mod vdr_contract {
         ctx: Context<UpdateProtocolConfig>,
         new_admin: Option<Pubkey>,
         new_fee: Option<u64>,
-        new_treasury: Option<Pubkey>,
-        is_paused: Option<bool>,
+        new_treasury: Option<Pubkey>
     ) -> Result<()> {
-        crate::instructions::update_protocol_config::handler(ctx, new_admin, new_fee, new_treasury, is_paused)
+        crate::instructions::update_protocol_config::handler(ctx, new_admin, new_fee, new_treasury)
     }
 }

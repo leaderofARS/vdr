@@ -55,10 +55,9 @@ pub enum VDRError {
 pub fn handler(
     ctx: Context<RegisterHash>, 
     hash: [u8; 32], 
-    metadata: String, 
+    metadata: String,
     expiry: i64
 ) -> Result<()> {
-    require!(!ctx.accounts.protocol_config.is_paused, VDRError::ProtocolPaused);
     require!(metadata.len() <= 200, VDRError::MetadataTooLong);
 
     // Hardening: If organization is provided, the owner must be the admin

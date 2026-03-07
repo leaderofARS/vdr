@@ -24,8 +24,7 @@ pub fn handler(
     ctx: Context<UpdateProtocolConfig>,
     new_admin: Option<Pubkey>,
     new_fee: Option<u64>,
-    new_treasury: Option<Pubkey>,
-    is_paused: Option<bool>,
+    new_treasury: Option<Pubkey>
 ) -> Result<()> {
     let config = &mut ctx.accounts.protocol_config;
 
@@ -42,11 +41,6 @@ pub fn handler(
     if let Some(val) = new_treasury {
         config.treasury = val;
         msg!("Treasury updated to: {}", val);
-    }
-
-    if let Some(val) = is_paused {
-        config.is_paused = val;
-        msg!("Protocol Paused state set to: {}", val);
     }
 
     Ok(())

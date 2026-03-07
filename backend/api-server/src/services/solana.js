@@ -33,7 +33,7 @@ async function initialize() {
 
         const idl = require("./vdr_contract.json");
         programId = new PublicKey(programIdStr);
-        program = new anchor.Program(idl, provider);
+        program = new anchor.Program(idl, programId, provider);
 
         [protocolConfigPda] = PublicKey.findProgramAddressSync(
             [Buffer.from("protocol_config")],

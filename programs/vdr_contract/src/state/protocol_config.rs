@@ -11,10 +11,9 @@ pub struct ProtocolConfig {
     pub admin: Pubkey,
     pub registration_fee: u64, // In lamports
     pub treasury: Pubkey,
-    pub is_paused: bool,
 }
 
 impl ProtocolConfig {
-    // 8 discriminator + 32 admin + 8 fee + 32 treasury + 1 is_paused
-    pub const SPACE: usize = 8 + 32 + 8 + 32 + 1;
+    // 8 discriminator + 32 admin + 8 fee + 32 treasury
+    pub const SPACE: usize = 8 + 32 + 8 + 32;
 }

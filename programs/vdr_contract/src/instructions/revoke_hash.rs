@@ -41,7 +41,6 @@ pub enum RevokeError {
 }
 
 pub fn handler(ctx: Context<RevokeHash>) -> Result<()> {
-    require!(!ctx.accounts.protocol_config.is_paused, RevokeError::ProtocolPaused);
     let record = &mut ctx.accounts.hash_record;
 
     require!(!record.is_revoked, RevokeError::AlreadyRevoked);

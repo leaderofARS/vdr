@@ -43,7 +43,6 @@ pub fn handler(ctx: Context<InitProtocol>, registration_fee: u64) -> Result<()> 
     config.admin = ctx.accounts.admin.key();
     config.registration_fee = registration_fee;
     config.treasury = ctx.accounts.treasury.key();
-    config.is_paused = false;
 
     msg!("VDR Protocol Initialized!");
     msg!("Registration Fee: {} lamports", registration_fee);
