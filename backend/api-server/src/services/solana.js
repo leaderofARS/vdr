@@ -92,11 +92,11 @@ async function registerHash(hexHash, metadata = "", expiry = 0) {
             new anchor.BN(expiry)           // i64
         )
         .accounts({
-            hashRecord: pdaAddress,
-            protocolConfig: protocolConfigPda,
-            treasury: config.treasury,
-            owner: wallet.publicKey,
-            systemProgram: SystemProgram.programId,
+            hashRecord: pdaAddress.toBase58(),
+            protocolConfig: protocolConfigPda.toBase58(),
+            treasury: config.treasury.toBase58(),
+            owner: wallet.publicKey.toBase58(),
+            systemProgram: SystemProgram.programId.toBase58(),
         })
         .rpc();
 
@@ -175,8 +175,8 @@ async function revokeHash(hexHash) {
     const tx = await program.methods
         .revokeHash()
         .accounts({
-            hashRecord: pdaAddress,
-            owner: wallet.publicKey,
+            hashRecord: pdaAddress.toBase58(),
+            owner: wallet.publicKey.toBase58(),
         })
         .rpc();
 
