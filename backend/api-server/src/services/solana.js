@@ -102,7 +102,7 @@ async function registerHash(hexHash, metadata = "", expiry = 0) {
         })
         .rpc();
 
-    return { tx, owner: wallet.publicKey.toBase58() };
+    return { tx, owner: wallet.publicKey.toBase58(), pdaAddress: pdaAddress.toBase58() };
 }
 
 /**
