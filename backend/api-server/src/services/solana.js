@@ -79,7 +79,7 @@ async function registerHash(hexHash, metadata = "", expiry = 0) {
     await ensureInitialized();
 
     const hashBytes = Buffer.from(hexHash, "hex");
-    const hashArray = Array.from(hashBytes);
+    const hashArray = hashBytes;
 
     const [pdaAddress] = PublicKey.findProgramAddressSync(
         [Buffer.from("hash_record"), Buffer.from(hashArray), wallet.publicKey.toBuffer()],
@@ -112,7 +112,7 @@ async function verifyHash(hexHash) {
     await ensureInitialized();
 
     const hashBytes = Buffer.from(hexHash, "hex");
-    const hashArray = Array.from(hashBytes);
+    const hashArray = hashBytes;
 
     const [pdaAddress] = PublicKey.findProgramAddressSync(
         [Buffer.from("hash_record"), Buffer.from(hashArray), wallet.publicKey.toBuffer()],
@@ -178,7 +178,7 @@ async function revokeHash(hexHash) {
     await ensureInitialized();
 
     const hashBytes = Buffer.from(hexHash, "hex");
-    const hashArray = Array.from(hashBytes);
+    const hashArray = hashBytes;
 
     const [pdaAddress] = PublicKey.findProgramAddressSync(
         [Buffer.from("hash_record"), Buffer.from(hashArray), wallet.publicKey.toBuffer()],
@@ -203,7 +203,7 @@ async function getHashRecord(hexHash) {
     await ensureInitialized();
 
     const hashBytes = Buffer.from(hexHash, "hex");
-    const hashArray = Array.from(hashBytes);
+    const hashArray = hashBytes;
 
     const [pdaAddress] = PublicKey.findProgramAddressSync(
         [Buffer.from("hash_record"), Buffer.from(hashArray), wallet.publicKey.toBuffer()],
