@@ -1,33 +1,26 @@
 /**
  * @file rateLimiter.js
  * @description Centralized rate limiting configuration for SipHeron VDR.
- * Uses Redis for distributed rate limiting with a fallback to memory store.
+ * Fixed for Railway deployment: Separate store instances, IPv6 support, and Redis fallback.
  */
 
-const rateLimit = require('express-rate-limit');
+const { rateLimit, ipKeyGenerator } = require('express-rate-limit');
 const { RedisStore } = require('rate-limit-redis');
 const redisClient = require('../services/redis');
 
-// Initialize Redis store
-let store;
-try {
-    store = new RedisStore({
-        // sendCommand handles ioredis compatibility
-        sendCommand: (...args) => redisClient.call(...args),
-        prefix: 'vdr_rl:', // Prefix to avoid collisions
-    });
-} catch (error) {
-    console.error('[RateLimiter] Redis store initialization failed, falling back to MemoryStore');
-    store = undefined; // Defaults to MemoryStore
+// Disable rate limiting in test environment
+if (process.env.NODE_ENV === 'test') {
+    module.exports = {
+        globalLimiter: (req, res, next) => next(),
+        authLimiter: (req, res, next) => next(),
+        batchRegisterLimiter: (req, res, next) => next(),
+        keyCreationLimiter: (req, res, next) => next(),
+    };
+    return;
 }
 
 /**
- * Custom handler to match the required JSON format:
- * {
- *   "error": "Rate limit exceeded",
- *   "message": "Too many requests. Please try again in 15 minutes.",
- *   "retryAfter": 900
- * }
+ * Custom handler to match the required JSON format
  */
 const rateLimitHandler = (message, windowMs) => (req, res, next, options) => {
     const retryAfter = Math.ceil(windowMs / 1000);
@@ -38,11 +31,28 @@ const rateLimitHandler = (message, windowMs) => (req, res, next, options) => {
     });
 };
 
+/**
+ * Creates a unique RedisStore instance for each limiter to avoid ERR_ERL_STORE_REUSE.
+ * Falls back to MemoryStore if Redis is unavailable.
+ */
+const createStore = (prefix) => {
+    try {
+        return new RedisStore({
+            sendCommand: (...args) => redisClient.call(...args),
+            prefix: `rl:${prefix}:`,
+        });
+    } catch (error) {
+        console.error(`[RateLimiter] Redis store initialization failed for ${prefix}, falling back to MemoryStore`);
+        return undefined;
+    }
+};
+
 // 1. Global limiter — all routes (200 requests per 15 minutes per IP)
 const globalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     limit: 200,
-    store: store,
+    keyGenerator: (req) => ipKeyGenerator(req),
+    store: createStore('global'),
     handler: rateLimitHandler("Too many requests. Please try again in 15 minutes.", 15 * 60 * 1000),
     standardHeaders: true,
     legacyHeaders: false,
@@ -52,7 +62,8 @@ const globalLimiter = rateLimit({
 const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     limit: 10,
-    store: store,
+    keyGenerator: (req) => ipKeyGenerator(req),
+    store: createStore('auth'),
     handler: rateLimitHandler("Too many authentication attempts. Please try again in 15 minutes.", 15 * 60 * 1000),
     standardHeaders: true,
     legacyHeaders: false,
@@ -62,9 +73,9 @@ const authLimiter = rateLimit({
 const batchRegisterLimiter = rateLimit({
     windowMs: 60 * 60 * 1000,
     limit: 50,
-    // Extract API key from x-api-key header, fallback to IP
-    keyGenerator: (req) => req.headers['x-api-key'] || req.ip,
-    store: store,
+    // Extract API key from x-api-key header, fallback to IPv6 safe IP key
+    keyGenerator: (req) => req.headers['x-api-key'] || ipKeyGenerator(req),
+    store: createStore('batch'),
     handler: rateLimitHandler("Too many batch registration requests. Please try again in 1 hour.", 60 * 60 * 1000),
     standardHeaders: true,
     legacyHeaders: false,
@@ -74,13 +85,13 @@ const batchRegisterLimiter = rateLimit({
 const keyCreationLimiter = rateLimit({
     windowMs: 24 * 60 * 60 * 1000,
     limit: 10,
-    // Use organization ID if available, fallback to user ID or IP
+    // Use organization ID if available, fallback to user ID or IPv6 safe IP key
     keyGenerator: (req) => {
         if (req.organization && req.organization.id) return `org:${req.organization.id}`;
         if (req.user && req.user.id) return `user:${req.user.id}`;
-        return req.ip;
+        return ipKeyGenerator(req);
     },
-    store: store,
+    store: createStore('keys'),
     handler: rateLimitHandler("Daily API key creation limit reached. Please try again tomorrow.", 24 * 60 * 60 * 1000),
     standardHeaders: true,
     legacyHeaders: false,
