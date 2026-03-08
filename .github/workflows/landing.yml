@@ -1,0 +1,45 @@
+name: Landing Page CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'web/landing/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'web/landing/**'
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  build:
+    name: Build Verification
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web/landing
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: web/landing/package-lock.json
+      - name: Install Dependencies
+        run: npm ci
+      - name: Build Next.js
+        run: npm run build
+
+  deploy:
+    name: Vercel Verification
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Verify Live Deployment
+        run: |
+          sleep 45
+          curl --fail -I https://sipheron.com || exit 1

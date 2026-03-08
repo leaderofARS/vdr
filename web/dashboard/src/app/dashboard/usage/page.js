@@ -10,15 +10,30 @@ import {
     ArrowRight, Filter, AlertCircle, RefreshCw,
     FileJson, Table
 } from 'lucide-react';
-import {
-    BarChart, Bar, XAxis, YAxis, CartesianGrid,
-    Tooltip, ResponsiveContainer, Legend, Cell
-} from 'recharts';
+import dynamic from 'next/dynamic';
 import Pagination from '@/components/Pagination';
 
+// Dynamic import for Recharts to handle SSR compatibility
+const ResponsiveContainer = dynamic(() => import('recharts').then(m => m.ResponsiveContainer), { ssr: false });
+const BarChart = dynamic(() => import('recharts').then(m => m.BarChart), { ssr: false });
+const Bar = dynamic(() => import('recharts').then(m => m.Bar), { ssr: false });
+const XAxis = dynamic(() => import('recharts').then(m => m.XAxis), { ssr: false });
+const YAxis = dynamic(() => import('recharts').then(m => m.YAxis), { ssr: false });
+const CartesianGrid = dynamic(() => import('recharts').then(m => m.CartesianGrid), { ssr: false });
+const Tooltip = dynamic(() => import('recharts').then(m => m.Tooltip), { ssr: false });
+const Legend = dynamic(() => import('recharts').then(m => m.Legend), { ssr: false });
+const Cell = dynamic(() => import('recharts').then(m => m.Cell), { ssr: false });
+
 export default function UsageDashboard() {
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => setMounted(true), []);
+
     const [period, setPeriod] = useState('7d');
     const [summary, setSummary] = useState(null);
+
+    // ... inside the component, we will check mounted ...
+    // but better to check it before return
+
     const [chartData, setChartData] = useState([]);
     const [endpoints, setEndpoints] = useState([]);
     const [apiKeys, setApiKeys] = useState([]);
@@ -76,7 +91,6 @@ export default function UsageDashboard() {
     }, [fetchLogs]);
 
     const handleExportCSV = () => {
-        // Mock export functionality
         const headers = ['Timestamp', 'Key', 'Endpoint', 'Method', 'Status', 'Duration (ms)'];
         const csvContent = "data:text/csv;charset=utf-8,"
             + headers.join(",") + "\n"
@@ -97,6 +111,12 @@ export default function UsageDashboard() {
         link.click();
         document.body.removeChild(link);
     };
+
+    if (!mounted) return (
+        <div className="min-h-screen bg-[#0A0A0F] flex items-center justify-center">
+            <div className="w-8 h-8 border-t-2 border-b-2 border-[#4285F4] rounded-full animate-spin" />
+        </div>
+    );
 
     return (
         <div className="max-w-[1400px] mx-auto space-y-6 pb-20">

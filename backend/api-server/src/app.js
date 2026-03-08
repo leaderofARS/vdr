@@ -135,8 +135,8 @@ app.get("/", (req, res) => {
 app.get("/health", (req, res) => {
     res.status(200).json({
         status: "ok",
-        solana: "connected",
-        cluster: process.env.SOLANA_NETWORK || "devnet",
+        version: process.env.npm_package_version,
+        network: process.env.SOLANA_NETWORK,
         timestamp: new Date().toISOString()
     });
 });

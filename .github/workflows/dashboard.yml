@@ -1,0 +1,71 @@
+name: Dashboard CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'web/dashboard/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'web/dashboard/**'
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  lint:
+    name: Lint Check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web/dashboard
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: web/dashboard/package-lock.json
+      - name: Install Dependencies
+        run: npm ci
+      - name: Lint
+        run: npm run lint
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web/dashboard
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: web/dashboard/package-lock.json
+      - name: Install Dependencies
+        run: npm ci
+      - name: Build Next.js
+        run: npm run build
+      - name: Build Integrity Check
+        run: |
+          if [ ! -d .next/standalone ] && [ ! -d .next/static ]; then
+            echo "Next.js build artifacts missing."
+            exit 1
+          fi
+
+  deploy:
+    name: Vercel Verification
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Health Check Deployment
+        run: |
+          echo "Waiting for Vercel auto-deploy..."
+          sleep 45
+          curl --fail -I https://app.sipheron.com/dashboard || exit 1
