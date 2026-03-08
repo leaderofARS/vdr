@@ -23,6 +23,7 @@ export default function DashboardLayout({ children }) {
     const [mounted, setMounted] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [showProfileMenu, setShowProfileMenu] = useState(false);
+    const [showNotifications, setShowNotifications] = useState(false);
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [loading, setLoading] = useState(false);
