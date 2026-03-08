@@ -202,10 +202,28 @@ async function sendWalletAlertEmail(type, balance) {
     }
 }
 
+/**
+ * Send a test email (Resend onboarding example).
+ */
+async function sendTestEmail(toEmail = 'noreply@sipheron.com') {
+    try {
+        await resend.emails.send({
+            from: 'onboarding@resend.dev',
+            to: toEmail,
+            subject: 'Hello World',
+            html: '<p>Congrats on sending your <strong>first email</strong>!</p>'
+        });
+        console.log('[Email Service] Test email sent successfully to:', toEmail);
+    } catch (error) {
+        console.error('[Email Service] Failed to send test email:', error.message);
+    }
+}
+
 module.exports = {
     sendPasswordResetEmail,
     sendApiKeyCreatedEmail,
     sendHashAnchoredEmail,
     sendWelcomeEmail,
-    sendWalletAlertEmail
+    sendWalletAlertEmail,
+    sendTestEmail
 };

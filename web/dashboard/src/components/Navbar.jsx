@@ -14,10 +14,8 @@ import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { ShieldCheck, Globe, Activity, ChevronDown } from "lucide-react";
 
-const WalletMultiButton = dynamic(
-    async () => (await import("@solana/wallet-adapter-react-ui")).WalletMultiButton,
-    { ssr: false }
-);
+// Wallet connect button removed as dashboard uses institutional API keys
+
 
 export default function Navbar() {
     const pathname = usePathname();
@@ -74,7 +72,6 @@ export default function Navbar() {
                             <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
                             <span className="text-[10px] font-black uppercase tracking-widest text-blue-400">Beta Version</span>
                         </div>
-                        <WalletMultiButton className="!bg-white !text-black !rounded-xl !font-black !text-xs !px-6 !h-11 !transition-all hover:!bg-blue-500 hover:!text-white border-none shadow-lg" />
                     </div>
                 </div>
             </div>

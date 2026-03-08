@@ -12,6 +12,8 @@ const { parsePagination, buildPaginationResponse, applyPagination } = require('.
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
+const router = express.Router();
+
 /**
  * @route GET /api/notifications
  * @description Get all notifications for the organization.
