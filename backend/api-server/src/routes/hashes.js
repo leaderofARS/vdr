@@ -1,0 +1,220 @@
+/**
+ * @file hashes.js
+ * @module backend/api-server/src/routes/hashes.js
+ * @description API route handlers for document hash management (List, Detail, Revocation).
+ */
+
+const express = require('express');
+const { PrismaClient } = require('@prisma/client');
+const solanaService = require('../services/solana');
+const authenticate = require('../middleware/auth');
+const webhookService = require('../services/webhookService');
+
+const router = express.Router();
+const prisma = new PrismaClient();
+
+// Helper to format HashRecord response
+const formatHashRecord = (record) => {
+    const network = process.env.SOLANA_NETWORK || 'devnet';
+    // Use timestamp from Solana if available, otherwise fallback to database createdAt
+    const registeredAt = record.timestamp
+        ? new Date(record.timestamp * 1000).toISOString()
+        : (record.createdAt ? record.createdAt.toISOString() : new Date().toISOString());
+
+    return {
+        hash: record.hash,
+        pdaAddress: record.pdaAddress,
+        txSignature: record.txSignature || null,
+        owner: record.ownerWallet || record.owner,
+        organizationId: record.organizationId || null,
+        metadata: record.metadata || "",
+        registeredAt: registeredAt,
+        expiry: record.expiry && record.expiry > 0 ? new Date(record.expiry * 1000).toISOString() : null,
+        status: record.status || (record.isRevoked ? 'revoked' : 'active'),
+        revokedAt: record.revokedAt ? record.revokedAt.toISOString() : null,
+        explorerUrl: record.txSignature ? `https://explorer.solana.com/tx/${record.txSignature}?cluster=${network}` : null,
+        pdaExplorerUrl: `https://explorer.solana.com/address/${record.pdaAddress}?cluster=${network}`
+    };
+};
+
+const { parsePagination, buildPaginationResponse, applyPagination } = require('../utils/paginate');
+
+/**
+ * @route GET /api/hashes
+ * @description List all hashes for the organization with pagination and filters.
+ */
+router.get('/', authenticate, async (req, res, next) => {
+    try {
+        if (!req.organization) {
+            return res.status(403).json({ error: 'Institutional Context Required' });
+        }
+
+        const { page, limit, sortBy, sortOrder } = parsePagination(
+            req.query,
+            ['registeredAt', 'timestamp', 'status'],
+            'timestamp',
+            10
+        );
+
+        const status = req.query.status;
+        const search = req.query.search;
+
+        const where = {
+            organizationId: req.organization.id,
+            AND: []
+        };
+
+        if (status === 'revoked') {
+            where.AND.push({ OR: [{ status: 'revoked' }, { isRevoked: true }] });
+        } else if (status === 'expired') {
+            where.AND.push({
+                expiry: { gt: 0, lt: Math.floor(Date.now() / 1000) },
+                status: { not: 'revoked' }
+            });
+        } else if (status === 'active') {
+            where.AND.push({ status: 'active', isRevoked: false });
+            where.AND.push({
+                OR: [
+                    { expiry: 0 },
+                    { expiry: { gt: Math.floor(Date.now() / 1000) } }
+                ]
+            });
+        }
+
+        if (search) {
+            where.AND.push({
+                OR: [
+                    { hash: { startsWith: search, mode: 'insensitive' } },
+                    { metadata: { contains: search, mode: 'insensitive' } }
+                ]
+            });
+        }
+
+        if (where.AND.length === 0) delete where.AND;
+
+        const orderField = sortBy === 'registeredAt' ? 'timestamp' : sortBy;
+
+        const [total, records] = await Promise.all([
+            prisma.hashRecord.count({ where }),
+            prisma.hashRecord.findMany(applyPagination({
+                where,
+                orderBy: { [orderField]: sortOrder }
+            }, page, limit))
+        ]);
+
+        res.json(buildPaginationResponse(
+            records.map(formatHashRecord),
+            total,
+            page,
+            limit
+        ));
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @route GET /api/hashes/:hash
+ * @description Get detail for a specific hash.
+ */
+router.get('/:hash', authenticate, async (req, res, next) => {
+    try {
+        const { hash } = req.params;
+
+        if (!/^[a-fA-F0-9]{64}$/.test(hash)) {
+            return res.status(400).json({ error: 'Invalid SHA-256 hash format' });
+        }
+
+        if (!req.organization) {
+            return res.status(403).json({ error: 'Institutional Context Required' });
+        }
+
+        // 1. Try Prisma first
+        let record = await prisma.hashRecord.findFirst({
+            where: {
+                hash,
+                organizationId: req.organization.id
+            }
+        });
+
+        // 2. If not in DB, try Solana directly
+        if (!record) {
+            const solanaData = await solanaService.verifyHash(hash);
+            if (solanaData.exists && solanaData.record) {
+                // Return solana record directly (formatted)
+                return res.json(formatHashRecord(solanaData.record));
+            }
+            return res.status(404).json({ error: 'Hash not found in registry or unauthorized' });
+        }
+
+        res.json(formatHashRecord(record));
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @route POST /api/hashes/revoke
+ * @description Revoke a document's proof on-chain and in the database.
+ * @access Private (Institutional API Key required)
+ */
+router.post('/revoke', authenticate, async (req, res, next) => {
+    try {
+        const { hash } = req.body;
+
+        if (!hash) {
+            return res.status(400).json({ error: 'Hash is required for revocation' });
+        }
+
+        if (!req.organization) {
+            return res.status(403).json({ error: 'Unauthorized: No institutional context found' });
+        }
+
+        // 1. Look up hash record in Prisma
+        const record = await prisma.hashRecord.findFirst({
+            where: {
+                hash,
+                organizationId: req.organization.id
+            }
+        });
+
+        if (!record) {
+            return res.status(404).json({ error: 'Hash not found or unauthorized' });
+        }
+
+        if (record.status === 'revoked' || record.isRevoked) {
+            return res.status(400).json({ error: 'Hash proof has already been revoked' });
+        }
+
+        // 2. Transact on Solana
+        const { tx } = await solanaService.revokeHash(hash);
+
+        // 3. Update local database
+        await prisma.hashRecord.update({
+            where: { id: record.id },
+            data: {
+                status: 'revoked',
+                revokedAt: new Date(),
+                isRevoked: true
+            }
+        });
+
+        // 4. Trigger Webhook
+        await webhookService.triggerWebhook(req.organization.id, 'hash_revoked', {
+            hash,
+            txSignature: tx,
+            revokedAt: new Date().toISOString()
+        });
+
+        res.json({
+            success: true,
+            txSignature: tx,
+            message: "Hash proof revoked successfully on Solana blockchain"
+        });
+    } catch (error) {
+        console.error('[Registry] Revocation failed:', error.message);
+        next(error);
+    }
+});
+
+module.exports = router;

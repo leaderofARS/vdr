@@ -54,11 +54,11 @@ export default function LoginPage() {
                         initial={{ scale: 0.8, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         transition={{ delay: 0.2, duration: 0.5 }}
-                        className="inline-flex items-center justify-center p-3 rounded-2xl bg-blue-500/10 border border-blue-500/20 mb-6"
+                        className="inline-flex items-center justify-center p-2 rounded-2xl bg-white/5 border border-white/10 mb-6"
                     >
-                        <ShieldCheck className="w-8 h-8 text-blue-400" />
+                        <img src="/sipheron_vdap_logo.png" alt="SipHeron" className="w-10 h-10 object-contain" />
                     </motion.div>
-                    <h2 className="text-3xl font-bold tracking-tight text-white mb-2">SipHeron VDR</h2>
+                    <h2 className="text-3xl font-black tracking-tight text-white mb-2 uppercase">SIPHERON</h2>
                     <p className="text-gray-400 font-medium">Institutional Access Portal</p>
                 </div>
 
@@ -98,6 +98,12 @@ export default function LoginPage() {
                         <div className="space-y-2">
                             <div className="flex justify-between items-center ml-1">
                                 <label className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Master Key</label>
+                                <Link
+                                    href="/auth/forgot-password"
+                                    className="text-[10px] font-bold text-blue-400/80 hover:text-blue-400 uppercase tracking-wider transition-colors"
+                                >
+                                    Forgot Password?
+                                </Link>
                             </div>
                             <div className="group relative">
                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">

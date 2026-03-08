@@ -34,9 +34,7 @@ export default function RootLayout({ children }) {
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-950 text-gray-50 flex flex-col min-h-screen`}
       >
         <WalletContextProvider>
-          <Navbar />
           {children}
-          <Footer />
         </WalletContextProvider>
       </body>
     </html>

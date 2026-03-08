@@ -1,19 +1,30 @@
 @import "tailwindcss";
 
 :root {
-  --background: #050505;
-  --foreground: #ffffff;
-  --accent: #3b82f6;
+  --background: #0A0A0F;
+  --foreground: #F8F8FF;
+  --accent-primary: #4F6EF7;
+  --accent-secondary: #9B5CF6;
+  --surface: #111118;
+  --border: #1E1E2E;
+  --text-muted: #6B7280;
+  --success: #10B981;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-accent: var(--accent);
+  --color-accent-primary: var(--accent-primary);
+  --color-accent-secondary: var(--accent-secondary);
+  --color-surface: var(--surface);
+  --color-border: var(--border);
+  --color-text-muted: var(--text-muted);
+  --color-success: var(--success);
 }
 
 html {
   scroll-behavior: smooth;
+  color-scheme: dark;
 }
 
 [id] {
@@ -23,8 +34,10 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: var(--font-geist-sans), 'Inter', system-ui, -apple-system, sans-serif;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Glassmorphism Utilities */

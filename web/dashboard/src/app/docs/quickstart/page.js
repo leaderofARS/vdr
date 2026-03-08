@@ -1,238 +1,169 @@
-"use client";
+import CodeBlock from '../components/CodeBlock';
+import Callout from '../components/Callout';
 
-import { motion } from "framer-motion";
-import { Terminal, Copy, Check, CheckCircle, ArrowRight, Download, Shield, Sparkles, FileCode, Send, LayoutGrid, Search } from "lucide-react";
-import { useState } from "react";
-import Link from "next/link";
+export const metadata = {
+    title: 'Quickstart Guide | SipHeron VDR',
+    description: 'Learn how to install the SipHeron VDR CLI and anchor your first document on Solana in minutes.',
+};
 
 export default function QuickstartPage() {
-    const [copied, setCopied] = useState("");
-
-    const copyToClipboard = (text, id) => {
-        navigator.clipboard.writeText(text);
-        setCopied(id);
-        setTimeout(() => setCopied(""), 2000);
-    };
-
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="prose prose-invert max-w-none space-y-16"
-        >
-            {/* Header */}
-            <div id="overview">
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-emerald-500/10 border border-emerald-500/20 mb-6">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400 font-mono">Tutorial</span>
-                </div>
-                <h1 className="text-5xl font-black tracking-tighter mb-6">Quickstart Guide</h1>
-                <p className="text-xl text-gray-400 font-light leading-relaxed">
-                    Learn how to anchor your first digital asset to the Solana human-history ledger. This guide takes you from an empty directory to a globally verifiable cryptographic proof.
-                </p>
+        <>
+            <h1>Quickstart Guide</h1>
+            <p className="lead text-xl text-gray-300">
+                This guide provides a comprehensive, step-by-step walkthrough for setting up the SipHeron VDR CLI and anchoring your first document on the Solana blockchain. By the end of this tutorial, you will have a cryptographically verifiable proof of existence for a local file.
+            </p>
+
+            <Callout type="tip">
+                <strong>Prerequisites:</strong> Before proceeding, ensure you have <a href="https://nodejs.org/" target="_blank" rel="noopener noreferrer">Node.js (v16+)</a> and <code>npm</code> installed on your local environment. You will also need a SipHeron account, which you can create via the <a href="/dashboard">Dashboard</a>.
+            </Callout>
+
+            <h2>1. Install the CLI Tool</h2>
+            <p>
+                The <code>sipheron-vdr</code> CLI is the primary interface for developers and system administrators to interact with the Verifiable Document Registry. It handles local file hashing, wallet management, and communication with the SipHeron API.
+            </p>
+            <p>
+                Install the package globally using npm to access the command from any directory on your system:
+            </p>
+            <CodeBlock
+                language="bash"
+                code="npm install -g sipheron-vdr"
+            />
+            <p>
+                Once installed, verify the installation by checking the version number. This ensures the binary is correctly mapped to your system's PATH:
+            </p>
+            <CodeBlock
+                language="bash"
+                code="sipheron-vdr --version"
+            />
+
+            <h2>2. Initialize Your Environment</h2>
+            <p>
+                Before you can anchor documents, you must initialize your local environment. This process creates a secure configuration directory (typically <code>~/.sipheron</code>) and generates a local workspace.
+            </p>
+            <CodeBlock
+                language="bash"
+                code="sipheron-vdr init"
+            />
+            <p>
+                During initialization, you will be prompted to set a master passphrase. This passphrase is used to encrypt your local session tokens and any derived cryptographic material using AES-256-GCM. <strong>Do not lose this passphrase;</strong> it is required for all subsequent authoritative commands.
+            </p>
+
+            <h2>3. Link Your Account</h2>
+            <p>
+                To associate your local CLI actions with your SipHeron organization, you need to authenticate using an API key generated from the SipHeron Dashboard.
+            </p>
+            <ol className="list-decimal space-y-4 ml-6 my-6">
+                <li>Navigate to the <strong>Settings &gt; API Keys</strong> section of your Dashboard.</li>
+                <li>Generate a new "Provisioning Key" with <code>write</code> permissions.</li>
+                <li>Copy the generated key (it will look like <code>sh_live_...</code>).</li>
+            </ol>
+            <p>
+                Run the link command and paste your API key when prompted:
+            </p>
+            <CodeBlock
+                language="bash"
+                code="sipheron-vdr link"
+            />
+
+            <h2>4. Stage and Anchor Your First Document</h2>
+            <p>
+                Anchoring a document is a two-step process: <strong>Staging</strong> and <strong>Anchoring</strong>. Staging calculates the hash locally and prepares the metadata, while Anchoring commits that hash to the Solana blockchain.
+            </p>
+
+            <h3>Staging the File</h3>
+            <p>
+                Identify a document you wish to protect. For this example, we will use a file named <code>agreement.pdf</code>. Staging ensures that the file is read and its SHA-256 hash is computed without transmitting the file content.
+            </p>
+            <CodeBlock
+                language="bash"
+                code="sipheron-vdr stage ./agreement.pdf"
+            />
+            <p>
+                The output will display the unique SHA-256 fingerprint of your document. This is the only information that will ever leave your machine.
+            </p>
+
+            <h3>Anchoring to Solana</h3>
+            <p>
+                Now, commit this fingerprint to the blockchain. This step creates an immutable record on-chain, stamped with the current network time and your identity.
+            </p>
+            <CodeBlock
+                language="bash"
+                code="sipheron-vdr anchor ./agreement.pdf"
+            />
+
+            <Callout type="info">
+                <strong>Transaction Finality:</strong> On the Solana network, transactions typically achieve finality in under 400ms. Your document is instantly verifiable across the globe once the transaction is confirmed.
+            </Callout>
+
+            <h2>5. Verify Document Integrity</h2>
+            <p>
+                The most powerful feature of SipHeron VDR is the ability to prove a document's integrity at any time. If even a single bit in <code>agreement.pdf</code> is changed, the verification will fail.
+            </p>
+            <CodeBlock
+                language="bash"
+                code="sipheron-vdr verify ./agreement.pdf"
+            />
+            <p>
+                A successful verification will return the original registration timestamp, the Solana transaction signature, and the Blockhash of the anchoring event.
+            </p>
+
+            <h2>Quick Reference Table</h2>
+            <div className="overflow-x-auto my-6">
+                <table className="min-w-full text-left border-collapse">
+                    <thead>
+                        <tr className="border-b border-gray-700 bg-[#1a1b20]">
+                            <th className="py-3 px-4 text-sm font-semibold text-gray-200">Command</th>
+                            <th className="py-3 px-4 text-sm font-semibold text-gray-200">Description</th>
+                            <th className="py-3 px-4 text-sm font-semibold text-gray-200">Context</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-800 bg-[#131418]">
+                        <tr>
+                            <td className="py-3 px-4 text-sm font-mono text-[#4285F4]">init</td>
+                            <td className="py-3 px-4 text-sm text-gray-400">Setup local configuration and encryption.</td>
+                            <td className="py-3 px-4 text-sm text-gray-400">Run once per machine.</td>
+                        </tr>
+                        <tr>
+                            <td className="py-3 px-4 text-sm font-mono text-[#4285F4]">link</td>
+                            <td className="py-3 px-4 text-sm text-gray-400">Authenticate CLI with Dashboard API key.</td>
+                            <td className="py-3 px-4 text-sm text-gray-400">Requires SipHeron account.</td>
+                        </tr>
+                        <tr>
+                            <td className="py-3 px-4 text-sm font-mono text-[#4285F4]">anchor</td>
+                            <td className="py-3 px-4 text-sm text-gray-400">Hash and commit document to Solana.</td>
+                            <td className="py-3 px-4 text-sm text-gray-400">Primary action command.</td>
+                        </tr>
+                        <tr>
+                            <td className="py-3 px-4 text-sm font-mono text-[#4285F4]">status</td>
+                            <td className="py-3 px-4 text-sm text-gray-400">Check sync status of local files.</td>
+                            <td className="py-3 px-4 text-sm text-gray-400">Monitoring tool.</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
 
-            {/* What you'll achieve */}
-            <section id="what-youll-build" className="pt-8 border-t border-white/5">
-                <h2 className="text-2xl font-black tracking-tight mb-8">What you&apos;ll build</h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 not-prose">
-                    <div className="p-6 bg-[#050505] border border-white/5 rounded-2xl">
-                        <FileCode className="w-5 h-5 text-blue-500 mb-4" />
-                        <h4 className="text-sm font-bold text-white mb-2">Local Entropy</h4>
-                        <p className="text-xs text-gray-500 leading-relaxed">Compute a unique SHA-256 fingerprint for a local file.</p>
-                    </div>
-                    <div className="p-6 bg-[#050505] border border-white/5 rounded-2xl">
-                        <Send className="w-5 h-5 text-purple-500 mb-4" />
-                        <h4 className="text-sm font-bold text-white mb-2">On-Chain Anchor</h4>
-                        <p className="text-xs text-gray-500 leading-relaxed">Commit the fingerprint to a Solana PDA for permanent storage.</p>
-                    </div>
-                    <div className="p-6 bg-[#050505] border border-white/5 rounded-2xl">
-                        <Search className="w-5 h-5 text-emerald-500 mb-4" />
-                        <h4 className="text-sm font-bold text-white mb-2">Global Resolution</h4>
-                        <p className="text-xs text-gray-500 leading-relaxed">Verify the asset against the registry via CLI or Explorer.</p>
-                    </div>
-                </div>
-            </section>
+            <h2>Troubleshooting Common Issues</h2>
+            <h3>API Authentication Errors</h3>
+            <p>
+                If you receive a <code>401 Unauthorized</code> error, ensure your API key hasn't expired or been revoked in the dashboard. You can re-run <code>sipheron-vdr link</code> to update your credentials.
+            </p>
 
-            {/* Step 1 */}
-            <section id="step-01-link-key">
-                <div className="flex items-center gap-4 mb-8">
-                    <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center font-black text-lg">01</div>
-                    <h3 className="text-2xl font-black tracking-tight margin-0">Initialize and Link</h3>
-                </div>
-                <p className="text-gray-400 font-light mb-8">
-                    Assuming you have followed the <Link href="/docs/installation" className="text-blue-400 font-medium">Installation Guide</Link>, initialize your local identity using your organization API key.
-                </p>
+            <h3>Network Connectivity</h3>
+            <p>
+                Anchoring requires an active internet connection to communicate with <code>api.sipheron.com</code> and the Solana RPC nodes. If you are behind an enterprise firewall, ensure outbound traffic to port 443 is permitted for these domains.
+            </p>
 
-                <div className="group relative not-prose">
-                    <div className="bg-[#050505] border border-white/10 rounded-xl p-8 font-mono text-sm text-gray-300 relative group">
-                        <button
-                            onClick={() => copyToClipboard("sipheron-vdr link --key [YOUR_KEY]", "link")}
-                            className="absolute top-4 right-4 p-2 rounded-lg bg-white/5 border border-white/10 text-gray-500 hover:text-white transition-all opacity-0 group-hover:opacity-100"
-                        >
-                            {copied === "link" ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
-                        </button>
-                        <div className="text-xs text-gray-600 uppercase font-black mb-4">Link API Key</div>
-                        <div className="flex items-center gap-4">
-                            <span className="opacity-50">➜</span>
-                            <span>sipheron-vdr link --key sk_live_...</span>
-                        </div>
-                    </div>
-                </div>
-                <p className="mt-6 text-gray-400 font-light text-sm leading-relaxed italic italic">
-                    Linking assigns your institutional identity to the local CLI instance. This key is used to sign requests to the SipHeron API, which orchestrates the batching of your hashes before they are committed to the Solana blockchain.
-                </p>
-            </section>
+            <CodeBlock
+                language="bash"
+                code={`# Check network status and API reachability
+sipheron-vdr diag --network`}
+            />
 
-            {/* Step 2 */}
-            <section id="step-02-local-entropy" className="pt-8 border-t border-white/5">
-                <div className="flex items-center gap-4 mb-8">
-                    <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center font-black text-lg">02</div>
-                    <h3 className="text-2xl font-black tracking-tight margin-0">Local Entropy Generation</h3>
-                </div>
-                <p className="text-gray-400 font-light mb-8">
-                    The <code className="text-white bg-white/5 px-1.5 py-0.5 rounded">stage</code> command is the entry point for local integrity validation. It reads your file as a bitstream and applies the <span className="text-white font-medium">FIPS 180-4 standard (SHA-256)</span> to produce a unique digest.
-                </p>
-
-                <div className="bg-[#050505] border border-white/10 rounded-xl p-8 space-y-4 not-prose relative group">
-                    <button
-                        onClick={() => copyToClipboard("sipheron-vdr stage ./legal_contract.pdf", "stage")}
-                        className="absolute top-4 right-4 p-2 rounded-lg bg-white/5 border border-white/10 text-gray-500 hover:text-white transition-all opacity-0 group-hover:opacity-100"
-                    >
-                        {copied === "stage" ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
-                    </button>
-                    <div className="flex items-center gap-4 font-mono text-sm text-gray-300">
-                        <span className="opacity-50">➜</span>
-                        <span>sipheron-vdr stage ./legal_contract.pdf</span>
-                    </div>
-                </div>
-
-                <div className="space-y-6 mt-8">
-                    <div className="p-6 bg-blue-500/5 border border-blue-500/10 rounded-2xl text-gray-400 font-light leading-relaxed">
-                        <h4 className="text-white font-bold text-sm mb-3">Deep Dive: Deterministic Entropy</h4>
-                        <p className="text-xs leading-relaxed">
-                            Our CLI uses a <strong>buffered chunking strategy</strong> (default 64KB blocks). This allows us to hash multi-gigabyte datasets without loading them entirely into system memory. The resulting 64-character hex string is the only piece of data that will ever be communicated to the SipHeron API, ensuring that your raw data remains air-gapped from the public ledger.
-                        </p>
-                        <p className="text-xs mt-4 leading-relaxed">
-                            Even a single bit change in the original PDF—such as a modified character in a contract—will result in a completely different hash, triggering an immediate validation failure during the verify phase.
-                        </p>
-                    </div>
-                </div>
-
-                <div className="mt-8 p-6 bg-yellow-500/5 border border-yellow-500/10 rounded-2xl flex items-start gap-4">
-                    <Shield className="w-5 h-5 text-yellow-500 shrink-0 mt-0.5" />
-                    <p className="text-xs text-gray-500 leading-relaxed font-light italic">
-                        <strong className="text-white font-bold">Privacy Check:</strong> The CLI only generated a 64-character hash. The original PDF contents were never sent to our servers or the blockchain.
-                    </p>
-                </div>
-            </section>
-
-            {/* Step 3 */}
-            <section id="step-03-on-chain-anchor" className="pt-8 border-t border-white/5">
-                <div className="flex items-center gap-4 mb-8">
-                    <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center font-black text-lg">03</div>
-                    <h3 className="text-2xl font-black tracking-tight margin-0">Anchor to the Registry</h3>
-                </div>
-                <p className="text-gray-400 font-light mb-8">
-                    Push the staged hash to the SipHeron registry on Solana. This creates a permanent, timestamped record.
-                </p>
-
-                <div className="bg-[#050505] border border-white/10 rounded-xl p-8 space-y-4 not-prose relative group">
-                    <button
-                        onClick={() => copyToClipboard("sipheron-vdr anchor", "anchor")}
-                        className="absolute top-4 right-4 p-2 rounded-lg bg-white/5 border border-white/10 text-gray-500 hover:text-white transition-all opacity-0 group-hover:opacity-100"
-                    >
-                        {copied === "anchor" ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
-                    </button>
-                    <div className="flex items-center gap-4 font-mono text-sm text-gray-300">
-                        <span className="opacity-50">➜</span>
-                        <span>sipheron-vdr anchor</span>
-                    </div>
-                </div>
-
-                <div className="space-y-6 mt-8">
-                    <p className="text-gray-400 font-light leading-relaxed">
-                        The <code className="text-white">anchor</code> command bridges the gap between your local environment and the global consensus. It dispatches an instruction to the **SipHeron VDR Smart Contract** on Solana.
-                    </p>
-                    <div className="p-6 bg-purple-500/5 border border-purple-500/10 rounded-2xl">
-                        <h4 className="text-white font-bold text-sm mb-3">Deep Dive: The PDA & CPI Mechanism</h4>
-                        <p className="text-xs text-gray-500 leading-relaxed font-light">
-                            Assets are not stored in a traditional list. Instead, we use <strong>Program Derived Addresses (PDAs)</strong>. A PDA is a deterministic address on Solana generated from the file hash and your organization's public key. This architecture allows for <strong>O(1) resolution speed</strong>—anyone can calculate the address locally and query the blockchain directly without needing a central database.
-                        </p>
-                    </div>
-                    <ul className="grid grid-cols-1 md:grid-cols-2 gap-4 list-none p-0 mt-6">
-                        <li className="p-4 rounded-xl border border-white/5 bg-white/2 text-[11px] text-gray-500 leading-relaxed group-hover:border-purple-500/10 transition-colors">
-                            <strong className="text-white block mb-1 font-bold">Atomic Finality</strong>
-                            Once committed, the transaction is immutable. The blockhash serves as an irrefutable proof of time across the entire Solana network.
-                        </li>
-                        <li className="p-4 rounded-xl border border-white/5 bg-white/2 text-[11px] text-gray-500 leading-relaxed group-hover:border-purple-500/10 transition-colors">
-                            <strong className="text-white block mb-1 font-bold">Economic Weight</strong>
-                            Every anchor represents a real cryptographic commitment backed by the decentralized security of global validators.
-                        </li>
-                    </ul>
-                </div>
-            </section>
-
-            {/* Step 4 */}
-            <section id="verification-flow" className="pt-8 border-t border-white/5">
-                <div className="flex items-center gap-4 mb-8">
-                    <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center font-black text-lg">04</div>
-                    <h3 className="text-2xl font-black tracking-tight margin-0">Verification flow</h3>
-                </div>
-                <p className="text-gray-400 font-light mb-8">
-                    Verify the file at any time. The CLI will recompute the hash locally and compare it with the on-chain record.
-                </p>
-
-                <div className="bg-[#050505] border border-white/10 rounded-xl p-8 not-prose relative group">
-                    <button
-                        onClick={() => copyToClipboard("sipheron-vdr verify ./legal_contract.pdf", "verify")}
-                        className="absolute top-4 right-4 p-2 rounded-lg bg-white/5 border border-white/10 text-gray-500 hover:text-white transition-all opacity-0 group-hover:opacity-100"
-                    >
-                        {copied === "verify" ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
-                    </button>
-                    <div className="flex items-center gap-4 font-mono text-sm text-gray-300">
-                        <span className="opacity-50">➜</span>
-                        <span>sipheron-vdr verify ./legal_contract.pdf</span>
-                    </div>
-                </div>
-
-                <div className="space-y-6 mt-8">
-                    <h4 className="text-white font-bold text-sm">The 3-Step Verification Handshake:</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="space-y-2 p-5 rounded-2xl border border-white/5 bg-[#050505] shadow-xl group/step">
-                            <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest group-hover/step:text-blue-500 transition-colors">Step 01</span>
-                            <p className="text-[11px] text-gray-400 font-light leading-relaxed">CLI re-hashes the local file to find its current cryptographic <strong>State Digest</strong>.</p>
-                        </div>
-                        <div className="space-y-2 p-5 rounded-2xl border border-white/5 bg-[#050505] shadow-xl group/step">
-                            <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest group-hover/step:text-purple-500 transition-colors">Step 02</span>
-                            <p className="text-[11px] text-gray-400 font-light leading-relaxed">The CLI queries the <strong>PDA State</strong> on Solana for that specific hash-identity pair.</p>
-                        </div>
-                        <div className="space-y-2 p-5 rounded-2xl border border-white/5 bg-[#050505] shadow-xl group/step">
-                            <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest group-hover/step:text-emerald-500 transition-colors">Step 03</span>
-                            <p className="text-[11px] text-gray-400 font-light leading-relaxed">A bitwise comparison is made. If matches, integrity is cryptographically <strong>Validated</strong>.</p>
-                        </div>
-                    </div>
-                    <p className="text-gray-500 font-light text-sm italic border-l border-white/10 pl-6 py-2">
-                        "Verification is the heart of the SipHeron protocol. It transforms a simple file into a globally recognized truth, independent of any central authority."
-                    </p>
-                </div>
-            </section>
-
-            {/* Success Footer */}
-            <div className="mt-32 p-12 bg-gradient-to-br from-emerald-900/10 to-[#050505] border border-emerald-500/10 rounded-3xl flex flex-col items-center text-center">
-                <Sparkles className="w-10 h-10 text-emerald-500 mb-6" />
-                <h2 className="text-3xl font-black mb-4">Congratulations!</h2>
-                <p className="text-gray-400 font-light mb-8 max-w-lg">
-                    You have now mastered the CORE flow of the SipHeron VDR protocol. Your data is now anchored to human history.
-                </p>
-                <div className="flex flex-wrap justify-center gap-4">
-                    <Link href="/docs/cli-stage" className="px-8 py-4 bg-white text-black font-bold flex items-center gap-2 hover:bg-gray-200 transition-all rounded-xl">
-                        Deep CLI Guide
-                    </Link>
-                    <Link href="/docs/api-overview" className="px-8 py-4 bg-white/5 text-white border border-white/10 font-bold flex items-center gap-2 hover:bg-white/10 transition-all rounded-xl">
-                        API Reference
-                    </Link>
-                </div>
-            </div>
-        </motion.div>
+            <h2>Next Steps</h2>
+            <p>
+                Congratulations! You have successfully anchored and verified your first document using SipHeron VDR. To learn more about the underlying technology, explore the <a href="/docs/concepts">Core Concepts</a> page, or dive into the <a href="/docs/cli/commands">Full Command Reference</a> for advanced automation techniques.
+            </p>
+        </>
     );
 }

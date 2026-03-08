@@ -7,13 +7,11 @@
  */
 
 const { Queue, Worker } = require('bullmq');
-const Redis = require('ioredis');
+const redisClient = require('../services/redis');
 const solanaService = require('../services/solana');
 
-// Use REDIS_URL from environment — falls back to localhost for local dev
-const connection = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
-    maxRetriesPerRequest: null
-});
+// Use existing Redis client for BullMQ
+const connection = redisClient;
 
 connection.on('connect', () => {
     console.log('[Redis] Connected successfully');
@@ -27,9 +25,19 @@ const hashQueue = new Queue('HashRegistration', { connection });
 
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+const { isDrained } = require('../services/walletMonitor');
+const notificationService = require('../services/notificationService');
+const webhookService = require('../services/webhookService');
 
 // Define the background worker
 const worker = new Worker('HashRegistration', async job => {
+    // 0. Check for drained wallet flag before processing batch
+    if (isDrained()) {
+        const errorMsg = "Wallet balance critical — registration paused. Contact support.";
+        console.error(`[Worker] Wallet drained. Failing Batch Job ${job.id}`);
+        throw new Error(errorMsg);
+    }
+
     const { hashes, metadata, expiry, organizationId } = job.data;
 
     console.log(`Processing batch of ${hashes.length} hashes for organization ${organizationId}`);
@@ -42,7 +50,7 @@ const worker = new Worker('HashRegistration', async job => {
             const { tx, pdaAddress, owner } = await solanaService.registerHash(hash, metadata, expiry);
 
             // 2. Immediate Database Reflection (GitHub-style instant update)
-            await prisma.hashRecord.upsert({
+            const updatedRecord = await prisma.hashRecord.upsert({
                 where: { pdaAddress },
                 update: {
                     txSignature: tx,
@@ -57,12 +65,61 @@ const worker = new Worker('HashRegistration', async job => {
                     metadata: metadata,
                     txSignature: tx,
                     organizationId: organizationId
+                },
+                include: {
+                    organization: {
+                        include: {
+                            owner: true
+                        }
+                    }
                 }
+            });
+
+            // 3. Create In-App Notification
+            await notificationService.createNotification(
+                organizationId,
+                'anchor_success',
+                'Hash anchored successfully',
+                `Hash ${hash.slice(0, 8)}...${hash.slice(-4)} registered on Solana`,
+                { hash, txSignature: tx }
+            ).catch(err => console.error('[Worker] Notification failed:', err.message));
+
+            // 4. Send professional anchoring confirmation (Non-blocking)
+            const { sendHashAnchoredEmail } = require('../services/emailService');
+            if (updatedRecord?.organization?.owner?.email) {
+                sendHashAnchoredEmail(updatedRecord.organization.owner.email, hash, tx, metadata).catch(err => {
+                    console.error('[Worker] Email dispatch failed:', err.message);
+                });
+            }
+
+            // 5. Trigger Webhooks
+            await webhookService.triggerWebhook(organizationId, 'anchor_success', {
+                hash,
+                txSignature: tx,
+                pdaAddress,
+                metadata,
+                registeredAt: new Date(updatedRecord.timestamp * 1000).toISOString()
             });
 
             results.push({ hash, status: 'success', tx, pdaAddress });
         } catch (e) {
             console.error(`Failed to register hash ${hash}`, e.message);
+
+            // Create Failure Notification
+            await notificationService.createNotification(
+                organizationId,
+                'anchor_failed',
+                'Hash registration failed',
+                `Failed to anchor hash ${hash.slice(0, 8)}...`,
+                { hash, error: e.message }
+            ).catch(err => console.error('[Worker] Notification failed:', err.message));
+
+            // Trigger Failure Webhook
+            await webhookService.triggerWebhook(organizationId, 'anchor_failed', {
+                hash,
+                error: e.message
+            });
+
             results.push({ hash, status: 'error', error: e.message });
         }
     }

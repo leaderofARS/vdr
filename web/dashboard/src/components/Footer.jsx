@@ -7,7 +7,7 @@ import { ShieldCheck, Activity, Github, Twitter, Linkedin } from "lucide-react";
 export default function Footer() {
     const pathname = usePathname();
 
-    if (pathname && pathname.startsWith('/dashboard')) {
+    if (!pathname || pathname === '/' || pathname.startsWith('/dashboard')) {
         return null;
     }
 

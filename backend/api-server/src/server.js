@@ -50,9 +50,12 @@ console.log(`[STARTUP] NODE_ENV: ${process.env.NODE_ENV}`);
 console.log(`[STARTUP] SOLANA_NETWORK: ${process.env.SOLANA_NETWORK}`);
 console.log(`[STARTUP] PROGRAM_ID: ${process.env.PROGRAM_ID}`);
 
+const walletMonitor = require('./services/walletMonitor');
+
 const server = app.listen(PORT, () => {
     console.log(`[PID ${process.pid}] VDR API running on port ${PORT}`);
     indexer.start();
+    walletMonitor.start();
 }).on('error', (err) => {
     console.error('[FATAL] Failed to start server:', err.message);
     console.error(err.stack);

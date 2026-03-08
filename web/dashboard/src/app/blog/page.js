@@ -1,37 +1,438 @@
 "use client";
 
-import { motion } from "framer-motion";
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+    Calendar,
+    Clock,
+    User,
+    ArrowRight,
+    Search,
+    Mail,
+    Zap,
+    TrendingUp,
+    Cpu,
+    ShieldCheck,
+    Scale,
+    GraduationCap,
+    BookOpen,
+    CheckCircle2,
+    X,
+    ExternalLink
+} from 'lucide-react';
+import LandingNavbar from '@/components/LandingNavbar';
 
-export default function Page() {
+// --- Shared Components ---
+
+const Badge = ({ children, className = "" }) => (
+    <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${className}`}>
+        {children}
+    </span>
+);
+
+const Footer = () => {
+    const columns = [
+        {
+            title: 'Platform',
+            links: [
+                { name: 'Dashboard', href: 'https://app.sipheron.com' },
+                { name: 'Explorer', href: 'https://app.sipheron.com/explorer' },
+                { name: 'CLI Tool', href: 'https://app.sipheron.com/docs/cli' },
+                { name: 'Pricing', href: '/pricing' }
+            ]
+        },
+        {
+            title: 'Developers',
+            links: [
+                { name: 'Docs', href: 'https://app.sipheron.com/docs' },
+                { name: 'CLI Reference', href: 'https://app.sipheron.com/docs/cli' },
+                { name: 'API Reference', href: 'https://app.sipheron.com/docs/api' },
+                { name: 'GitHub', href: 'https://github.com/leaderofARS/solana-vdr' }
+            ]
+        },
+        {
+            title: 'Resources',
+            links: [
+                { name: 'Security', href: '#' },
+                { name: 'Legal', href: '#' },
+                { name: 'Privacy', href: '#' },
+                { name: 'Terms', href: '#' }
+            ]
+        },
+        {
+            title: 'Company',
+            links: [
+                { name: 'About', href: '/about' },
+                { name: 'Contact', href: '/contact' },
+                { name: 'Blog', href: '/blog' },
+                { name: 'Changelog', href: '/changelog' }
+            ]
+        }
+    ];
+
     return (
-        <div className="min-h-screen bg-[#050505] text-white flex flex-col overflow-hidden relative">
-            {/* Background Effects */}
-            <div className="fixed inset-0 bg-mesh opacity-30 pointer-events-none" />
-            <div className="fixed top-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
-
-            <main className="flex-grow max-w-7xl mx-auto px-6 lg:px-8 py-20 w-full relative z-10 flex flex-col items-center justify-center text-center pt-32">
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="max-w-3xl"
-                >
-                    <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-white/5 border border-white/10 mb-8">
-                        <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse" />
-                        <span className="text-xs font-semibold text-gray-300 tracking-wide">Coming Soon</span>
-                    </div>
-                    <h1 className="text-5xl md:text-7xl font-black tracking-tight mb-6">
-                        Blog
-                    </h1>
-                    <p className="text-gray-400 text-xl font-light leading-relaxed mb-10">
-                        Latest updates, technical deep-dives, and announcements.
-                    </p>
-                    <div className="p-8 border border-white/10 bg-[#0a0a0a] rounded-2xl shadow-2xl inline-block mt-8">
-                        <p className="text-sm font-mono text-gray-500">
-                           This section of the platform is currently under active development.
+        <footer className="pt-32 pb-12 bg-[#0A0A0F] border-t border-[#1E1E2E]">
+            <div className="max-w-7xl mx-auto px-6">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-12 mb-20">
+                    <div className="col-span-2">
+                        <Link href="/" className="flex items-center gap-3 mb-8">
+                            <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center p-1 border border-white/10 hover:border-[#4F6EF7]/50 transition-all">
+                                <img src="/sipheron_vdap_logo.png" alt="SipHeron" className="w-full h-full object-contain" />
+                            </div>
+                            <span className="text-xl font-black tracking-tight text-[#F8F8FF]">SIPHERON</span>
+                        </Link>
+                        <p className="text-[#6B7280] max-w-sm leading-relaxed mb-8">
+                            Securing the world's digital provenance on Solana's high-performance blockchain. Immutable truth for the digital era.
                         </p>
+                        <div className="flex gap-4">
+                            {['Tw', 'Gh', 'In', 'Dc'].map(s => (
+                                <div key={s} className="w-10 h-10 rounded-full bg-[#111118] border border-[#1E1E2E] flex items-center justify-center text-[#6B7280] hover:text-[#F8F8FF] hover:border-[#F8F8FF] transition-all cursor-pointer font-bold text-xs uppercase">
+                                    {s}
+                                </div>
+                            ))}
+                        </div>
                     </div>
-                </motion.div>
+                    {columns.map(col => (
+                        <div key={col.title}>
+                            <h4 className="text-[#F8F8FF] font-bold text-sm mb-6 uppercase tracking-widest">{col.title}</h4>
+                            <ul className="space-y-4">
+                                {col.links.map(link => (
+                                    <li key={link.name}>
+                                        <Link href={link.href} className="text-[#6B7280] hover:text-[#4F6EF7] transition-colors text-sm">
+                                            {link.name}
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    ))}
+                </div>
+                <div className="pt-12 border-t border-[#1E1E2E] flex flex-col md:flex-row items-center justify-between gap-6">
+                    <p className="text-[#6B7280] text-sm">&copy; 2026 SipHeron. Built on Solana.</p>
+                    <div className="flex gap-8 text-sm text-[#6B7280]">
+                        <span className="hover:text-[#F8F8FF] cursor-pointer">Security Audit</span>
+                        <span className="hover:text-[#F8F8FF] cursor-pointer">Status</span>
+                        <span className="hover:text-[#F8F8FF] cursor-pointer cursor-not-allowed opacity-50">v0.9.4-beta</span>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    );
+};
+
+// --- Blog Components ---
+
+const PostCard = ({ category, title, excerpt, date, readTime, author, authorAvatar, onClick }) => (
+    <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        onClick={onClick}
+        className="group bg-[#111118] border border-[#1E1E2E] rounded-3xl overflow-hidden hover:border-[#4F6EF7]/40 transition-all duration-300 cursor-pointer flex flex-col h-full"
+    >
+        <div className="p-8 flex flex-col h-full">
+            <div className="mb-6 flex items-center justify-between">
+                <Badge className="bg-[#4F6EF7]/10 text-[#4F6EF7]">
+                    {category}
+                </Badge>
+                <div className="flex items-center gap-1.5 text-[10px] text-[#6B7280] font-bold uppercase tracking-wider">
+                    <Clock size={12} /> {readTime}
+                </div>
+            </div>
+
+            <h3 className="text-xl font-bold text-white mb-4 group-hover:text-[#4F6EF7] transition-colors line-clamp-2 leading-snug">
+                {title}
+            </h3>
+
+            <p className="text-[#6B7280] text-sm leading-relaxed mb-8 line-clamp-2">
+                {excerpt}
+            </p>
+
+            <div className="mt-auto flex items-center justify-between pt-6 border-t border-[#1E1E2E]">
+                <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#4F6EF7] to-[#9B5CF6] flex items-center justify-center text-[10px] font-bold text-white border border-white/10 shadow-lg">
+                        {author.split(' ').map(n => n[0]).join('')}
+                    </div>
+                    <div className="flex flex-col">
+                        <span className="text-xs font-bold text-[#F8F8FF]">{author}</span>
+                        <span className="text-[10px] text-[#6B7280]">{date}</span>
+                    </div>
+                </div>
+                <ArrowRight size={18} className="text-[#1E1E2E] group-hover:text-[#4F6EF7] group-hover:translate-x-1 transition-all" />
+            </div>
+        </div>
+    </motion.div>
+);
+
+const Newsletter = () => {
+    const [email, setEmail] = useState('');
+    const [subscribed, setSubscribed] = useState(false);
+
+    const handleSubscribe = (e) => {
+        e.preventDefault();
+        if (email) {
+            setSubscribed(true);
+            setEmail('');
+            setTimeout(() => setSubscribed(false), 5000);
+        }
+    };
+
+    return (
+        <section className="px-6 relative">
+            <div className="max-w-7xl mx-auto">
+                <div className="relative p-12 md:p-20 rounded-[3rem] overflow-hidden bg-gradient-to-br from-[#111118] to-[#0A0A0F] border border-[#1E1E2E]">
+                    <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/5 blur-[120px] rounded-full -translate-y-12 translate-x-12 pointer-events-none" />
+
+                    <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-12">
+                        <div className="text-center lg:text-left">
+                            <h2 className="text-3xl md:text-5xl font-black text-white mb-4 tracking-tight">Stay in the loop.</h2>
+                            <p className="text-[#6B7280] text-lg lg:max-w-md">
+                                Stay updated on SipHeron developments, new features, and the future of on-chain trust.
+                            </p>
+                        </div>
+
+                        <div className="w-full max-w-md">
+                            <form onSubmit={handleSubscribe} className="relative group">
+                                <input
+                                    type="email"
+                                    required
+                                    placeholder="Enter your institutional email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="w-full pl-6 pr-40 py-5 bg-[#0A0A0F] border border-[#1E1E2E] rounded-2xl text-[#F8F8FF] focus:outline-none focus:border-[#4F6EF7] transition-all"
+                                />
+                                <button
+                                    type="submit"
+                                    className="absolute right-2 top-2 bottom-2 px-8 bg-gradient-to-r from-[#4F6EF7] to-[#9B5CF6] text-white font-bold rounded-xl text-sm shadow-xl hover:opacity-90 active:scale-95 transition-all uppercase tracking-widest"
+                                >
+                                    Subscribe
+                                </button>
+                            </form>
+                            <AnimatePresence>
+                                {subscribed && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0 }}
+                                        className="mt-4 flex items-center gap-2 text-[#10B981] text-sm font-bold justify-center lg:justify-start"
+                                    >
+                                        <CheckCircle2 size={16} /> Subscription successful!
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    );
+};
+
+// --- Main Page ---
+
+export default function BlogPage() {
+    const [toast, setToast] = useState(false);
+
+    const showToast = () => {
+        setToast(true);
+        setTimeout(() => setToast(false), 3000);
+    };
+
+    const posts = [
+        {
+            title: "How SHA-256 Hashing Protects Your Document Privacy",
+            category: "Technical",
+            date: "Feb 28, 2026",
+            readTime: "6 min read",
+            author: "Dr. Elara Vance",
+            excerpt: "Learn how SipHeron processes cryptographic signatures without ever seeing your raw data. Mathematical certainty for institutional document privacy."
+        },
+        {
+            title: "SipHeron VDR on Solana: Architecture Deep Dive",
+            category: "Technical",
+            date: "Feb 25, 2026",
+            readTime: "12 min read",
+            author: "Markus Chen",
+            excerpt: "From PDAs to sub-second finality - exploring the technical underpinnings that make SipHeron the fastest document registry in web3."
+        },
+        {
+            title: "5 Use Cases for Blockchain Document Verification in Legal Practice",
+            category: "Use Cases",
+            date: "Feb 20, 2026",
+            readTime: "8 min read",
+            author: "Sarah Jenkins, JD",
+            excerpt: "Discover how top-tier law firms are using on-chain provenance to reduce due diligence costs and eliminate contract forgery."
+        },
+        {
+            title: "Academic Credential Fraud: How Universities Can Fight Back",
+            category: "Use Cases",
+            date: "Feb 15, 2026",
+            readTime: "10 min read",
+            author: "Prof. Arthur Miller",
+            excerpt: "Transcript fraud costs institutions billions annually. On-chain academic registries offer an immutable solution for diploma verification."
+        },
+        {
+            title: "Understanding Solana Program Derived Addresses (PDAs)",
+            category: "Technical",
+            date: "Feb 10, 2026",
+            readTime: "9 min read",
+            author: "Alex Rivera",
+            excerpt: "The secret to off-chain data referencing. A deep dive into how SipHeron uses PDAs to build scalable, trustless document indexes."
+        },
+        {
+            title: "From Notary to Node: The Future of Document Authentication",
+            category: "Opinion",
+            date: "Feb 5, 2026",
+            readTime: "7 min read",
+            author: "SipHeron Founder",
+            excerpt: "Traditional notarization is a relic of the paper age. We examine why decentralized nodes are the logical successor to physical seals."
+        }
+    ];
+
+    return (
+        <div className="min-h-screen bg-[#0A0A0F] text-[#F8F8FF] font-sans selection:bg-[#4F6EF7]/30 selection:text-white overflow-x-hidden">
+            <LandingNavbar />
+
+            <main className="pt-32 pb-24">
+                {/* Hero Section */}
+                <header className="px-6 mb-24">
+                    <div className="max-w-4xl mx-auto text-center">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.5 }}
+                        >
+                            <Badge className="bg-[#4F6EF7]/10 text-[#4F6EF7] mb-6">Latest Insights</Badge>
+                        </motion.div>
+                        <motion.h1
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.6, delay: 0.1 }}
+                            className="text-5xl md:text-7xl font-black mb-8 tracking-tight leading-[1.1]"
+                        >
+                            The SipHeron <br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#4F6EF7] to-[#9B5CF6]">Blog.</span>
+                        </motion.h1>
+                        <motion.p
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.6, delay: 0.2 }}
+                            className="text-lg md:text-xl text-[#6B7280] max-w-2xl mx-auto leading-relaxed"
+                        >
+                            Insights on document verification, blockchain infrastructure, and the future of digital trust.
+                        </motion.p>
+                    </div>
+                </header>
+
+                {/* Featured Post */}
+                <section className="px-6 mb-32">
+                    <div className="max-w-7xl mx-auto">
+                        <motion.div
+                            initial={{ opacity: 0, y: 30 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            onClick={showToast}
+                            className="group relative p-8 md:p-16 rounded-[3rem] bg-[#111118] border border-[#1E1E2E] hover:border-[#4F6EF7]/40 transition-all duration-500 cursor-pointer overflow-hidden lg:flex items-center gap-16"
+                        >
+                            <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-[#4F6EF7]/5 to-transparent pointer-events-none" />
+
+                            <div className="lg:w-3/5 relative z-10">
+                                <div className="flex items-center gap-4 mb-8">
+                                    <Badge className="bg-gradient-to-r from-[#4F6EF7] to-[#9B5CF6] text-white px-4 py-1.5 shadow-lg">Featured</Badge>
+                                    <span className="text-xs font-bold text-[#6B7280] uppercase tracking-widest">March 1, 2026</span>
+                                </div>
+
+                                <h2 className="text-3xl md:text-5xl font-black text-white mb-6 group-hover:text-[#4F6EF7] transition-colors leading-[1.1]">
+                                    Why We Built SipHeron: The Case for On-Chain Document Verification
+                                </h2>
+
+                                <p className="text-[#6B7280] text-lg mb-10 leading-relaxed max-w-2xl">
+                                    Traditional notarization is broken—slow, expensive, and geographically limited.
+                                    We built SipHeron to transform document trust into a universal, cryptographic standard.
+                                    Discover how decentralized nodes are replacing physical seals in the digital era.
+                                </p>
+
+                                <div className="flex items-center gap-8 mb-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 font-bold border border-blue-500/20">SV</div>
+                                        <div className="flex flex-col">
+                                            <span className="text-sm font-bold text-[#F8F8FF]">SipHeron Team</span>
+                                            <span className="text-[10px] text-[#6B7280] font-bold uppercase tracking-widest">Company Blog</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-xs font-bold text-[#6B7280] uppercase tracking-wider">
+                                        <Clock size={16} /> 8 min read
+                                    </div>
+                                </div>
+
+                                <div className="mt-12 flex items-center gap-2 text-[#4F6EF7] font-bold text-sm uppercase tracking-[0.2em] group-hover:gap-4 transition-all">
+                                    Read Full Story <ArrowRight size={18} />
+                                </div>
+                            </div>
+
+                            <div className="hidden lg:block lg:w-2/5 relative">
+                                <div className="aspect-square bg-gradient-to-br from-[#1E1E2E] to-[#0A0A0F] rounded-[2rem] border border-[#1E1E2E] relative overflow-hidden flex items-center justify-center">
+                                    <ShieldCheck size={120} className="text-[#4F6EF7]/20" />
+                                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_#4F6EF710_0%,_transparent_70%)]" />
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
+                </section>
+
+                {/* Grid Section */}
+                <section className="px-6 mb-40">
+                    <div className="max-w-7xl mx-auto">
+                        <div className="flex items-center justify-between mb-12">
+                            <h2 className="text-2xl md:text-3xl font-black text-white">Latest Posts</h2>
+                            <div className="flex items-center gap-6">
+                                <button className="text-xs font-black uppercase tracking-widest text-[#4F6EF7] border-b-2 border-[#4F6EF7] pb-1">All</button>
+                                <button className="text-xs font-black uppercase tracking-widest text-[#6B7280] hover:text-[#F8F8FF] transition-colors pb-1 border-b-2 border-transparent">Technical</button>
+                                <button className="text-xs font-black uppercase tracking-widest text-[#6B7280] hover:text-[#F8F8FF] transition-colors pb-1 border-b-2 border-transparent">Use Cases</button>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {posts.map((post, i) => (
+                                <PostCard
+                                    key={i}
+                                    {...post}
+                                    onClick={showToast}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                </section>
+
+                {/* Newsletter Strip */}
+                <Newsletter />
             </main>
+
+            <Footer />
+
+            <AnimatePresence>
+                {toast && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 50 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 50 }}
+                        className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] px-6 py-4 bg-[#111118] border border-[#4F6EF7]/40 rounded-2xl shadow-2xl flex items-center gap-3 backdrop-blur-xl"
+                    >
+                        <Zap size={18} className="text-[#4F6EF7]" />
+                        <span className="text-sm font-bold text-white">Post coming soon to the VDR network.</span>
+                        <X size={14} className="ml-4 cursor-pointer text-[#6B7280]" onClick={() => setToast(false)} />
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Background elements */}
+            <div className="fixed top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_10%_10%,_#4F6EF705_0%,_transparent_40%)] pointer-events-none -z-10" />
+            <div className="fixed bottom-0 right-0 w-full h-full bg-[radial-gradient(circle_at_90%_90%,_#9B5CF605_0%,_transparent_40%)] pointer-events-none -z-10" />
+
+            <style jsx global>{`
+                html { scroll-behavior: smooth; }
+            `}</style>
         </div>
     );
 }

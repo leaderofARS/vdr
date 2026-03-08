@@ -12,6 +12,7 @@ const { PrismaClient } = require('@prisma/client');
 const authenticate = require('../middleware/auth');
 const { sanitizeEmail } = require('../utils/sanitizer');
 const { generateToken, generateRefreshToken, verifyToken } = require('../services/jwt');
+const notificationService = require('../services/notificationService');
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -55,6 +56,10 @@ router.post('/register', async (req, res, next) => {
         const user = await prisma.user.create({
             data: { email: sanitizedEmail, password: hashedPassword }
         });
+
+        // Send Welcome Email (Non-blocking)
+        const { sendWelcomeEmail } = require('../services/emailService');
+        sendWelcomeEmail(sanitizedEmail).catch(console.error);
 
         res.status(201).json({ message: 'User created successfully', userId: user.id });
     } catch (error) {
@@ -162,6 +167,20 @@ router.post('/api-key', authenticate, async (req, res, next) => {
             }
         });
 
+        // Send API Key Creation Notification (Non-blocking)
+        const { sendApiKeyCreatedEmail } = require('../services/emailService');
+        sendApiKeyCreatedEmail(req.user.email, name).catch(console.error);
+
+        if (apiKey.organizationId) {
+            notificationService.createNotification(
+                apiKey.organizationId,
+                'key_created',
+                'API key created',
+                `New API key "${name}" was created`,
+                { keyName: name }
+            ).catch(err => console.error('[Auth] Notification failed:', err.message));
+        }
+
         res.status(201).json({
             success: true,
             apiKey: apiKey.key,
@@ -196,6 +215,84 @@ router.get('/verify-key', authenticate, async (req, res, next) => {
                 email: apiKey.user.email
             }
         });
+    } catch (error) {
+        next(error);
+    }
+});
+
+// Forgot Password — generates token and sends placeholder email
+router.post('/forgot-password', async (req, res, next) => {
+    try {
+        const { email } = req.body;
+        const sanitizedEmail = sanitizeEmail(email);
+
+        // Always return generic message for security
+        const genericMessage = { message: "If that email exists, a reset link has been sent" };
+
+        if (!sanitizedEmail) return res.json(genericMessage);
+
+        const user = await prisma.user.findUnique({ where: { email: sanitizedEmail } });
+        if (!user) return res.json(genericMessage);
+
+        const token = require('crypto').randomBytes(32).toString('hex');
+        const expiry = new Date(Date.now() + 3600000); // 1 hour
+
+        await prisma.user.update({
+            where: { id: user.id },
+            data: {
+                passwordResetToken: token,
+                passwordResetExpiry: expiry
+            }
+        });
+
+        const { sendPasswordResetEmail } = require('../services/emailService');
+        await sendPasswordResetEmail(sanitizedEmail, token);
+
+        res.json(genericMessage);
+    } catch (error) {
+        next(error);
+    }
+});
+
+// Reset Password — validates token and updates password
+router.post('/reset-password', async (req, res, next) => {
+    try {
+        const { token, newPassword } = req.body;
+
+        if (!token) return res.status(400).json({ error: 'Token is required' });
+
+        const user = await prisma.user.findUnique({
+            where: { passwordResetToken: token }
+        });
+
+        if (!user || !user.passwordResetExpiry || user.passwordResetExpiry < new Date()) {
+            return res.status(400).json({ error: 'Invalid or expired reset token' });
+        }
+
+        // Complexity validation: min 8 chars, 1 uppercase, 1 number, 1 special char
+        const complexityRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        if (!complexityRegex.test(newPassword)) {
+            return res.status(400).json({
+                error: 'Password must be at least 8 characters long and contain at least one uppercase letter, one number, and one special character (@$!%*?&).'
+            });
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 12);
+
+        await prisma.user.update({
+            where: { id: user.id },
+            data: {
+                password: hashedPassword,
+                passwordResetToken: null,
+                passwordResetExpiry: null
+            }
+        });
+
+        // Invalidate all existing sessions (clears cookies for the resetting device)
+        res.clearCookie('vdr_token', { path: '/', sameSite: 'none', secure: true });
+        res.clearCookie('vdr_refresh', { path: '/', sameSite: 'none', secure: true });
+
+        res.json({ message: 'Password reset successful' });
     } catch (error) {
         next(error);
     }

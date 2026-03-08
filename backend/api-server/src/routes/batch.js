@@ -21,8 +21,8 @@ router.post('/batch-register', authenticate, async (req, res, next) => {
             return res.status(400).json({ error: 'hashes array is required' });
         }
 
-        if (hashes.length > 500) {
-            return res.status(400).json({ error: 'Maximum batch size is 500' });
+        if (hashes.length > 100) {
+            return res.status(400).json({ error: 'Maximum batch size is 100' });
         }
 
         const hexRegex = /^[a-fA-F0-9]{64}$/;

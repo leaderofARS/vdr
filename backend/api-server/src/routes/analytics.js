@@ -12,9 +12,15 @@ const authenticate = require('../middleware/auth');
 
 const router = express.Router();
 const prisma = new PrismaClient();
+const walletMonitor = require('../services/walletMonitor');
 
 router.get('/stats', authenticate, async (req, res, next) => {
     try {
+        const walletInfo = {
+            walletBalance: walletMonitor.getBalance(),
+            walletStatus: walletMonitor.getStatus()
+        };
+
         // If user has no organization linked, return onboarding state
         if (!req.organization) {
             return res.json({
@@ -22,7 +28,8 @@ router.get('/stats', authenticate, async (req, res, next) => {
                 totalHashes: 0,
                 activeRate: 100,
                 revokedHashes: 0,
-                recentRecords: []
+                recentRecords: [],
+                ...walletInfo
             });
         }
 
@@ -56,9 +63,16 @@ router.get('/stats', authenticate, async (req, res, next) => {
 
         const recentRecords = await prisma.hashRecord.findMany({
             where: { organizationId: org.id },
-            take: 10,
-            orderBy: { createdAt: 'desc' }
+            take: 20,
+            orderBy: { timestamp: 'desc' }
         });
+
+        // Add computed fields for the frontend dashboard while preserving original fields for compatibility
+        const dashboardRecords = recentRecords.map(record => ({
+            ...record,
+            registeredAt: new Date(record.timestamp * 1000).toISOString(),
+            status: record.isRevoked ? 'revoked' : 'active'
+        }));
 
         res.json({
             organizationName: org.name,
@@ -66,7 +80,8 @@ router.get('/stats', authenticate, async (req, res, next) => {
             totalHashes,
             revokedHashes,
             activeRate: totalHashes > 0 ? (((totalHashes - revokedHashes) / totalHashes) * 100).toFixed(2) : 100,
-            recentRecords
+            recentRecords: dashboardRecords,
+            ...walletInfo
         });
     } catch (error) {
         next(error);

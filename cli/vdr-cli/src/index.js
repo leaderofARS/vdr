@@ -13,6 +13,7 @@ const chalk = require("chalk");
 // Commands
 const createStageCommand = require("./commands/stage");
 const createAnchorCommand = require("./commands/anchor");
+const createRevokeCommand = require("./commands/revoke");
 const createStatusCommand = require("./commands/status");
 const { verifyCmd, verifyHashCmd } = require("./commands/verify");
 const { createWalletCommand } = require("./commands/wallet");
@@ -33,6 +34,7 @@ program
 program.addCommand(createStageCommand());
 program.addCommand(createStatusCommand());
 program.addCommand(createAnchorCommand());
+program.addCommand(createRevokeCommand());
 
 // Verification
 program.addCommand(verifyCmd);

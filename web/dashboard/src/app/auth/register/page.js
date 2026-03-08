@@ -54,11 +54,11 @@ export default function RegisterPage() {
                         initial={{ rotate: -10, opacity: 0 }}
                         animate={{ rotate: 0, opacity: 1 }}
                         transition={{ delay: 0.2, duration: 0.5 }}
-                        className="inline-flex items-center justify-center p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 mb-6"
+                        className="inline-flex items-center justify-center p-2 rounded-2xl bg-white/5 border border-white/10 mb-6"
                     >
-                        <Building2 className="w-8 h-8 text-emerald-400" />
+                        <img src="/sipheron_vdap_logo.png" alt="SipHeron" className="w-10 h-10 object-contain" />
                     </motion.div>
-                    <h2 className="text-2xl font-bold tracking-tight text-white mb-2">Provision Organization</h2>
+                    <h2 className="text-2xl font-black tracking-tight text-white mb-2 uppercase">SIPHERON VDR</h2>
                     <p className="text-gray-400 font-medium text-sm">Deploy your institutional VDR node</p>
                 </div>
 

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '@/utils/api';
 import { Key, Plus, Trash2, CheckCircle2, AlertCircle, Copy, X } from 'lucide-react';
+import EmptyState from '@/components/EmptyState';
 
 export default function ApiKeysPage() {
     const [keys, setKeys] = useState([]);
@@ -46,7 +47,7 @@ export default function ApiKeysPage() {
             setKeys([{
                 id: data.id,
                 name: nameInput,
-                key: data.key,
+                key: data.apiKey,
                 createdAt: new Date().toISOString(),
                 status: 'Active'
             }, ...keys]);
@@ -127,8 +128,17 @@ export default function ApiKeysPage() {
                                 </tr>
                             ) : keys.length === 0 ? (
                                 <tr>
-                                    <td colSpan="5" className="px-5 py-8 text-center text-[#9AA0A6]">
-                                        No API keys found. Click "Create Credentials" to generate one.
+                                    <td colSpan="5" className="p-0">
+                                        <EmptyState
+                                            icon={Key}
+                                            title="No API keys yet"
+                                            subtitle="Create an API key to start using the SipHeron REST API"
+                                            action={() => {
+                                                setNewKeyData(null);
+                                                setShowCreateModal(true);
+                                            }}
+                                            actionLabel="Create API Key"
+                                        />
                                     </td>
                                 </tr>
                             ) : (
@@ -225,11 +235,11 @@ export default function ApiKeysPage() {
                                             <input
                                                 type="text"
                                                 readOnly
-                                                value={newKeyData.key}
+                                                value={newKeyData.apiKey}
                                                 className="w-full bg-[#131418] border border-[#3C4043] rounded px-3 py-2.5 text-sm text-[#4285F4] font-mono focus:outline-none"
                                             />
                                             <button
-                                                onClick={() => copyToClipboard(newKeyData.key)}
+                                                onClick={() => copyToClipboard(newKeyData.apiKey)}
                                                 className="shrink-0 p-2.5 bg-[#4285F4] hover:bg-[#3367D6] text-white rounded transition-colors"
                                             >
                                                 {copied ? <CheckCircle2 className="w-5 h-5" /> : <Copy className="w-5 h-5" />}

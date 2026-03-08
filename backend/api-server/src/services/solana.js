@@ -178,9 +178,8 @@ async function revokeHash(hexHash) {
         .revokeHash()
         .accounts({
             hashRecord: pdaAddress,
-            organization: null,
-            protocolConfig: protocolConfigPda,
             owner: wallet.publicKey,
+            systemProgram: SystemProgram.programId,
         })
         .rpc();
 

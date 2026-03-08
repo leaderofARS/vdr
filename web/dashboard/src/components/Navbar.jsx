@@ -22,7 +22,7 @@ const WalletMultiButton = dynamic(
 export default function Navbar() {
     const pathname = usePathname();
 
-    if (pathname && pathname.startsWith('/dashboard')) {
+    if (!pathname || pathname === '/' || pathname.startsWith('/dashboard')) {
         return null;
     }
 

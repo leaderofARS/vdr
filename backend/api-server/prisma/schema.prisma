@@ -8,27 +8,35 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  createdAt DateTime @default(now())
+  id                   String   @id @default(uuid())
+  email                String   @unique
+  password             String
+  createdAt            DateTime @default(now())
   
-  organizations Organization[]
-  apiKeys       ApiKey[]
+  passwordResetToken   String?   @unique
+  passwordResetExpiry  DateTime?
+  
+  organizations        Organization[]
+  apiKeys              ApiKey[]
 }
 
 model Organization {
-  id          String   @id @default(uuid())
-  name        String
-  solanaPubkey String  @unique // The PDA of the org on Solana
+  id            String   @id @default(uuid())
+  name          String
+  solanaPubkey  String   @unique // The PDA of the org on Solana
   
-  ownerId     String
-  owner       User     @relation(fields: [ownerId], references: [id])
+  walletAddress String?  // Added: backend or org-specific wallet
+  issuerCount   Int      @default(0) // Added: count of active issuers
   
-  apiKeys     ApiKey[]
-  records     HashRecord[]
+  ownerId       String
+  owner         User     @relation(fields: [ownerId], references: [id])
   
-  createdAt   DateTime @default(now())
+  apiKeys       ApiKey[]
+  records       HashRecord[]
+  notifications Notification[]
+  webhooks      Webhook[]
+  
+  createdAt     DateTime @default(now())
 }
 
 model ApiKey {
@@ -44,6 +52,8 @@ model ApiKey {
   
   createdAt      DateTime @default(now())
   lastUsedAt     DateTime?
+  status         String    @default("active") // Added: active / revoked
+  usageLogs      ApiUsageLog[]
 }
 
 model HashRecord {
@@ -57,11 +67,15 @@ model HashRecord {
   expiry         Int      @default(0)
   isRevoked      Boolean  @default(false)
   txSignature    String
+  status         String    @default("active")
+  revokedAt      DateTime?
   
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id])
   
   createdAt      DateTime @default(now())
+
+  @@index([organizationId])
 }
 
 model CliSession {
@@ -76,4 +90,67 @@ model CliSession {
   
   createdAt      DateTime @default(now())
   expiresAt      DateTime
+}
+
+model Notification {
+  id             String   @id @default(uuid())
+  organizationId String
+  type           String   // anchor_success, anchor_failed, key_created, key_revoked, low_balance
+  title          String
+  message        String
+  metadata       Json?    // { hash, txSignature, keyName, balance }
+  isRead         Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  
+  organization Organization @relation(fields: [organizationId], references: [id])
+  
+  @@index([organizationId, isRead])
+  @@index([organizationId, createdAt])
+}
+
+model Webhook {
+  id             String   @id @default(uuid())
+  organizationId String
+  url            String
+  secret         String   // HMAC signing secret
+  events         String[] // ["anchor_success", "anchor_failed", "hash_revoked"]
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  lastTriggeredAt DateTime?
+  failureCount   Int      @default(0)
+  
+  organization Organization @relation(fields: [organizationId], references: [id])
+  logs         WebhookLog[]
+}
+
+model WebhookLog {
+  id          String   @id @default(uuid())
+  webhookId   String
+  event       String
+  payload     Json
+  statusCode  Int?
+  response    String?
+  error       String?
+  duration    Int?     // ms
+  createdAt   DateTime @default(now())
+  
+  webhook Webhook @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+}
+
+model ApiUsageLog {
+  id          String   @id @default(uuid())
+  apiKeyId    String
+  orgId       String
+  endpoint    String   // "/api/batch-register"
+  method      String   // "POST"
+  statusCode  Int
+  durationMs  Int
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+  
+  apiKey ApiKey @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+  
+  @@index([apiKeyId, createdAt])
+  @@index([orgId, createdAt])
 }

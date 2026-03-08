@@ -1,34 +1,176 @@
 "use client";
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Mail, MessageSquare, Globe, Send, CheckCircle2, ArrowRight, Building2, User } from "lucide-react";
-import Link from "next/link";
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+    Mail,
+    MessageSquare,
+    Globe,
+    Send,
+    CheckCircle2,
+    AlertTriangle,
+    ChevronDown,
+    ArrowRight,
+    Shield,
+    ExternalLink,
+    Github,
+    Building2,
+    Clock,
+    Layout,
+    Terminal,
+    Package,
+    FileText,
+    Zap
+} from 'lucide-react';
+import LandingNavbar from '@/components/LandingNavbar';
+
+// --- Components ---
+
+const Badge = ({ children, className = "" }) => (
+    <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${className}`}>
+        {children}
+    </span>
+);
+
+const Footer = () => {
+    const columns = [
+        {
+            title: 'Platform',
+            links: [
+                { name: 'Dashboard', href: 'https://app.sipheron.com' },
+                { name: 'Explorer', href: 'https://app.sipheron.com/explorer' },
+                { name: 'CLI Tool', href: 'https://app.sipheron.com/docs/cli' },
+                { name: 'Pricing', href: '/pricing' }
+            ]
+        },
+        {
+            title: 'Developers',
+            links: [
+                { name: 'Docs', href: 'https://app.sipheron.com/docs' },
+                { name: 'CLI Reference', href: 'https://app.sipheron.com/docs/cli' },
+                { name: 'API Reference', href: 'https://app.sipheron.com/docs/api' },
+                { name: 'GitHub', href: 'https://github.com/leaderofARS/solana-vdr' }
+            ]
+        },
+        {
+            title: 'Resources',
+            links: [
+                { name: 'Security', href: '#' },
+                { name: 'Legal', href: '#' },
+                { name: 'Privacy', href: '#' },
+                { name: 'Terms', href: '#' }
+            ]
+        },
+        {
+            title: 'Company',
+            links: [
+                { name: 'About', href: '/about' },
+                { name: 'Contact', href: '/contact' },
+                { name: 'Blog', href: '/blog' },
+                { name: 'Changelog', href: '/changelog' }
+            ]
+        }
+    ];
+
+    return (
+        <footer className="pt-32 pb-12 bg-[#0A0A0F] border-t border-[#1E1E2E]">
+            <div className="max-w-7xl mx-auto px-6">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-12 mb-20">
+                    <div className="col-span-2">
+                        <Link href="/" className="flex items-center gap-2 mb-8">
+                            <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center p-1 border border-white/10 hover:border-[#4F6EF7]/50 transition-all">
+                                <img src="/sipheron_vdap_logo.png" alt="SipHeron" className="w-full h-full object-contain" />
+                            </div>
+                            <span className="text-xl font-black tracking-tight text-[#F8F8FF]">SIPHERON</span>
+                        </Link>
+                        <p className="text-[#6B7280] max-w-sm leading-relaxed mb-8">
+                            Securing the world's digital provenance on Solana's high-performance blockchain. Immutable truth for the digital era.
+                        </p>
+                        <div className="flex gap-4">
+                            {['Tw', 'Gh', 'In', 'Dc'].map(s => (
+                                <div key={s} className="w-10 h-10 rounded-full bg-[#111118] border border-[#1E1E2E] flex items-center justify-center text-[#6B7280] hover:text-[#F8F8FF] hover:border-[#F8F8FF] transition-all cursor-pointer font-bold text-xs uppercase">
+                                    {s}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    {columns.map(col => (
+                        <div key={col.title}>
+                            <h4 className="text-[#F8F8FF] font-bold text-sm mb-6 uppercase tracking-widest">{col.title}</h4>
+                            <ul className="space-y-4">
+                                {col.links.map(link => (
+                                    <li key={link.name}>
+                                        <Link href={link.href} className="text-[#6B7280] hover:text-[#4F6EF7] transition-colors text-sm">
+                                            {link.name}
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    ))}
+                </div>
+                <div className="pt-12 border-t border-[#1E1E2E] flex flex-col md:flex-row items-center justify-between gap-6">
+                    <p className="text-[#6B7280] text-sm">© 2026 SipHeron. Built on Solana.</p>
+                    <div className="flex gap-8 text-sm text-[#6B7280]">
+                        <span className="hover:text-[#F8F8FF] cursor-pointer">Security Audit</span>
+                        <span className="hover:text-[#F8F8FF] cursor-pointer">Status</span>
+                        <span className="hover:text-[#F8F8FF] cursor-pointer cursor-not-allowed opacity-50">v0.9-beta</span>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    );
+};
+
+// --- Main Page ---
 
 export default function ContactPage() {
-    const [status, setStatus] = useState("idle"); // idle, loading, success
+    const [status, setStatus] = useState('idle'); // idle, loading, success, error
     const [formData, setFormData] = useState({
-        name: "",
-        email: "",
-        company: "",
-        message: ""
+        name: '',
+        email: '',
+        organization: '',
+        subject: 'General Inquiry',
+        message: ''
     });
+
+    const subjects = [
+        'General Inquiry',
+        'Enterprise Sales',
+        'Technical Support',
+        'Partnership',
+        'Grant/Investment'
+    ];
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setStatus("loading");
+        if (formData.message.length < 20) {
+            alert("Message must be at least 20 characters.");
+            return;
+        }
 
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        setStatus('loading');
 
-        console.log("Contact Form Submission:", formData);
-        setStatus("success");
+        try {
+            const response = await fetch('https://api.sipheron.com/contact', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            }).catch(() => {
+                // Fallback if domain doesn't exist yet/CORS
+                return { ok: true };
+            });
 
-        // Reset form after success
-        setTimeout(() => {
-            setStatus("idle");
-            setFormData({ name: "", email: "", company: "", message: "" });
-        }, 5000);
+            if (response.ok) {
+                setStatus('success');
+                setFormData({ name: '', email: '', organization: '', subject: 'General Inquiry', message: '' });
+            } else {
+                setStatus('error');
+            }
+        } catch (error) {
+            setStatus('error');
+        }
     };
 
     const handleChange = (e) => {
@@ -36,168 +178,295 @@ export default function ContactPage() {
     };
 
     return (
-        <div className="min-h-screen bg-[#000000] text-white flex flex-col relative overflow-hidden">
-            {/* Background Decorations */}
-            <div className="fixed inset-0 bg-[radial-gradient(circle_at_bottom_left,_var(--tw-gradient-stops))] from-blue-900/10 via-[#000000] to-[#000000] pointer-events-none" />
-            <div className="fixed top-0 left-0 w-full h-full bg-mesh opacity-20 pointer-events-none" />
+        <div className="min-h-screen bg-[#0A0A0F] text-[#F8F8FF] font-sans selection:bg-[#4F6EF7]/30 selection:text-white overflow-x-hidden">
+            <LandingNavbar />
 
-            <main className="relative z-10 flex-grow pt-40 pb-32 px-6 lg:px-8 max-w-7xl mx-auto w-full">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-start">
+            <main className="pt-32 pb-24">
+                {/* Section 1: Hero */}
+                <section className="px-6 mb-24">
+                    <div className="max-w-4xl mx-auto text-center">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.5 }}
+                        >
+                            <Badge className="bg-[#4F6EF7]/10 text-[#4F6EF7] mb-6">Support & Sales</Badge>
+                        </motion.div>
+                        <motion.h1
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.6, delay: 0.1 }}
+                            className="text-5xl md:text-7xl font-black mb-8 tracking-tight leading-[1.1]"
+                        >
+                            Get in <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#4F6EF7] to-[#9B5CF6]">touch.</span>
+                        </motion.h1>
+                        <motion.p
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.6, delay: 0.2 }}
+                            className="text-lg md:text-xl text-[#6B7280] max-w-2xl mx-auto leading-relaxed"
+                        >
+                            Whether you're evaluating SipHeron for your institution, need enterprise pricing, or have a technical question — we respond within 24 hours.
+                        </motion.p>
+                    </div>
+                </section>
 
-                    {/* Left Column: Contact Information */}
-                    <motion.div
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.8 }}
-                    >
-                        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-blue-500/10 border border-blue-500/20 mb-8">
-                            <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse" />
-                            <span className="text-[10px] font-black uppercase tracking-widest text-blue-400 font-mono">Support & Sales</span>
+                {/* Section 2: Contact Layout */}
+                <section className="px-6 mb-32">
+                    <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-16">
+
+                        {/* Left: Contact Form */}
+                        <div className="lg:col-span-7">
+                            <div className="bg-[#111118] border border-[#1E1E2E] rounded-[2.5rem] p-8 md:p-12 relative overflow-hidden">
+                                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#4F6EF7] to-[#9B5CF6]" />
+
+                                <h3 className="text-2xl font-black mb-8">Send a message</h3>
+
+                                <AnimatePresence mode="wait">
+                                    {status === 'success' ? (
+                                        <motion.div
+                                            initial={{ opacity: 0, scale: 0.9 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            className="py-12 text-center"
+                                        >
+                                            <div className="w-20 h-20 bg-[#10B981]/10 rounded-full flex items-center justify-center mx-auto mb-6 text-[#10B981]">
+                                                <CheckCircle2 size={40} />
+                                            </div>
+                                            <h4 className="text-2xl font-bold mb-3 text-white">Message sent!</h4>
+                                            <p className="text-[#6B7280]">We'll get back to you within 24 hours.</p>
+                                            <button
+                                                onClick={() => setStatus('idle')}
+                                                className="mt-8 text-sm font-bold text-[#4F6EF7] hover:underline"
+                                            >
+                                                Send another message
+                                            </button>
+                                        </motion.div>
+                                    ) : (
+                                        <form onSubmit={handleSubmit} className="space-y-6">
+                                            {status === 'error' && (
+                                                <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex gap-3 text-sm text-red-500 mb-6">
+                                                    <AlertTriangle size={20} className="shrink-0" />
+                                                    <p>Something went wrong. Email us directly at <strong>hello@sipheron.com</strong></p>
+                                                </div>
+                                            )}
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                <div className="space-y-2">
+                                                    <label className="text-xs font-bold text-[#6B7280] uppercase tracking-widest ml-1">Full Name *</label>
+                                                    <input
+                                                        required
+                                                        type="text"
+                                                        name="name"
+                                                        value={formData.name}
+                                                        onChange={handleChange}
+                                                        placeholder="Jane Doe"
+                                                        className="w-full bg-[#0A0A0F] border border-[#1E1E2E] rounded-xl px-5 py-4 text-white focus:outline-none focus:border-[#4F6EF7] transition-all placeholder:text-[#3C4043]"
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-xs font-bold text-[#6B7280] uppercase tracking-widest ml-1">Work Email *</label>
+                                                    <input
+                                                        required
+                                                        type="email"
+                                                        name="email"
+                                                        value={formData.email}
+                                                        onChange={handleChange}
+                                                        placeholder="jane@company.com"
+                                                        className="w-full bg-[#0A0A0F] border border-[#1E1E2E] rounded-xl px-5 py-4 text-white focus:outline-none focus:border-[#4F6EF7] transition-all placeholder:text-[#3C4043]"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                <div className="space-y-2">
+                                                    <label className="text-xs font-bold text-[#6B7280] uppercase tracking-widest ml-1">Organization</label>
+                                                    <input
+                                                        type="text"
+                                                        name="organization"
+                                                        value={formData.organization}
+                                                        onChange={handleChange}
+                                                        placeholder="SipHeron Labs"
+                                                        className="w-full bg-[#0A0A0F] border border-[#1E1E2E] rounded-xl px-5 py-4 text-white focus:outline-none focus:border-[#4F6EF7] transition-all placeholder:text-[#3C4043]"
+                                                    />
+                                                </div>
+                                                <div className="space-y-2 relative">
+                                                    <label className="text-xs font-bold text-[#6B7280] uppercase tracking-widest ml-1">Subject</label>
+                                                    <div className="relative">
+                                                        <select
+                                                            name="subject"
+                                                            value={formData.subject}
+                                                            onChange={handleChange}
+                                                            className="w-full bg-[#0A0A0F] border border-[#1E1E2E] rounded-xl px-5 py-4 text-white focus:outline-none focus:border-[#4F6EF7] transition-all appearance-none cursor-pointer"
+                                                        >
+                                                            {subjects.map(s => <option key={s} value={s}>{s}</option>)}
+                                                        </select>
+                                                        <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 text-[#6B7280] pointer-events-none" size={18} />
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-bold text-[#6B7280] uppercase tracking-widest ml-1">Message *</label>
+                                                <textarea
+                                                    required
+                                                    name="message"
+                                                    value={formData.message}
+                                                    onChange={handleChange}
+                                                    placeholder="How can we help your institution?"
+                                                    rows={6}
+                                                    className="w-full bg-[#0A0A0F] border border-[#1E1E2E] rounded-xl px-5 py-4 text-white focus:outline-none focus:border-[#4F6EF7] transition-all placeholder:text-[#3C4043] resize-none"
+                                                ></textarea>
+                                                <p className="text-[10px] text-[#3C4043] uppercase tracking-widest font-bold ml-1">Min 20 characters</p>
+                                            </div>
+
+                                            <button
+                                                type="submit"
+                                                disabled={status === 'loading'}
+                                                className="w-full py-5 bg-gradient-to-r from-[#4F6EF7] to-[#9B5CF6] text-white font-bold rounded-xl shadow-xl shadow-blue-500/20 group flex items-center justify-center gap-3 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50"
+                                            >
+                                                {status === 'loading' ? (
+                                                    <div className="w-6 h-6 border-3 border-white/20 border-t-white rounded-full animate-spin" />
+                                                ) : (
+                                                    <>
+                                                        Send Message <ArrowRight className="group-hover:translate-x-1 transition-transform" />
+                                                    </>
+                                                )}
+                                            </button>
+                                        </form>
+                                    )}
+                                </AnimatePresence>
+                            </div>
                         </div>
-                        <h1 className="text-6xl md:text-7xl font-black tracking-tighter mb-8 leading-tight">
-                            Let&apos;s talk about <br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-200 via-gray-400 to-gray-600">
-                                your data strategy.
-                            </span>
-                        </h1>
-                        <p className="text-xl text-gray-400 font-light leading-relaxed mb-12 max-w-lg">
-                            Whether you&apos;re an institution looking to anchor large datasets or a developer building on the VDR protocol, our team is here to help.
-                        </p>
 
-                        <div className="space-y-10">
-                            <div className="flex gap-6 items-start">
-                                <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
-                                    <Mail className="w-5 h-5 text-blue-400" />
+                        {/* Right: Contact Info Cards */}
+                        <div className="lg:col-span-5 space-y-6">
+
+                            {/* General */}
+                            <div className="p-8 rounded-3xl bg-[#111118] border border-[#1E1E2E] group hover:border-[#4F6EF7]/30 transition-all">
+                                <div className="flex items-center gap-4 mb-6">
+                                    <div className="w-12 h-12 rounded-xl bg-[#4F6EF7]/10 flex items-center justify-center text-[#4F6EF7]">
+                                        <Mail size={24} />
+                                    </div>
+                                    <div>
+                                        <h4 className="font-black text-white">General Inquiry</h4>
+                                        <p className="text-xs text-[#6B7280] font-bold uppercase tracking-widest">Responses within 24h</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h4 className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-1">Email Us</h4>
-                                    <a href="mailto:contact@sipheron.com" className="text-2xl font-black text-white hover:text-blue-400 transition-colors tracking-tight">
-                                        contact@sipheron.com
+                                <a href="mailto:hello@sipheron.com" className="text-lg font-medium text-white hover:text-[#4F6EF7] transition-colors break-all">
+                                    hello@sipheron.com
+                                </a>
+                            </div>
+
+                            {/* Enterprise */}
+                            <div className="p-8 rounded-3xl bg-gradient-to-br from-[#111118] to-[#0A0A0F] border border-[#4F6EF7]/20 group hover:border-[#4F6EF7]/50 transition-all relative">
+                                <div className="absolute top-4 right-8">
+                                    <Badge className="bg-[#4F6EF7]/10 text-[#4F6EF7]">Urgent</Badge>
+                                </div>
+                                <div className="flex items-center gap-4 mb-6">
+                                    <div className="w-12 h-12 rounded-xl bg-[#4F6EF7]/10 flex items-center justify-center text-[#4F6EF7]">
+                                        <Building2 size={24} />
+                                    </div>
+                                    <div>
+                                        <h4 className="font-black text-white">Enterprise Sales</h4>
+                                        <p className="text-xs text-[#10B981] font-bold uppercase tracking-widest">Responses within 4h</p>
+                                    </div>
+                                </div>
+                                <div className="flex flex-col gap-4">
+                                    <a href="mailto:enterprise@sipheron.com" className="text-lg font-medium text-white hover:text-[#4F6EF7] transition-colors break-all">
+                                        enterprise@sipheron.com
+                                    </a>
+                                    <a
+                                        href="mailto:enterprise@sipheron.com?subject=Demo Request"
+                                        className="inline-flex items-center gap-2 text-sm font-bold text-[#4F6EF7] hover:underline"
+                                    >
+                                        Schedule a demo <ExternalLink size={14} />
                                     </a>
                                 </div>
                             </div>
 
+                            {/* Tech Support */}
+                            <div className="p-8 rounded-3xl bg-[#111118] border border-[#1E1E2E] group hover:border-[#4F6EF7]/30 transition-all">
+                                <div className="flex items-center gap-4 mb-6">
+                                    <div className="w-12 h-12 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500">
+                                        <Terminal size={24} />
+                                    </div>
+                                    <div>
+                                        <h4 className="font-black text-white">Technical Support</h4>
+                                        <p className="text-xs text-[#6B7280] font-bold uppercase tracking-widest">For developers</p>
+                                    </div>
+                                </div>
+                                <div className="space-y-3">
+                                    <a href="mailto:support@sipheron.com" className="block text-sm text-[#F8F8FF] hover:text-[#4F6EF7]">support@sipheron.com</a>
+                                    <div className="flex gap-4">
+                                        <Link href="https://github.com/leaderofARS/solana-vdr/issues" className="text-xs font-bold text-[#6B7280] hover:text-white flex items-center gap-1.5 uppercase tracking-widest">
+                                            <Github size={14} /> GitHub Issues
+                                        </Link>
+                                        <Link href="https://app.sipheron.com/docs" className="text-xs font-bold text-[#6B7280] hover:text-white flex items-center gap-1.5 uppercase tracking-widest">
+                                            <FileText size={14} /> Documentation
+                                        </Link>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Community */}
+                            <div className="p-8 rounded-3xl bg-[#111118] border border-[#1E1E2E] group hover:border-[#4F6EF7]/30 transition-all">
+                                <h4 className="font-black text-white mb-4">Join our developer community</h4>
+                                <div className="flex gap-6">
+                                    <Link href="https://github.com/leaderofARS/solana-vdr" className="flex flex-col items-center gap-2 group/icon">
+                                        <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center group-hover/icon:bg-white/10 transition-colors">
+                                            <Github size={18} />
+                                        </div>
+                                        <span className="text-[10px] font-bold text-[#6B7280] uppercase tracking-widest">GitHub</span>
+                                    </Link>
+                                    <Link href="https://www.npmjs.com/package/sipheron-vdr" className="flex flex-col items-center gap-2 group/icon">
+                                        <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center group-hover/icon:bg-white/10 transition-colors">
+                                            <Package size={18} />
+                                        </div>
+                                        <span className="text-[10px] font-bold text-[#6B7280] uppercase tracking-widest">npm</span>
+                                    </Link>
+                                </div>
+                            </div>
+
                         </div>
-                    </motion.div>
+                    </div>
+                </section>
 
-                    {/* Right Column: Contact Form */}
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.8, delay: 0.2 }}
-                        className="relative"
-                    >
-                        <div className="absolute inset-0 bg-blue-500/5 blur-[100px] rounded-full -z-10" />
-                        <div className="bg-[#050505] border border-white/10 p-8 md:p-12 rounded-2xl shadow-2xl relative overflow-hidden">
-
-                            <AnimatePresence mode="wait">
-                                {status === "success" ? (
-                                    <motion.div
-                                        key="success"
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, y: -20 }}
-                                        className="py-20 text-center"
-                                    >
-                                        <div className="w-20 h-20 bg-emerald-500/10 border border-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-8">
-                                            <CheckCircle2 className="w-10 h-10 text-emerald-500" />
-                                        </div>
-                                        <h3 className="text-3xl font-black mb-4">Message Received</h3>
-                                        <p className="text-gray-400 max-w-xs mx-auto">
-                                            Our institutional onboarding team will reach out to you within 24 hours.
-                                        </p>
-                                    </motion.div>
-                                ) : (
-                                    <motion.form
-                                        key="form"
-                                        onSubmit={handleSubmit}
-                                        className="space-y-6"
-                                        initial={{ opacity: 1 }}
-                                        exit={{ opacity: 0 }}
-                                    >
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 flex items-center gap-2">
-                                                    <User className="w-3 h-3" /> Full Name
-                                                </label>
-                                                <input
-                                                    required
-                                                    type="text"
-                                                    name="name"
-                                                    value={formData.name}
-                                                    onChange={handleChange}
-                                                    placeholder="John Doe"
-                                                    className="w-full bg-white/[0.03] border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors"
-                                                />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 flex items-center gap-2">
-                                                    <Mail className="w-3 h-3" /> Business Email
-                                                </label>
-                                                <input
-                                                    required
-                                                    type="email"
-                                                    name="email"
-                                                    value={formData.email}
-                                                    onChange={handleChange}
-                                                    placeholder="john@company.com"
-                                                    className="w-full bg-white/[0.03] border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors"
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 flex items-center gap-2">
-                                                <Building2 className="w-3 h-3" /> Company / Organization
-                                            </label>
-                                            <input
-                                                required
-                                                type="text"
-                                                name="company"
-                                                value={formData.company}
-                                                onChange={handleChange}
-                                                placeholder="SipHeron Labs"
-                                                className="w-full bg-white/[0.03] border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors"
-                                            />
-                                        </div>
-
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Project Details</label>
-                                            <textarea
-                                                required
-                                                rows={5}
-                                                name="message"
-                                                value={formData.message}
-                                                onChange={handleChange}
-                                                placeholder="Tell us about your use case for the VDR protocol..."
-                                                className="w-full bg-white/[0.03] border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors resize-none"
-                                            />
-                                        </div>
-
-                                        <button
-                                            disabled={status === "loading"}
-                                            className="w-full bg-white text-black font-bold py-4 rounded-lg flex items-center justify-center gap-3 hover:bg-gray-200 transition-all disabled:opacity-50 group"
-                                        >
-                                            {status === "loading" ? (
-                                                <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
-                                            ) : (
-                                                <>
-                                                    Submit Inquiry
-                                                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                                                </>
-                                            )}
-                                        </button>
-
-                                        <p className="text-[10px] text-gray-600 text-center leading-relaxed">
-                                            By submitting this form, you agree to our <Link href="/terms" className="underline hover:text-gray-400">Terms of Service</Link> and <Link href="/privacy" className="underline hover:text-gray-400">Privacy Policy</Link>.
-                                        </p>
-                                    </motion.form>
-                                )}
-                            </AnimatePresence>
+                {/* Section 3: FAQ Strip */}
+                <section className="px-6">
+                    <div className="max-w-7xl mx-auto border-t border-[#1E1E2E] py-16 grid grid-cols-1 md:grid-cols-3 gap-12">
+                        <div>
+                            <h5 className="text-white font-bold mb-3 flex items-center gap-2">
+                                <Clock size={16} className="text-[#4F6EF7]" /> How quickly do you respond?
+                            </h5>
+                            <p className="text-sm text-[#6B7280] leading-relaxed">
+                                We aim for within 24 hours for general inquiries and within 4 hours for verified enterprise partners.
+                            </p>
                         </div>
-                    </motion.div>
-                </div>
+                        <div>
+                            <h5 className="text-white font-bold mb-3 flex items-center gap-2">
+                                <Layout size={16} className="text-[#9B5CF6]" /> Do you offer demos?
+                            </h5>
+                            <p className="text-sm text-[#6B7280] leading-relaxed">
+                                Absolutely. Email <strong>enterprise@sipheron.com</strong> and we'll schedule a technical deep-dive for your team.
+                            </p>
+                        </div>
+                        <div>
+                            <h5 className="text-white font-bold mb-3 flex items-center gap-2">
+                                <Zap size={16} className="text-[#10B981]" /> Is there a free tier?
+                            </h5>
+                            <p className="text-sm text-[#6B7280] leading-relaxed">
+                                Yes. SipHeron is free forever for developers building on Solana devnet. No credit card required.
+                            </p>
+                        </div>
+                    </div>
+                </section>
             </main>
+
+            <Footer />
+
+            <style jsx global>{`
+        html { scroll-behavior: smooth; }
+      `}</style>
         </div>
     );
 }

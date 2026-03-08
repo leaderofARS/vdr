@@ -9,9 +9,9 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
-const rateLimit = require("express-rate-limit");
 const cookieParser = require("cookie-parser");
 const helmetConfig = require("./middleware/helmet-config");
+const { globalLimiter, authLimiter, batchRegisterLimiter, keyCreationLimiter } = require("./middleware/rateLimiter");
 
 dotenv.config();
 
@@ -24,12 +24,20 @@ const authRoute = require("./routes/auth");
 const batchRoute = require("./routes/batch");
 const analyticsRoute = require("./routes/analytics");
 const organizationRoute = require("./routes/organization");
+const hashesRoute = require("./routes/hashes");
+const orgRoute = require("./routes/org");
+const notificationsRoute = require("./routes/notifications");
+const webhooksRoute = require("./routes/webhooks");
+const usageRoute = require("./routes/usage");
+const keysRoute = require("./routes/keys");
+const usageLogger = require("./middleware/usageLogger");
 
 const authenticate = require("./middleware/auth");
 const errorHandler = require("./middleware/errorHandler");
 
 // Core Indexer Service
 const indexer = require("./services/indexer");
+const walletMonitor = require("./services/walletMonitor");
 
 const app = express();
 
@@ -62,36 +70,12 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key', 'X-CSRF-Token']
 }));
 
-app.use(express.json());
+// Specific body-parser limits for batch registrations
+app.use('/api/batch-register', express.json({ limit: '10mb' }));
 
-// Apply High-Level Rate Limiting
-const apiLimiter = rateLimit({
-    windowMs: 1 * 60 * 1000,
-    max: 60,
-    message: { error: 'Too many requests from this IP, please try again after a minute.' },
-    standardHeaders: true,
-    legacyHeaders: false,
-});
-
-app.use(apiLimiter);
-
-// Specific limiter for Auth (Login/Register)
-const authLimiter = rateLimit({
-    windowMs: 1 * 60 * 1000,
-    max: 50,
-    message: { error: 'Too many auth attempts, please try again in 1 minute.' },
-    standardHeaders: true,
-    legacyHeaders: false,
-});
-
-// Specific limiter for Hash Registration (Treasury Protection)
-const registrationLimiter = rateLimit({
-    windowMs: 1 * 60 * 1000,
-    max: 10,
-    message: { error: 'Registration limit reached. Please wait a minute.' },
-    standardHeaders: true,
-    legacyHeaders: false,
-});
+// Global body-parser and global rate limiting
+app.use(express.json({ limit: '1mb' }));
+app.use(globalLimiter);
 
 // CSRF token endpoint — returns null since API uses stateless JWT auth
 // csurf removed: incompatible with Express 5
@@ -100,14 +84,29 @@ app.get("/api/csrf-token", (req, res) => {
 });
 
 // Routes
-app.post("/register", registrationLimiter, registerRoute);
+// Apply authLimiter to root /register endpoint and auth routes
+app.post("/register", authLimiter, registerRoute);
 app.post("/verify", verifyRoute);
 app.get("/record/:hash", authenticate, recordRoute);
 
-// Auth routes
+// Auth routes — apply authLimiter to /auth/*
 app.use("/auth", authLimiter, authRoute);
-app.use("/api", registrationLimiter, batchRoute);
+
+// Batch and Hashes routes — apply specific limiters
+app.post("/api/batch-register", batchRegisterLimiter); // Apply limiter specifically to this POST
+app.use("/api", batchRoute);
+app.use("/api/hashes", hashesRoute);
+
+// API Keys — list and manage
+app.use("/api/keys", keysRoute);
+app.post("/api/keys", keyCreationLimiter); // This still needs a handler if used here, or handled inside keysRoute
+
 app.use("/analytics", analyticsRoute);
+app.use("/api/org", orgRoute); // Full org management & stats
+app.use("/api/notifications", notificationsRoute);
+app.use("/api/webhooks", webhooksRoute);
+app.use("/api/usage", usageRoute);
+app.use("/api", usageLogger); // Log all /api requests (non-blocking)
 app.use("/organizations", organizationRoute);
 
 // Root endpoint
@@ -152,6 +151,7 @@ if (require.main === module) {
     app.listen(PORT, () => {
         console.log(`VDR Backend API running on port ${PORT}`);
         indexer.start();
+        walletMonitor.start();
     });
 }
 
