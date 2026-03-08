@@ -52,6 +52,9 @@
           "isSigner": false
         },
         {
+          "name": "organization",
+          "isMut": false,
+          "isSigner": false,
           "isOptional": true
         },
         {
@@ -105,9 +108,20 @@
           "isSigner": false
         },
         {
+          "name": "organization",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
           "name": "owner",
           "isMut": true,
           "isSigner": true
+        },
+        {
+          "name": "protocolConfig",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": []
@@ -160,6 +174,18 @@
       "args": [
         {
           "name": "newAdmin",
+          "type": {
+            "option": "publicKey"
+          }
+        },
+        {
+          "name": "newFee",
+          "type": {
+            "option": "u64"
+          }
+        },
+        {
+          "name": "newTreasury",
           "type": {
             "option": "publicKey"
           }
