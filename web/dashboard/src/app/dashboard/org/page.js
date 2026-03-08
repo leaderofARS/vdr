@@ -2,16 +2,19 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '@/utils/api';
+import Link from 'next/link';
 import {
     Building2, Pencil, Copy, CheckCircle2,
     ExternalLink, Users, Key, Hash, ShieldCheck,
     Trash2, UserPlus, ArrowRightLeft, AlertTriangle,
-    RefreshCw, Globe, ShieldAlert, X, Check, Calendar, HardDrive, Network
+    RefreshCw, Globe, ShieldAlert, X, Check, Calendar, HardDrive, Network, Info
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import EmptyState from '@/components/EmptyState';
 
 export default function OrganizationProfile() {
+    const [org, setOrg] = useState(null);
+    const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState(null);
     const [statsLoading, setStatsLoading] = useState(true);
     const [statsError, setStatsError] = useState(false);
