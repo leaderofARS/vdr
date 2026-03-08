@@ -11,7 +11,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { LayoutDashboard, Key, LogOut, ShieldCheck, Settings, ChevronRight, Menu, X, Landmark } from 'lucide-react';
+import { LayoutDashboard, Key, LogOut, ShieldCheck, Settings, ChevronRight, Menu, X, Landmark, Binary } from 'lucide-react';
 import { logout, isAuthenticated } from '@/utils/api';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -49,6 +49,7 @@ export default function DashboardLayout({ children }) {
     const navItems = [
         { name: 'Analytics', href: '/dashboard', icon: LayoutDashboard },
         { name: 'API Key Management', href: '/dashboard/keys', icon: Key },
+        { name: 'Hash Decoder', href: '/dashboard/decoder', icon: Binary },
         { name: 'Global Explorer', href: '/explorer', icon: ShieldCheck },
         { name: 'Node Settings', href: '/dashboard/settings', icon: Settings },
     ];
