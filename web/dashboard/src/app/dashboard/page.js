@@ -47,6 +47,7 @@ export default function AnalyticsDashboard() {
     const [statusFilter, setStatusFilter] = useState('all');
     const [dateFilter, setDateFilter] = useState('all');
 
+    const searchParams = useSearchParams();
     const pageFromUrl = parseInt(searchParams.get('page')) || 1;
     const [currentPage, setCurrentPage] = useState(pageFromUrl);
     const itemsPerPage = 10;
