@@ -31,9 +31,6 @@ export default function UsageDashboard() {
     const [period, setPeriod] = useState('7d');
     const [summary, setSummary] = useState(null);
 
-    // ... inside the component, we will check mounted ...
-    // but better to check it before return
-
     const [chartData, setChartData] = useState([]);
     const [endpoints, setEndpoints] = useState([]);
     const [apiKeys, setApiKeys] = useState([]);

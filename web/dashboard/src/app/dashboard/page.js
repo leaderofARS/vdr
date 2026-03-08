@@ -13,9 +13,20 @@ import {
     Clock, AlertTriangle, Info, ArrowUpRight, ChevronRight as ChevronRightIcon,
     Ban, ShieldAlert, X, TerminalSquare, Rocket, Check, RefreshCw, BarChart2
 } from 'lucide-react';
-import { BarChart, Bar, ResponsiveContainer, YAxis, Tooltip, XAxis, Cell } from 'recharts';
+import dynamic from 'next/dynamic';
+
+const BarChart = dynamic(() => import('recharts').then(m => m.BarChart), { ssr: false });
+const Bar = dynamic(() => import('recharts').then(m => m.Bar), { ssr: false });
+const ResponsiveContainer = dynamic(() => import('recharts').then(m => m.ResponsiveContainer), { ssr: false });
+const YAxis = dynamic(() => import('recharts').then(m => m.YAxis), { ssr: false });
+const XAxis = dynamic(() => import('recharts').then(m => m.XAxis), { ssr: false });
+const Tooltip = dynamic(() => import('recharts').then(m => m.Tooltip), { ssr: false });
+const Cell = dynamic(() => import('recharts').then(m => m.Cell), { ssr: false });
 
 export default function AnalyticsDashboard() {
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => setMounted(true), []);
+
     const router = useRouter();
     const [stats, setStats] = useState(null);
     const [hashes, setHashes] = useState([]);
@@ -149,6 +160,8 @@ export default function AnalyticsDashboard() {
     }, [searchParams]);
 
     // Deterministic state checks for rendering
+    if (!mounted) return null;
+
     if (showWizard) {
         return <OnboardingWizard onComplete={() => window.location.reload()} />;
     }
