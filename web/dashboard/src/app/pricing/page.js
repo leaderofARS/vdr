@@ -232,7 +232,7 @@ export default function PricingPage() {
             period: "month",
             description: "Perfect for exploring the SipHeron VDR protocol.",
             cta: "Get Started Free",
-            ctaHref: "https://app.sipheron.com",
+            ctaHref: "https://app.sipheron.com/auth/register",
             features: [
                 { text: "10 document anchors per month", included: true },
                 { text: "1 API key", included: true },
@@ -250,7 +250,7 @@ export default function PricingPage() {
             period: "month",
             description: "For creators and teams who need reliability and scale.",
             cta: "Start Pro Trial",
-            ctaHref: "https://app.sipheron.com",
+            ctaHref: "https://app.sipheron.com/auth/register",
             popular: true,
             features: [
                 { text: "Unlimited anchors", included: true },
@@ -472,7 +472,7 @@ export default function PricingPage() {
                                 <p className="text-[#6B7280] text-lg mb-12 max-w-xl mx-auto">
                                     Free forever on devnet. No credit card required. Experience institutional provenance on the world's most performant network.
                                 </p>
-                                <Link href="https://app.sipheron.com">
+                                <Link href="https://app.sipheron.com/auth/register">
                                     <button className="px-10 py-5 rounded-2xl bg-gradient-to-r from-[#4F6EF7] to-[#9B5CF6] text-white font-bold text-lg shadow-2xl shadow-blue-500/30 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3 mx-auto uppercase tracking-widest">
                                         Get Started Free <ArrowRight size={22} />
                                     </button>

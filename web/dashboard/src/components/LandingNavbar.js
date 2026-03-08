@@ -249,12 +249,12 @@ export const LandingNavbar = () => {
 
                 {/* Right: CTAs */}
                 <div className="hidden lg:flex items-center gap-4">
-                    <Link href="https://app.sipheron.com/login">
+                    <Link href="https://app.sipheron.com/auth/login">
                         <button className="px-5 py-2.5 rounded-lg text-sm font-semibold text-[#F8F8FF] hover:bg-white/5 transition-colors">
                             Sign In
                         </button>
                     </Link>
-                    <Link href="https://app.sipheron.com">
+                    <Link href="https://app.sipheron.com/auth/register">
                         <button className="px-5 py-2.5 rounded-lg text-sm font-bold text-white bg-gradient-to-br from-[#4F6EF7] to-[#9B5CF6] hover:opacity-90 transition-all shadow-lg shadow-blue-500/20 flex items-center gap-1.5">
                             Get Started Free <ArrowRight size={16} />
                         </button>
@@ -310,12 +310,12 @@ export const LandingNavbar = () => {
                             </div>
 
                             <div className="p-6 border-t border-[#1E1E2E] flex flex-col gap-4">
-                                <Link href="https://app.sipheron.com/login" className="w-full">
+                                <Link href="https://app.sipheron.com/auth/login" className="w-full">
                                     <button className="w-full py-3 rounded-xl border border-[#1E1E2E] text-[#F8F8FF] font-bold hover:bg-white/5">
                                         Sign In
                                     </button>
                                 </Link>
-                                <Link href="https://app.sipheron.com" className="w-full">
+                                <Link href="https://app.sipheron.com/auth/register" className="w-full">
                                     <button className="w-full py-3 rounded-xl bg-gradient-to-br from-[#4F6EF7] to-[#9B5CF6] text-white font-bold shadow-lg flex items-center justify-center gap-2">
                                         Get Started Free <ArrowRight size={18} />
                                     </button>

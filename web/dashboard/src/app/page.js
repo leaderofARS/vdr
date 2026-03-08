@@ -237,7 +237,7 @@ const Hero = () => {
               transition={{ delay: 0.3 }}
               className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mb-12"
             >
-              <Link href="https://app.sipheron.com">
+              <Link href="https://app.sipheron.com/auth/register">
                 <Button className="px-8 py-4 text-lg">Start Anchoring Free <ArrowRight size={20} /></Button>
               </Link>
               <Link href="https://explorer.solana.com/address/6ecWPUK87zxwZP2pARJ75wbpCka92mYSGP1szrJxzAwo?cluster=devnet">
@@ -775,7 +775,7 @@ const FinalCTA = () => {
             Join the developers and institutions anchoring document authenticity on Solana.
           </p>
           <div className="flex flex-col items-center gap-8">
-            <Link href="https://app.sipheron.com">
+            <Link href="https://app.sipheron.com/auth/register">
               <Button className="px-12 py-5 text-xl">Get Started Free <ArrowRight size={24} /></Button>
             </Link>
             <div className="flex flex-wrap justify-center gap-6 text-sm font-medium text-[#6B7280]">
