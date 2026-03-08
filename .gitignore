@@ -9,7 +9,11 @@ test-ledger/
 # ─── Node.js ──────────────────────────────────
 node_modules/
 .npm/
+.npmrc
+.yarnrc
+.pnpm-debug.log*
 npm-debug.log*
+yarn-debug.log*
 yarn-error.log*
 
 # ─── Environment & Secrets ────────────────────
@@ -20,6 +24,17 @@ yarn-error.log*
 *.pem
 *.key
 keys/
+secrets/
+secret.txt
+id.json
+keypair.json
+*.json.key
+*.local
+*.secret
+.password
+.vault-token
+.terraform/
+.vagrant/
 
 # ─── Prisma ───────────────────────────────────
 prisma/dev.db
