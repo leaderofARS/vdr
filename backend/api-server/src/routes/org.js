@@ -179,6 +179,10 @@ router.get('/stats', authenticate, async (req, res, next) => {
                 status: walletMonitor.getStatus(),
                 network: process.env.SOLANA_NETWORK || 'devnet'
             },
+            user: {
+                email: req.user.email,
+                role: 'Administrator'
+            },
             recentActivity: recentActivity.map(formatHashRecordShort)
         });
 

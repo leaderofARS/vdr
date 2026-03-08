@@ -28,6 +28,7 @@ export default function DashboardLayout({ children }) {
     const [unreadCount, setUnreadCount] = useState(0);
     const [loading, setLoading] = useState(false);
     const [refreshFailed, setRefreshFailed] = useState(false);
+    const [contextData, setContextData] = useState(null);
 
     // TODO: Connect to real backend when /api/notifications is ready
     const pollUnreadCount = async () => {
@@ -150,6 +151,12 @@ export default function DashboardLayout({ children }) {
                 } else {
                     document.title = "VDR Console";
                     setMounted(true);
+                    try {
+                        const { data } = await api.get('/api/org/stats');
+                        if (!cancelled) setContextData(data);
+                    } catch (e) {
+                        console.error('Failed to load org stats in layout');
+                    }
                 }
             }
         }
@@ -333,8 +340,8 @@ export default function DashboardLayout({ children }) {
                         </div>
                         <div className="relative">
                             <button className="hover:text-white flex items-center" onClick={() => setShowProfileMenu(!showProfileMenu)}>
-                                <div className="w-7 h-7 rounded-full bg-[#4285F4] text-white flex items-center justify-center text-xs font-bold">
-                                    AD
+                                <div className="w-7 h-7 rounded-full bg-[#4285F4] text-white flex items-center justify-center text-xs font-bold uppercase">
+                                    {contextData?.user?.email ? contextData.user.email.substring(0, 2) : 'AD'}
                                 </div>
                             </button>
                             {showProfileMenu && (
@@ -381,8 +388,21 @@ export default function DashboardLayout({ children }) {
                     {/* Bottom Project Info */}
                     <div className="border-t border-[#2C3038] p-3">
                         <div className="flex flex-col overflow-hidden whitespace-nowrap">
-                            <span className="text-xs font-medium text-[#E8EAED] truncate">Organization Admin</span>
-                            <span className="text-[10px] text-[#9AA0A6] truncate">Net: Devnet Cluster</span>
+                            <span className="text-xs font-medium text-[#E8EAED] truncate" title={contextData?.user?.email || 'Admin'}>
+                                {contextData?.user?.email || 'Loading...'}
+                            </span>
+                            <span className="text-[10px] text-[#9AA0A6] truncate mt-1 mb-1.5" title={contextData?.org?.name}>
+                                {contextData?.org?.name || 'Loading Org...'}
+                            </span>
+                            <div className="flex items-center justify-between mt-1">
+                                <span className="text-[9px] font-bold text-[#4285F4] uppercase tracking-widest bg-[#4285F4]/10 px-1.5 py-0.5 rounded border border-[#4285F4]/20">
+                                    {contextData?.user?.role || 'Admin'}
+                                </span>
+                                <span className="text-[9px] text-[#10B981] capitalize flex items-center gap-1 bg-[#10B981]/10 px-1.5 py-0.5 rounded border border-[#10B981]/20">
+                                    <div className="w-1.5 h-1.5 bg-[#10B981] rounded-full animate-pulse"></div>
+                                    {contextData?.wallet?.network || 'Devnet'}
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </aside>
