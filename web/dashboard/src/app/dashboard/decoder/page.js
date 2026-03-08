@@ -1,20 +1,19 @@
 "use client";
 
 import { useState } from 'react';
-import { Binary, Copy, Check, AlertCircle } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Binary, Copy, Check, AlertCircle, Terminal, CheckCircle2 } from 'lucide-react';
 
 export default function HashDecoder() {
     const [input, setInput] = useState('');
     const [output, setOutput] = useState('');
     const [error, setError] = useState('');
-    const [copied, setCopied] = useState(false);
+    const [copiedHex, setCopiedHex] = useState(false);
+    const [copiedCurl, setCopiedCurl] = useState(false);
 
     const handleDecode = () => {
         setError('');
         setOutput('');
         try {
-            // Remove brackets and split by comma
             let clean = input.trim();
             if (clean.startsWith('[')) clean = clean.slice(1);
             if (clean.endsWith(']')) clean = clean.slice(0, -1);
@@ -42,99 +41,113 @@ export default function HashDecoder() {
         }
     };
 
-    const copyToClipboard = () => {
-        if (!output) return;
-        navigator.clipboard.writeText(output);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+    const copyToClipboard = (text, type) => {
+        if (!text) return;
+        navigator.clipboard.writeText(text);
+        if (type === 'hex') {
+            setCopiedHex(true);
+            setTimeout(() => setCopiedHex(false), 2000);
+        } else {
+            setCopiedCurl(true);
+            setTimeout(() => setCopiedCurl(false), 2000);
+        }
     };
 
+    const curlCommand = output
+        ? `curl -X GET https://api.sipheron.com/verify/${output} \\\n  -H "Authorization: Bearer YOUR_API_KEY"`
+        : '';
+
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-8 max-w-4xl mx-auto"
-        >
-            <div>
-                <h1 className="text-4xl font-black tracking-tight text-white mb-2">
-                    Hash Decoder Utility
-                </h1>
-                <p className="text-gray-400 font-medium">
+        <div className="max-w-[1000px] mx-auto space-y-6">
+            <div className="mb-6">
+                <h1 className="text-2xl font-normal text-white mb-1">Hash Decoder Utility</h1>
+                <p className="text-sm text-[#9AA0A6]">
                     Convert raw on-chain byte arrays back to hex hashes for verification.
                 </p>
             </div>
 
-            <div className="glass p-8 rounded-[32px] border border-white/5 relative overflow-hidden group">
-                <div className="relative z-10 space-y-6">
-                    <div className="flex items-center gap-4 mb-6">
-                        <div className="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shadow-lg">
-                            <Binary className="w-6 h-6 text-blue-400" />
-                        </div>
-                        <div>
-                            <h3 className="text-xl font-bold text-white">Raw Byte Array</h3>
-                            <p className="text-xs text-gray-500 uppercase tracking-widest font-bold">Paste from Solana Explorer</p>
-                        </div>
-                    </div>
+            <div className="bg-[#1A1D24] border border-[#2C3038] rounded shadow-sm">
+                <div className="border-b border-[#2C3038] px-5 py-3 bg-[#1D2128]">
+                    <h2 className="text-[#E8EAED] text-sm font-medium">Input Configuration</h2>
+                </div>
 
-                    <div className="space-y-4">
+                <div className="p-5 space-y-4">
+                    <div>
+                        <label className="block text-xs font-medium text-[#9AA0A6] mb-2 uppercase">Raw Byte Array</label>
                         <textarea
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             placeholder="e.g. [249, 245, 167, 3, 111, 164, 68, 96, ...]"
-                            className="w-full h-32 px-6 py-4 bg-white/5 border border-white/10 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all placeholder:text-gray-600 font-mono text-sm resize-none text-gray-300"
+                            className="w-full h-32 px-3 py-2 bg-[#131418] border border-[#3C4043] rounded text-sm text-[#4285F4] font-mono focus:outline-none focus:border-[#4285F4] transition-colors resize-none mb-4"
                         />
 
                         {error && (
-                            <div className="flex items-center gap-2 text-amber-400 text-sm font-bold bg-amber-400/10 px-4 py-3 rounded-xl border border-amber-400/20">
-                                <AlertCircle className="w-4 h-4" />
-                                {error}
+                            <div className="bg-[#3C2A2A] border border-[#F28B82]/30 rounded p-3 mb-4 flex items-start gap-2 text-sm text-[#F28B82]">
+                                <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                                <span>{error}</span>
                             </div>
                         )}
 
                         <button
                             onClick={handleDecode}
-                            className="w-full h-14 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold transition-all shadow-lg shadow-blue-600/20 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2"
+                            className="bg-[#4285F4] hover:bg-[#3367D6] text-white px-5 py-2 rounded text-sm font-medium transition-colors flex items-center gap-2"
                         >
-                            <Binary className="w-5 h-5" />
-                            Decode to Hex
+                            <Binary className="w-4 h-4" />
+                            DECODE TO HEX
                         </button>
                     </div>
-
-                    {output && (
-                        <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            className="pt-8 border-t border-white/10 space-y-4 mt-8"
-                        >
-                            <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] ml-1">Decoded Hex String</label>
-                            <div className="flex items-center gap-4">
-                                <div className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-6 py-4 font-mono text-sm text-emerald-400 break-all select-all flex items-center shadow-inner">
-                                    {output}
-                                </div>
-                                <button
-                                    onClick={copyToClipboard}
-                                    className="h-14 w-14 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/5 transition-colors flex items-center justify-center text-gray-400 hover:text-white"
-                                    title="Copy to clipboard"
-                                >
-                                    {copied ? <Check className="w-5 h-5 text-emerald-400" /> : <Copy className="w-5 h-5" />}
-                                </button>
-                            </div>
-
-                            <div className="mt-6 flex items-start gap-4 p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20">
-                                <div className="p-2 rounded-xl bg-blue-500/20">
-                                    <AlertCircle className="w-4 h-4 text-blue-400" />
-                                </div>
-                                <div>
-                                    <p className="text-sm font-bold text-blue-400 mb-1">Verification Hint</p>
-                                    <p className="text-xs text-blue-400/80 leading-relaxed font-medium">
-                                        Use this hex with <code className="bg-black/40 px-2 py-0.5 rounded ml-1 mr-1 text-blue-300 font-bold border border-blue-500/30">sipheron-vdr verify &lt;file&gt;</code> to verify your file against the on-chain registry.
-                                    </p>
-                                </div>
-                            </div>
-                        </motion.div>
-                    )}
                 </div>
             </div>
-        </motion.div>
+
+            {output && (
+                <div className="bg-[#1A1D24] border border-[#2C3038] rounded shadow-sm">
+                    <div className="border-b border-[#2C3038] px-5 py-3 bg-[#1D2128]">
+                        <h2 className="text-[#E8EAED] text-sm font-medium">Decoding Results</h2>
+                    </div>
+
+                    <div className="p-5 space-y-8">
+                        <div>
+                            <label className="block text-xs font-medium text-[#9AA0A6] mb-2 uppercase">Decoded Hex String</label>
+                            <div className="flex items-center gap-3">
+                                <input
+                                    type="text"
+                                    readOnly
+                                    value={output}
+                                    className="w-full bg-[#131418] border border-[#3C4043] rounded px-3 py-2.5 text-sm text-[#10B981] font-mono focus:outline-none"
+                                />
+                                <button
+                                    onClick={() => copyToClipboard(output, 'hex')}
+                                    className="shrink-0 p-2.5 bg-[#2C3038] hover:bg-[#3C4043] text-white rounded transition-colors"
+                                    title="Copy hex to clipboard"
+                                >
+                                    {copiedHex ? <CheckCircle2 className="w-4 h-4 text-[#10B981]" /> : <Copy className="w-4 h-4" />}
+                                </button>
+                            </div>
+                            <p className="mt-2 text-xs text-[#9AA0A6]">
+                                Use this hex with <code className="bg-[#131418] border border-[#2C3038] px-1 rounded text-[#E8EAED]">sipheron-vdr verify &lt;file&gt;</code>
+                            </p>
+                        </div>
+
+                        <div className="border-t border-[#2C3038] pt-6">
+                            <label className="flex items-center gap-2 text-xs font-medium text-[#9AA0A6] mb-2 uppercase">
+                                <Terminal className="w-4 h-4" /> Verify via API
+                            </label>
+                            <div className="relative group">
+                                <pre className="w-full bg-[#131418] border border-[#3C4043] rounded p-4 text-sm text-[#E8EAED] font-mono overflow-x-auto whitespace-pre-wrap">
+                                    {curlCommand}
+                                </pre>
+                                <button
+                                    onClick={() => copyToClipboard(curlCommand, 'curl')}
+                                    className="absolute top-3 right-3 p-1.5 bg-[#2C3038] hover:bg-[#3C4043] text-[#9AA0A6] hover:text-white rounded transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+                                    title="Copy command"
+                                >
+                                    {copiedCurl ? <CheckCircle2 className="w-4 h-4 text-[#10B981]" /> : <Copy className="w-4 h-4" />}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
     );
 }

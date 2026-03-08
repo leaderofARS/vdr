@@ -1,19 +1,9 @@
 "use client";
 
-/**
- * @file page.js
- * @module /home/ars0x01/Documents/Github/solana-vdr/web/dashboard/src/app/dashboard/page.js
- * @description Next.js App Router pages and layouts.
- * Part of the SipHeron VDR platform.
- * @author SipHeron Platform
- */
-
 import { useState, useEffect } from 'react';
 import { api } from '@/utils/api';
 import Link from 'next/link';
-import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid } from 'recharts';
-import { AlertCircle, FileDigit, Building, Users, Activity, ShieldCheck, Plus, ExternalLink, Hash, Globe, MousePointer2, Landmark } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Network, Key, FolderDot, HardDrive, CheckCircle2, XCircle, Terminal, ExternalLink, ShieldCheck, ChevronRight, Building } from 'lucide-react';
 
 export default function AnalyticsDashboard() {
     const [stats, setStats] = useState(null);
@@ -38,12 +28,8 @@ export default function AnalyticsDashboard() {
     }, []);
 
     if (loading) return (
-        <div className="flex items-center justify-center min-h-[60vh]">
-            <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                className="w-12 h-12 border-t-2 border-r-2 border-blue-500 rounded-full"
-            />
+        <div className="flex items-center justify-center min-h-[50vh]">
+            <div className="w-8 h-8 border-t-2 border-b-2 border-[#4285F4] rounded-full animate-spin" />
         </div>
     );
 
@@ -52,194 +38,104 @@ export default function AnalyticsDashboard() {
     }
 
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-8 max-w-7xl mx-auto"
-        >
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div className="max-w-[1400px] mx-auto space-y-6">
+            <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between">
                 <div>
-                    <h1 className="text-4xl font-black tracking-tight text-white mb-2">
-                        {stats?.organizationName || 'Institutional Overview'}
+                    <h1 className="text-2xl font-normal text-white mb-1">
+                        {stats?.organizationName ? `Project: ${stats.organizationName}` : 'Project Overview'}
                     </h1>
-                    <div className="flex items-center gap-3 text-gray-500 font-medium text-sm">
-                        <span className="flex items-center gap-1.5 bg-white/5 px-2 py-0.5 rounded-md border border-white/5">
-                            <Globe className="w-3.5 h-3.5" />
-                            Solana Devnet
-                        </span>
-                        <div className="w-1 h-1 rounded-full bg-gray-700" />
-                        <span className="font-mono text-[11px] py-0.5 px-2 bg-blue-500/10 text-blue-400 rounded-md border border-blue-500/20">
-                            {stats?.solanaPubkey?.slice(0, 8)}...{stats?.solanaPubkey?.slice(-8)}
-                        </span>
+                    <div className="text-sm text-[#9AA0A6] font-mono">
+                        Org ID: {stats?.solanaPubkey || 'Not provisioned'}
                     </div>
-                </div>
-
-                <div className="flex items-center gap-3 px-4 py-2 rounded-2xl glass-accent animate-pulse-slow">
-                    <Activity className="w-4 h-4 text-blue-400" />
-                    <span className="text-xs font-bold uppercase tracking-widest text-blue-400">Live Network Sync</span>
                 </div>
             </div>
 
-            {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <StatCard
-                    title="Total Anchored Proofs"
+            {/* Metric Cards Row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <MetricCard
+                    title="Total Proofs Anchored"
                     value={stats?.totalHashes || 0}
-                    icon={Hash}
-                    trend="+12% from last week"
-                    color="blue"
+                    icon={FolderDot}
                 />
-                <StatCard
-                    title="Verification Integrity"
-                    value={`${stats?.activeRate || 100}%`}
-                    icon={ShieldCheck}
-                    trend="Optimal Health"
-                    color="emerald"
+                <MetricCard
+                    title="Active API Keys"
+                    value={stats?.activeKeys || 0}
+                    icon={Key}
                 />
-                <StatCard
-                    title="Revocation events"
-                    value={stats?.revokedHashes || 0}
-                    icon={AlertCircle}
-                    trend="No recent spikes"
-                    color="amber"
+                <MetricCard
+                    title="Wallet Balance (SOL)"
+                    value={stats?.balance || "0.00"}
+                    icon={HardDrive}
                 />
-            </div>
-
-            {/* Charts Array */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-12">
-                <div className="lg:col-span-2 glass p-8 rounded-[32px] border border-white/5 relative overflow-hidden group">
-                    <div className="relative z-10">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
-                            <h3 className="text-xl font-bold text-white flex items-center gap-3">
-                                <Activity className="w-5 h-5 text-blue-500" />
-                                Network Anchoring Volume
-                            </h3>
-                            <select className="bg-white/5 border border-white/10 text-white text-xs px-4 py-2 rounded-xl outline-none hover:bg-white/10 transition-colors cursor-pointer appearance-none">
-                                <option className="bg-gray-900">Last 7 Days</option>
-                                <option className="bg-gray-900">Last 30 Days</option>
-                                <option className="bg-gray-900">All Time</option>
-                            </select>
-                        </div>
-                        <div className="h-[300px] w-full">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart data={
-                                    stats?.recentRecords?.length > 5
-                                        ? stats.recentRecords.slice(0, 10).map((r, i) => ({ name: `Day ${i + 1}`, volume: Math.floor(Math.random() * 50) + 10 }))
-                                        : [
-                                            { name: 'Mon', volume: 12 }, { name: 'Tue', volume: 19 },
-                                            { name: 'Wed', volume: 15 }, { name: 'Thu', volume: 25 },
-                                            { name: 'Fri', volume: 22 }, { name: 'Sat', volume: 30 },
-                                            { name: 'Sun', volume: 28 }
-                                        ]
-                                }>
-                                    <defs>
-                                        <linearGradient id="colorVolume" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4} />
-                                            <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                                        </linearGradient>
-                                    </defs>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                                    <XAxis dataKey="name" stroke="rgba(255,255,255,0.3)" fontSize={12} tickLine={false} axisLine={false} dy={10} />
-                                    <YAxis stroke="rgba(255,255,255,0.3)" fontSize={12} tickLine={false} axisLine={false} dx={-10} />
-                                    <Tooltip
-                                        cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1, strokeDasharray: '5 5' }}
-                                        contentStyle={{
-                                            backgroundColor: 'rgba(10,10,10,0.9)',
-                                            borderRadius: '16px',
-                                            border: '1px solid rgba(255,255,255,0.1)',
-                                            backdropFilter: 'blur(10px)',
-                                            color: '#fff',
-                                            boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
-                                        }}
-                                        itemStyle={{ color: '#60a5fa', fontWeight: 'bold' }}
-                                    />
-                                    <Area type="monotone" dataKey="volume" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorVolume)" activeDot={{ r: 6, fill: '#60a5fa', stroke: '#fff', strokeWidth: 2 }} />
-                                </AreaChart>
-                            </ResponsiveContainer>
-                        </div>
+                <div className="bg-[#1A1D24] border border-[#2C3038] rounded p-4 flex flex-col justify-between">
+                    <div className="text-[#9AA0A6] text-[11px] font-medium uppercase tracking-wider flex items-center gap-2">
+                        <Network className="w-3.5 h-3.5" />
+                        Network Status
                     </div>
-                </div>
-
-                <div className="glass p-8 rounded-[32px] border border-white/5 flex flex-col items-center justify-center text-center relative overflow-hidden group">
-                    {/* Background Glow */}
-                    <div className="absolute inset-0 bg-blue-600/5 blur-[80px] group-hover:bg-blue-600/10 transition-colors" />
-
-                    <div className="relative z-10">
-                        <div className="w-20 h-20 rounded-3xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mx-auto mb-6 shadow-2xl">
-                            <Plus className="w-10 h-10 text-blue-400 group-hover:rotate-90 transition-transform duration-500" />
-                        </div>
-                        <h3 className="text-2xl font-black text-white mb-3 tracking-tight">Anchor New Asset</h3>
-                        <p className="text-gray-400 text-sm mb-8 leading-relaxed">
-                            Initialize a new cryptographic proof for high-value intellectual property.
-                        </p>
-                        <Link href="/dashboard/keys" className="w-full h-14 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold transition-all shadow-lg shadow-blue-600/20 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center">
-                            Manage API Keys
-                        </Link>
+                    <div className="mt-2 flex items-center gap-2">
+                        <div className="w-2.5 h-2.5 rounded-full bg-[#10B981]"></div>
+                        <span className="text-xl font-normal text-white">Devnet</span>
                     </div>
+                    <div className="text-[11px] text-[#9AA0A6] mt-1">Operational</div>
                 </div>
             </div>
 
-            {/* Recent Activity Table */}
-            <div className="mt-12">
-                <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-xl font-bold text-white flex items-center gap-3">
-                        <MousePointer2 className="w-5 h-5 text-purple-500" />
-                        Recent Registry Entries
-                    </h3>
-                    <button className="text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors uppercase tracking-[0.2em]">View All Activity &rarr;</button>
-                </div>
-
-                <div className="glass rounded-[32px] border border-white/5 overflow-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Recent Activity Table */}
+                <div className="lg:col-span-2 bg-[#1A1D24] border border-[#2C3038] rounded">
+                    <div className="px-5 py-3 border-b border-[#2C3038] flex items-center justify-between">
+                        <h2 className="text-[#E8EAED] text-sm font-medium">Recent Activity</h2>
+                        <button className="text-[#4285F4] text-xs font-medium hover:underline">VIEW ALL</button>
+                    </div>
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left">
-                            <thead>
-                                <tr className="border-b border-white/5 bg-white/[0.02]">
-                                    <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Asset Identity</th>
-                                    <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Immutable Hash</th>
-                                    <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Status</th>
-                                    <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Provenance</th>
+                        <table className="w-full text-left text-sm whitespace-nowrap">
+                            <thead className="bg-[#1D2128] border-b border-[#2C3038]">
+                                <tr className="text-[#9AA0A6] text-xs uppercase">
+                                    <th className="px-5 py-2.5 font-medium">Hash</th>
+                                    <th className="px-5 py-2.5 font-medium">Metadata</th>
+                                    <th className="px-5 py-2.5 font-medium">Date Anchored</th>
+                                    <th className="px-5 py-2.5 font-medium border-l border-[#2C3038]">Status</th>
+                                    <th className="px-5 py-2.5 font-medium text-right">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-white/5">
+                            <tbody className="divide-y divide-[#2C3038] text-[13px]">
                                 {stats?.recentRecords?.length ? stats.recentRecords.map((record, i) => (
-                                    <tr
-                                        key={i}
-                                        className="group hover:bg-white/[0.05] transition-colors cursor-pointer"
-                                        onClick={() => window.open(`https://explorer.solana.com/address/${record.pdaAddress}?cluster=${stats?.network || 'devnet'}`, '_blank')}
-                                    >
-                                        <td className="px-8 py-6">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
-                                                    <FileDigit className="w-5 h-5 text-blue-400" />
-                                                </div>
-                                                <span className="font-bold text-sm text-gray-200">{record.metadata || 'Unnamed Proof'}</span>
-                                            </div>
+                                    <tr key={i} className="hover:bg-[#20232A] transition-colors">
+                                        <td className="px-5 py-3 font-mono text-[#4285F4]">
+                                            {record.hash.slice(0, 16)}...
                                         </td>
-                                        <td className="px-8 py-6">
-                                            <code className="text-xs text-gray-500 font-mono bg-white/5 px-3 py-1.5 rounded-lg border border-white/5">
-                                                {record.hash.slice(0, 16)}...
-                                            </code>
+                                        <td className="px-5 py-3 text-[#E8EAED]">
+                                            {record.metadata || 'Unnamed Proof'}
                                         </td>
-                                        <td className="px-8 py-6">
-                                            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 w-fit">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                                                <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">Anchored</span>
-                                            </div>
+                                        <td className="px-5 py-3 text-[#9AA0A6]">
+                                            {new Date(record.timestamp * 1000).toLocaleString()}
                                         </td>
-                                        <td className="px-8 py-6">
+                                        <td className="px-5 py-3 border-l border-[#2C3038]">
+                                            {record.isRevoked ? (
+                                                <span className="inline-flex items-center gap-1.5 text-[#F28B82] text-xs">
+                                                    <div className="w-2 h-2 rounded-full bg-[#F28B82]"></div> Revoked
+                                                </span>
+                                            ) : (
+                                                <span className="inline-flex items-center gap-1.5 text-[#10B981] text-xs">
+                                                    <div className="w-2 h-2 rounded-full bg-[#10B981]"></div> Active
+                                                </span>
+                                            )}
+                                        </td>
+                                        <td className="px-5 py-3 text-right">
                                             <a
                                                 href={`https://explorer.solana.com/address/${record.pdaAddress}?cluster=devnet`}
-                                                target="_blank"
-                                                className="p-2 rounded-lg bg-white/5 border border-white/5 hover:border-blue-500/50 hover:text-blue-400 transition-all inline-block"
+                                                target="_blank" rel="noopener noreferrer"
+                                                className="text-[#9AA0A6] hover:text-white inline-flex items-center gap-1 text-xs"
+                                                title="View on Solana Explorer"
                                             >
-                                                <ExternalLink className="w-4 h-4" />
+                                                Explorer <ExternalLink className="w-3.5 h-3.5" />
                                             </a>
                                         </td>
                                     </tr>
                                 )) : (
                                     <tr>
-                                        <td colSpan="4" className="px-8 py-12 text-center text-gray-500 font-medium italic">
-                                            No recent activity detected on the cluster.
+                                        <td colSpan="5" className="px-5 py-8 text-center text-[#9AA0A6] text-sm">
+                                            No recent transactions found in the registry.
                                         </td>
                                     </tr>
                                 )}
@@ -247,46 +143,66 @@ export default function AnalyticsDashboard() {
                         </table>
                     </div>
                 </div>
+
+                {/* Quick Actions Panel */}
+                <div className="bg-[#1A1D24] border border-[#2C3038] rounded h-fit">
+                    <div className="px-5 py-3 border-b border-[#2C3038]">
+                        <h2 className="text-[#E8EAED] text-sm font-medium">Quick Actions</h2>
+                    </div>
+                    <div className="p-2 flex flex-col gap-1">
+                        <div className="group flex flex-col gap-1 p-3 hover:bg-[#20232A] rounded transition-colors">
+                            <div className="flex items-center text-[#E8EAED] text-[13px] font-medium gap-2">
+                                <Terminal className="w-4 h-4 text-[#9AA0A6]" />
+                                Anchor New File
+                            </div>
+                            <code className="text-[11px] text-[#9AA0A6] bg-[#131418] p-2 rounded mt-2 border border-[#2C3038] font-mono break-all select-all block">
+                                sipheron-vdr register ./document.pdf
+                            </code>
+                        </div>
+
+                        <Link href="/dashboard/keys">
+                            <div className="group flex items-center justify-between p-3 hover:bg-[#20232A] rounded cursor-pointer transition-colors">
+                                <div className="flex items-center text-[#E8EAED] text-[13px] font-medium gap-2">
+                                    <Key className="w-4 h-4 text-[#9AA0A6]" />
+                                    Generate API Key
+                                </div>
+                                <ChevronRight className="w-4 h-4 text-[#9AA0A6]" />
+                            </div>
+                        </Link>
+
+                        <Link href="/dashboard/decoder">
+                            <div className="group flex items-center justify-between p-3 hover:bg-[#20232A] rounded cursor-pointer transition-colors">
+                                <div className="flex items-center text-[#E8EAED] text-[13px] font-medium gap-2">
+                                    <ShieldCheck className="w-4 h-4 text-[#9AA0A6]" />
+                                    Verify a File
+                                </div>
+                                <ChevronRight className="w-4 h-4 text-[#9AA0A6]" />
+                            </div>
+                        </Link>
+                    </div>
+                </div>
             </div>
-        </motion.div>
+        </div>
     );
 }
 
-function StatCard({ title, value, icon: Icon, trend, color }) {
-    const colors = {
-        blue: 'text-blue-400 bg-blue-400/10 border-blue-400/20',
-        emerald: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20',
-        amber: 'text-amber-400 bg-amber-400/10 border-amber-400/20',
-        purple: 'text-purple-400 bg-purple-400/10 border-purple-400/20',
-    };
-
+function MetricCard({ title, value, icon: Icon }) {
     return (
-        <motion.div
-            whileHover={{ y: -5 }}
-            className="glass p-8 rounded-[32px] border border-white/5 relative overflow-hidden group"
-        >
-            <div className="absolute top-0 right-0 p-8 opacity-5">
-                <Icon className="w-24 h-24" />
+        <div className="bg-[#1A1D24] border border-[#2C3038] rounded p-4 flex flex-col justify-between">
+            <div className="text-[#9AA0A6] text-[11px] font-medium uppercase tracking-wider flex items-center gap-2">
+                <Icon className="w-3.5 h-3.5" />
+                {title}
             </div>
-            <div className="relative z-10 flex flex-col h-full">
-                <div className="flex items-center justify-between mb-8">
-                    <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">{title}</h3>
-                    <div className={`p-3 rounded-2xl border ${colors[color]}`}>
-                        <Icon className="w-5 h-5" />
-                    </div>
-                </div>
-                <p className="text-4xl font-black text-white tracking-tighter mb-4">{value}</p>
-                <div className="mt-auto flex items-center gap-2">
-                    <span className={`text-[10px] font-bold uppercase tracking-wider ${colors[color].split(' ')[0]}`}>{trend}</span>
-                </div>
+            <div className="mt-2 text-2xl font-normal text-white">
+                {value}
             </div>
-        </motion.div>
+        </div>
     );
 }
 
 function OnboardingWizard({ onComplete }) {
     const [name, setName] = useState('');
-    const [pubkey, setPubkey] = useState(''); // PDA Or Wallet
+    const [pubkey, setPubkey] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -305,62 +221,56 @@ function OnboardingWizard({ onComplete }) {
     };
 
     return (
-        <div className="min-h-[70vh] flex items-center justify-center">
-            <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="max-w-xl w-full glass p-12 rounded-[40px] border border-white/10 shadow-2xl relative overflow-hidden"
-            >
-                <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none">
-                    <Building className="w-48 h-48" />
+        <div className="flex flex-col items-center mt-12">
+            <div className="bg-[#1A1D24] border border-[#2C3038] rounded w-full max-w-lg overflow-hidden shadow-lg">
+                <div className="bg-[#1D2128] border-b border-[#2C3038] px-6 py-4 flex items-center gap-3">
+                    <Building className="text-[#4285F4] w-5 h-5" />
+                    <h2 className="text-[#E8EAED] text-sm font-medium tracking-wide">Provision Organization</h2>
                 </div>
 
-                <div className="relative z-10">
-                    <div className="w-16 h-16 rounded-2xl bg-blue-600 flex items-center justify-center mb-8 shadow-xl shadow-blue-600/20">
-                        <Landmark className="w-8 h-8 text-white" />
-                    </div>
-
-                    <h2 className="text-3xl font-black text-white mb-4 tracking-tight">Provision Institutional Node</h2>
-                    <p className="text-gray-400 mb-10 leading-relaxed font-medium">
-                        Your account is currently orphaned. To begin anchoring assets, you must provision an organization identity on the Solana cluster.
+                <div className="p-6">
+                    <p className="text-[#9AA0A6] text-xs mb-6 leading-relaxed">
+                        To begin anchoring assets, you must provision an organization identity on the Solana cluster. This maps your dashboard account to an on-chain PDA.
                     </p>
 
-                    <form onSubmit={handleInit} className="space-y-6">
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] ml-1">Entity Nomenclature</label>
+                    <form onSubmit={handleInit} className="space-y-5">
+                        <div className="space-y-1.5">
+                            <label className="text-[11px] font-medium text-[#9AA0A6] uppercase tracking-wider">Project Name</label>
                             <input
                                 type="text"
                                 required
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
                                 placeholder="e.g. Acme Corp Institutional"
-                                className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all placeholder:text-gray-600 font-bold"
+                                className="w-full px-3 py-2 bg-[#131418] border border-[#3C4043] rounded text-sm text-white focus:outline-none focus:border-[#4285F4] transition-colors"
                             />
                         </div>
 
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] ml-1">Solana Ledger Identity (PDA/Wallet)</label>
+                        <div className="space-y-1.5">
+                            <label className="text-[11px] font-medium text-[#9AA0A6] uppercase tracking-wider">Solana Identity (PDA/Wallet)</label>
                             <input
                                 type="text"
                                 required
                                 value={pubkey}
                                 onChange={(e) => setPubkey(e.target.value)}
                                 placeholder="Public key for on-chain seeds"
-                                className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all placeholder:text-gray-600 font-mono text-sm"
+                                className="w-full px-3 py-2 bg-[#131418] border border-[#3C4043] rounded text-sm text-[#4285F4] font-mono focus:outline-none focus:border-[#4285F4] transition-colors"
                             />
                         </div>
 
-                        {error && <p className="text-red-400 text-xs font-bold px-2">{error}</p>}
+                        {error && <div className="text-[#F28B82] text-xs font-medium py-1">{error}</div>}
 
-                        <button
-                            disabled={loading}
-                            className="w-full h-16 rounded-2xl bg-white text-black font-black text-lg hover:bg-gray-200 transition-all shadow-xl disabled:bg-gray-800 disabled:text-gray-500 mt-4"
-                        >
-                            {loading ? 'Processing Protocol Seeds...' : 'Finalize Onboarding'}
-                        </button>
+                        <div className="pt-2">
+                            <button
+                                disabled={loading}
+                                className="w-full bg-[#4285F4] hover:bg-[#3367D6] text-white text-sm font-medium py-2 rounded transition-colors disabled:bg-[#3C4043] disabled:text-[#9AA0A6]"
+                            >
+                                {loading ? 'Provisioning...' : 'CREATE ORGANIZATION'}
+                            </button>
+                        </div>
                     </form>
                 </div>
-            </motion.div>
+            </div>
         </div>
     );
 }
