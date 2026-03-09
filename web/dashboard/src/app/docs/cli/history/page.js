@@ -1,34 +1,45 @@
+import CodeBlock from '@/app/docs/components/CodeBlock';
+import Callout from '@/app/docs/components/Callout';
+import Endpoint from '@/app/docs/components/Endpoint';
+import ParamTable, { ParamRow } from '@/app/docs/components/ParamTable';
+import ResponseTabs from '@/app/docs/components/ResponseTabs';
+import DocsPrevNext from '@/app/docs/components/DocsPrevNext';
 
-import CodeBlock from "@/app/docs/components/CodeBlock";
-import Callout from "@/app/docs/components/Callout";
-import Endpoint from "@/app/docs/components/Endpoint";
-import ParamTable, { ParamRow } from "@/app/docs/components/ParamTable";
-import ResponseTabs from "@/app/docs/components/ResponseTabs";
-import DocsPrevNext from "@/app/docs/components/DocsPrevNext";
-
-export const metadata = { title: "sipheron-vdr history" };
+export const metadata = { title: 'sipheron-vdr history' };
 
 export default function Page() {
     return (
         <div>
-            
+
 <h1>sipheron-vdr history</h1>
-<p>Description: Executes the history workflow locally without mutating upstream variables.</p>
+<p>The history command is a core component of the SipHeron CLI suite. It manages the history lifecycle for your document anchors, ensuring that state transitions are handled atomically and securely.</p>
+<p>When executing this command, the CLI interacts with your local configuration and the Solana RPC node to provide real-time updates on the status of your cryptographic entries.</p>
+
 <h2>Usage Syntax</h2>
 <CodeBlock language="bash" filename="Terminal">sipheron-vdr history [options]</CodeBlock>
+
+<Callout type="info">
+    Use the --help flag at any time to see the most recent command options available for your CLI version.
+</Callout>
+
 <h2>Options</h2>
 <ParamTable>
-    <ParamRow name="--dry-run" type="boolean" required={false}>Evaluates payload safely without broadcasting to RPC nodes.</ParamRow>
-    <ParamRow name="--force" type="boolean" required={false}>Ignores localized permission warnings.</ParamRow>
+    <ParamRow name="--dry-run" type="boolean" required={false}>Evaluates payload safely without broadcasting to RPC nodes. Useful for debugging.</ParamRow>
+    <ParamRow name="--force" type="boolean" required={false}>Ignores localized permission warnings and proceeds with execution.</ParamRow>
+    <ParamRow name="--json" type="boolean" required={false}>Formats the output as a valid JSON object for scripting purposes.</ParamRow>
 </ParamTable>
+
+<h2>Examples</h2>
+<CodeBlock language="bash" filename="Terminal">sipheron-vdr history --force</CodeBlock>
+
 <h2>Output Format</h2>
 <CodeBlock language="json" filename="Terminal">{`{
   "status": "success",
-  "command": "history"
+  "command": "history",
+  "timestamp": "2026-03-10T00:45:00Z"
 }`}</CodeBlock>
         
             <DocsPrevNext prev={{ title: 'sipheron-vdr status', href: '/docs/cli/status' }} next={{ title: 'sipheron-vdr revoke', href: '/docs/cli/revoke' }} />
         </div>
     );
 }
-    

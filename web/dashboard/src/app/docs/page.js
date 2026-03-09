@@ -1,17 +1,16 @@
+import CodeBlock from '@/app/docs/components/CodeBlock';
+import Callout from '@/app/docs/components/Callout';
+import Endpoint from '@/app/docs/components/Endpoint';
+import ParamTable, { ParamRow } from '@/app/docs/components/ParamTable';
+import ResponseTabs from '@/app/docs/components/ResponseTabs';
+import DocsPrevNext from '@/app/docs/components/DocsPrevNext';
 
-import CodeBlock from "@/app/docs/components/CodeBlock";
-import Callout from "@/app/docs/components/Callout";
-import Endpoint from "@/app/docs/components/Endpoint";
-import ParamTable, { ParamRow } from "@/app/docs/components/ParamTable";
-import ResponseTabs from "@/app/docs/components/ResponseTabs";
-import DocsPrevNext from "@/app/docs/components/DocsPrevNext";
-
-export const metadata = { title: "Introduction" };
+export const metadata = { title: 'Introduction' };
 
 export default function Page() {
     return (
         <div>
-            
+
 <h1>Introduction to SipHeron VDR</h1>
 <p className="text-xl mb-8">Welcome to the SipHeron Verifiable Document Registry (VDR). The industry standard for on-chain, instant document authenticity on Solana.</p>
 <Callout type="tip">
@@ -19,6 +18,7 @@ export default function Page() {
 </Callout>
 <h2>What is SipHeron VDR?</h2>
 <p>SipHeron VDR (Verifiable Document Registry) is an enterprise-grade protocol allowing organizations to anchor the cryptographic hash (SHA-256) of any digital asset directly to the Solana blockchain. This delivers undeniable proof of existence and pristine data provenance without ever compromising the confidentiality of the actual document.</p>
+<p>By leveraging the high throughput and low latency of Solana, SipHeron provides a trust layer that is globally accessible yet mathematically secure against tampering or retroactive modification.</p>
 <h2>How it Works</h2>
 <p>The process of verifiable document anchoring operates in three secure, localized stages:</p>
 <ol>
@@ -37,4 +37,3 @@ export default function Page() {
         </div>
     );
 }
-    

@@ -88,7 +88,7 @@ export default function DocsSidebar({ onNavigate }) {
                     </h4>
                     <ul className="space-y-1">
                         {group.items.map((item, j) => {
-                            const isActive = pathname === item.href;
+                            const isActive = pathname === item.href || (item.href !== '/docs' && pathname.startsWith(item.href + '/'));
 
                             return (
                                 <li key={j}>
@@ -108,8 +108,8 @@ export default function DocsSidebar({ onNavigate }) {
                                         </div>
                                         {item.badge && (
                                             <span className={`text-[9px] uppercase tracking-widest px-1.5 py-0.5 rounded-full font-bold ${item.badge === 'New'
-                                                    ? 'bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20'
-                                                    : 'bg-[#5B5380]/10 text-[#5B5380] border border-[#5B5380]/20'
+                                                ? 'bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20'
+                                                : 'bg-[#5B5380]/10 text-[#5B5380] border border-[#5B5380]/20'
                                                 }`}>
                                                 {item.badge}
                                             </span>

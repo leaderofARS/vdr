@@ -36,7 +36,7 @@ export default function DocsHeader() {
                         <div className="w-8 h-8 rounded-lg bg-[#151525] border border-[#5B5380]/30 flex items-center justify-center p-1">
                             <img src="/sipheron_vdap_logo.png" alt="SipHeron" className="w-full h-full object-contain" />
                         </div>
-                        <span className="text-xl font-bold tracking-tight text-[#F0EEFF] hidden sm:block">SipHeron Docs</span>
+                        <span className="text-xl font-bold tracking-tight text-[#F0EEFF] hidden sm:block">SipHeron VDR</span>
                     </Link>
 
                     <span className="hidden lg:flex items-center px-2 py-0.5 rounded-full bg-[#151525] border border-[#5B5380]/30 text-[10px] font-mono font-bold text-[#9B8EC4]">
@@ -61,8 +61,11 @@ export default function DocsHeader() {
                         <Link href="https://github.com/leaderofARS/solana-vdr" className="text-[#9B8EC4] hover:text-[#F0EEFF] transition-colors flex items-center gap-2 text-sm font-semibold">
                             <Github className="w-5 h-5" /> GitHub
                         </Link>
+                        <Link href="/dashboard" className="text-[#9B8EC4] hover:text-[#F0EEFF] transition-colors text-sm font-semibold">
+                            Dashboard &rarr;
+                        </Link>
                         <Link href="/auth/register" className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#4F6EF7] to-[#9B5CF6] text-white text-sm font-bold shadow-[0_0_20px_rgba(155,110,255,0.2)] hover:shadow-[0_0_30px_rgba(155,110,255,0.4)] hover:opacity-90 active:scale-95 transition-all">
-                            Get Started &rarr;
+                            Get Started
                         </Link>
                     </div>
                 </div>
