@@ -90,7 +90,6 @@ export const PurpleSkeleton = ({ className = "" }) => (
     <div className={`loader-shimmer rounded-md ${className}`} />
 );
 
-// --- CountUp ---
 export const CountUp = ({ end, duration = 1500 }) => {
     const [count, setCount] = useState(0);
 
@@ -195,7 +194,6 @@ export const PurpleModal = ({ isOpen, onClose, title, children }) => (
     </AnimatePresence>
 );
 
-// --- Light/Dark Toggle ---
 export const ThemeToggle = () => {
     const [isDark, setIsDark] = useState(true);
 
@@ -205,7 +203,7 @@ export const ThemeToggle = () => {
             setIsDark(false);
             document.documentElement.classList.add('light');
         }
-    }, []);
+    }, [setIsDark]);
 
     const toggle = () => {
         const next = !isDark;

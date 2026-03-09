@@ -6,7 +6,7 @@ import { Key, Plus, Trash2, CheckCircle2, AlertCircle, Copy, X, ShieldCheck, Zap
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     PurpleCard, GlowButton, PurpleBadge, PurpleTable,
-    PurpleTableRow, PurpleInput, PurpleModal, MonoHash
+    PurpleTableRow, PurpleInput, PurpleModal, MonoHash, PurpleSkeleton
 } from '@/components/ui/PurpleUI';
 
 export default function ApiKeysPage() {

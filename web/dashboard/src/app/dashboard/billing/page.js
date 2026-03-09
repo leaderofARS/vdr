@@ -7,7 +7,7 @@ import {
     CreditCard, Zap, Check, AlertTriangle, Clock,
     ArrowUpRight, Shield, Globe, FileBarChart,
     ExternalLink, X, Info, Gem, CircleDollarSign,
-    Lock, Sparkles, Plus, Wallet, TrendingUp, Cpu
+    Lock, Sparkles, Plus, Wallet, TrendingUp, Cpu, Activity
 } from 'lucide-react';
 import {
     PurpleCard, GlowButton, PurpleBadge, PurpleTable,
