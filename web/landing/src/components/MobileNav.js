@@ -24,14 +24,14 @@ export default function MobileNav({ open, items, onClose }) {
                     {/* Bottom CTAs */}
                     <div className="p-6 border-t border-[#1A1A2E] bg-[#08080F] flex flex-col gap-3">
                         <Link
-                            href="https://app.sipheron.com/login"
+                            href="/auth/login"
                             onClick={onClose}
                             className="w-full text-center py-3.5 border border-[#2A2A3E] rounded-xl text-[15px] font-medium text-[#888] hover:text-white transition-colors"
                         >
                             Sign In
                         </Link>
                         <Link
-                            href="https://app.sipheron.com/register"
+                            href="/auth/register"
                             onClick={onClose}
                             className="w-full text-center py-3.5 rounded-xl text-[15px] font-semibold text-white shadow-xl shadow-[#9B6EFF]/10 transition-transform active:scale-[0.98]"
                             style={{ background: 'linear-gradient(135deg, #7C5CBF, #4F6EF7)' }}

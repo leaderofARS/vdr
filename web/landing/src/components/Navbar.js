@@ -311,13 +311,13 @@ export default function Navbar() {
 
                     <div className="hidden lg:flex items-center gap-3">
                         <Link
-                            href="https://app.sipheron.com/login"
+                            href="/auth/login"
                             className="text-[13px] text-[#888] hover:text-[#EDEDED] transition-colors px-3 py-1.5"
                         >
                             Sign In
                         </Link>
                         <Link
-                            href="https://app.sipheron.com/register"
+                            href="/auth/register"
                             className="relative group flex items-center gap-1.5 text-[13px] font-medium text-white px-4 py-1.5 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-[#9B6EFF]/20 hover:-translate-y-0.5"
                             style={{ background: 'linear-gradient(135deg, #7C5CBF, #4F6EF7)' }}
                         >
