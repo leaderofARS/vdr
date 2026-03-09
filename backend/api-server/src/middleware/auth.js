@@ -34,6 +34,7 @@ const authenticate = async (req, res, next) => {
 
             req.user = apiKeyRecord.user;
             req.organization = apiKeyRecord.organization;
+            req.apiKey = apiKeyRecord; // Set this for usageLogger
             return next();
         }
 
@@ -78,4 +79,3 @@ const authenticate = async (req, res, next) => {
 };
 
 module.exports = authenticate;
-

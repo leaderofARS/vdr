@@ -76,6 +76,8 @@ app.use('/api/batch-register', express.json({ limit: '10mb' }));
 // Global body-parser and global rate limiting
 app.use(express.json({ limit: '1mb' }));
 app.use(globalLimiter);
+app.use(usageLogger); // Log all requests that have an API key (non-blocking)
+
 
 // CSRF token endpoint — returns null since API uses stateless JWT auth
 // csurf removed: incompatible with Express 5
@@ -106,7 +108,8 @@ app.use("/api/org", orgRoute); // Full org management & stats
 app.use("/api/notifications", notificationsRoute);
 app.use("/api/webhooks", webhooksRoute);
 app.use("/api/usage", usageRoute);
-app.use("/api", usageLogger); // Log all /api requests (non-blocking)
+// app.use("/api", usageLogger); // Removed from here and moved before routes
+
 app.use("/organizations", organizationRoute);
 
 // Root endpoint
