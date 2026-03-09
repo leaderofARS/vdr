@@ -7,10 +7,11 @@
  */
 
 const { PrismaClient } = require('@prisma/client');
+const { PrismaPg } = require('@prisma/adapter-pg');
+const { Pool } = require('pg');
 
 /**
  * Validate database configuration for production readiness.
- * SQLite is allowed for development but rejected in production.
  */
 function validateDatabaseConfig() {
     const isProduction = process.env.NODE_ENV === 'production';
@@ -33,6 +34,8 @@ function validateDatabaseConfig() {
 
 validateDatabaseConfig();
 
-const prisma = new PrismaClient();
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 module.exports = prisma;

@@ -3,8 +3,7 @@
  * @description Service for managing organizational notifications.
  */
 
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const prisma = require('../config/database');
 
 /**
  * Create a new notification for an organization.

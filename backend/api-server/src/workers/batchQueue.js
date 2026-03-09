@@ -23,8 +23,7 @@ connection.on('error', (err) => {
 
 const hashQueue = new Queue('HashRegistration', { connection });
 
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const prisma = require('../config/database');
 const { isDrained } = require('../services/walletMonitor');
 const notificationService = require('../services/notificationService');
 const webhookService = require('../services/webhookService');

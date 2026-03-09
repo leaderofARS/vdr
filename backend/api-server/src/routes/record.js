@@ -6,8 +6,7 @@
  * @author SipHeron Platform
  */
 
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const prisma = require('../config/database');
 
 module.exports = async (req, res, next) => {
     try {

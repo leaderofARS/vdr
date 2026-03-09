@@ -8,14 +8,13 @@
 
 const express = require('express');
 const bcrypt = require('bcrypt');
-const { PrismaClient } = require('@prisma/client');
+const prisma = require('../config/database');
 const authenticate = require('../middleware/auth');
 const { sanitizeEmail } = require('../utils/sanitizer');
 const { generateToken, generateRefreshToken, verifyToken } = require('../services/jwt');
 const notificationService = require('../services/notificationService');
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
 // Cookie configuration for HttpOnly JWT storage
 // sameSite: 'none' required for cross-site requests (Vercel → Railway)

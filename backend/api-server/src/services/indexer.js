@@ -7,10 +7,8 @@
  */
 
 const anchor = require('@coral-xyz/anchor');
-const { PrismaClient } = require('@prisma/client');
+const prisma = require('../config/database');
 const solanaService = require('./solana');
-
-const prisma = new PrismaClient();
 
 /**
  * SipHeron Blockchain Indexer

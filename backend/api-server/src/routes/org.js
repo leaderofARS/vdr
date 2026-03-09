@@ -5,13 +5,12 @@
  */
 
 const express = require('express');
-const { PrismaClient } = require('@prisma/client');
+const prisma = require('../config/database');
 const solanaService = require('../services/solana');
 const authenticate = require('../middleware/auth');
 const walletMonitor = require('../services/walletMonitor');
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
 // In-memory cache for wallet balance (60 seconds)
 let balanceCache = {

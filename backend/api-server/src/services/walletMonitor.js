@@ -5,8 +5,7 @@
 
 const solanaService = require('./solana');
 const { sendWalletAlertEmail } = require('./emailService');
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const prisma = require('../config/database');
 const notificationService = require('./notificationService');
 
 const CRITICAL_THRESHOLD = 0.01; // SOL — stop registrations

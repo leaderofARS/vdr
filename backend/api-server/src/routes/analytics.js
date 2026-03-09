@@ -7,11 +7,10 @@
  */
 
 const express = require('express');
-const { PrismaClient } = require('@prisma/client');
+const prisma = require('../config/database');
 const authenticate = require('../middleware/auth');
 
 const router = express.Router();
-const prisma = new PrismaClient();
 const walletMonitor = require('../services/walletMonitor');
 
 router.get('/stats', authenticate, async (req, res, next) => {

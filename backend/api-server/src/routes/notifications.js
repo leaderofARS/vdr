@@ -9,9 +9,7 @@ const authenticate = require('../middleware/auth');
 const notificationService = require('../services/notificationService');
 
 const { parsePagination, buildPaginationResponse, applyPagination } = require('../utils/paginate');
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
-
+const prisma = require('../config/database');
 const router = express.Router();
 
 /**

@@ -5,14 +5,13 @@
  */
 
 const express = require('express');
-const { PrismaClient } = require('@prisma/client');
+const prisma = require('../config/database');
 const authenticate = require('../middleware/auth');
 const notificationService = require('../services/notificationService');
 const { parsePagination, buildPaginationResponse, applyPagination } = require('../utils/paginate');
 const crypto = require('crypto');
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
 /**
  * @route GET /api/keys

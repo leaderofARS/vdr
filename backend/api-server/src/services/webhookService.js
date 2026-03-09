@@ -5,8 +5,7 @@
 
 const axios = require('axios');
 const crypto = require('crypto');
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const prisma = require('../config/database');
 
 /**
  * Register a new webhook for an organization.

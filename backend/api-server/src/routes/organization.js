@@ -7,12 +7,11 @@
  */
 
 const express = require('express');
-const { PrismaClient } = require('@prisma/client');
+const prisma = require('../config/database');
 const authenticate = require('../middleware/auth');
 const { sanitizeOrganizationName } = require('../utils/sanitizer');
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
 // Base58 character set for Solana public key validation
 const BASE58_REGEX = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;

@@ -4,8 +4,7 @@
  * @description In-app API usage tracking middleware.
  */
 
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const prisma = require('../config/database');
 
 /**
  * Middleware that logs API request & response details for institutional API keys.

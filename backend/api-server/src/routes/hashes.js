@@ -5,13 +5,12 @@
  */
 
 const express = require('express');
-const { PrismaClient } = require('@prisma/client');
+const prisma = require('../config/database');
 const solanaService = require('../services/solana');
 const authenticate = require('../middleware/auth');
 const webhookService = require('../services/webhookService');
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
 // Helper to format HashRecord response
 const formatHashRecord = (record) => {
