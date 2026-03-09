@@ -220,10 +220,10 @@ export default function DashboardLayout({ children }) {
 
                     <div className="flex items-center gap-3">
                         <motion.div
-                            whileHover={{ scale: 1.1, rotate: 5 }}
-                            className="w-8 h-8 bg-purple-gradient rounded-lg flex items-center justify-center shadow-[0_0_20px_rgba(155,110,255,0.3)]"
+                            whileHover={{ scale: 1.05 }}
+                            className="flex items-center justify-center p-0.5"
                         >
-                            <ShieldCheck className="w-5 h-5 text-white" />
+                            <img src="/sipheron_vdap_logo.png" alt="SipHeron Logo" className="w-8 h-8 object-contain filter drop-shadow-[0_0_10px_rgba(155,110,255,0.5)]" />
                         </motion.div>
                         <span className="font-bold text-lg tracking-tight hidden sm:block bg-gradient-to-r from-purple-glow to-blue-accent bg-clip-text text-transparent">SIPHERON</span>
                         <span className="text-bg-border text-sm hidden sm:block mx-1">|</span>
@@ -409,22 +409,31 @@ export default function DashboardLayout({ children }) {
                         <div className={`flex flex-col gap-2 rounded-2xl bg-bg-surface p-3 border border-bg-border transition-all ${!isSidebarOpen && 'items-center px-1'}`}>
                             {isSidebarOpen ? (
                                 <>
-                                    <div className="flex items-center justify-between mb-1">
-                                        <span className="text-[10px] text-text-muted font-bold uppercase tracking-[0.2em]">Authority Key</span>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <span className="text-[10px] text-text-muted font-bold uppercase tracking-[0.2em]">
+                                            {contextData?.user?.role || 'Authority Role'}
+                                        </span>
                                         <div className="flex items-center gap-1.5 bg-success/10 px-2 py-0.5 rounded-full border border-success/20">
                                             <div className="w-1.5 h-1.5 bg-success rounded-full animate-pulse" />
-                                            <span className="text-[9px] text-success font-bold uppercase">{contextData?.wallet?.network || 'DEVNET'}</span>
+                                            <span className="text-[9px] text-success font-bold uppercase">
+                                                {contextData?.wallet?.network || 'DEVNET'}
+                                            </span>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-2 p-2 bg-bg-elevated rounded-lg border border-bg-border/50 overflow-hidden">
-                                        <Wallet className="w-4 h-4 text-purple-vivid shrink-0" />
-                                        <span className="text-[11px] font-mono text-purple-glow truncate">
-                                            {contextData?.user?.email || '0x...'}
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center justify-between mt-1 px-1">
-                                        <span className="text-[10px] text-text-secondary font-medium">SOL Balance</span>
-                                        <span className="text-[11px] font-bold text-text-primary">10.42 SOL</span>
+
+                                    <div className="flex flex-col gap-2 p-2.5 bg-bg-elevated rounded-lg border border-bg-border/50 overflow-hidden">
+                                        <div className="flex items-center gap-2">
+                                            <Building2 className="w-3.5 h-3.5 text-blue-accent shrink-0" />
+                                            <span className="text-[11px] font-bold text-text-primary truncate">
+                                                {contextData?.org?.name || 'SipHeron Console'}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <User className="w-3.5 h-3.5 text-purple-vivid shrink-0" />
+                                            <span className="text-[10px] text-text-secondary truncate">
+                                                {contextData?.user?.email || 'Loading...'}
+                                            </span>
+                                        </div>
                                     </div>
                                 </>
                             ) : (
