@@ -21,5 +21,10 @@
     "commander": "14.0.3",
     "inquirer": "12.6.0",
     "ora": "5.4.1"
+  },
+  "overrides": {
+    "semver": "^7.6.0",
+    "word-wrap": "^1.2.4",
+    "braces": "^3.0.3"
   }
 }

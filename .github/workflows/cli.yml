@@ -45,7 +45,7 @@ jobs:
       - name: Install Dependencies
         run: npm ci
       - name: Audit Vulnerabilities
-        run: npm audit --audit-level=moderate
+        run: npm audit --audit-level=high
 
   test:
     name: CLI Commands Verification
