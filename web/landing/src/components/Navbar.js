@@ -2,11 +2,12 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { ChevronDown, Shield, ArrowRight } from 'lucide-react'
+import { ChevronDown, Shield, ArrowRight, Search, Menu, X } from 'lucide-react'
 import { AnimatePresence } from 'framer-motion'
 import AnnouncementBar from './AnnouncementBar'
 import NavDropdown from './NavDropdown'
 import MobileNav from './MobileNav'
+import DocsSearch from '../../app/docs/components/DocsSearch'
 
 const navItems = [
     {
@@ -221,6 +222,7 @@ export default function Navbar() {
     const [activeDropdown, setActiveDropdown] = useState(null)
     const [mobileOpen, setMobileOpen] = useState(false)
     const [scrollProgress, setScrollProgress] = useState(0)
+    const [isSearchOpen, setIsSearchOpen] = useState(false)
     const pathname = usePathname()
     const timeoutRef = useRef(null)
 
@@ -274,12 +276,16 @@ export default function Navbar() {
                     WebkitBackdropFilter: 'blur(20px)',
                     transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
                 }}
-                className="fixed left-0 right-0 z-50 h-12 flex items-center"
+                className="fixed left-0 right-0 z-[150] h-12 flex items-center"
             >
                 <div className="max-w-7xl mx-auto px-6 w-full flex items-center justify-between">
                     <Link href="/" className="flex items-center gap-2.5 group">
-                        <div className="w-7 h-7 bg-[#9B6EFF]/10 border border-[#9B6EFF]/20 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                            <Shield className="w-4 h-4 text-[#9B6EFF]" />
+                        <div className="w-8 h-8 group-hover:scale-110 transition-transform duration-300">
+                            <img
+                                src="/sipheron_vdap_logo.png"
+                                alt="SipHeron Logo"
+                                className="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(155,110,255,0.3)]"
+                            />
                         </div>
                         <span className="text-[15px] font-bold tracking-tight text-[#EDEDED] hidden sm:block">
                             SipHeron
@@ -309,34 +315,47 @@ export default function Navbar() {
                         ))}
                     </nav>
 
-                    <div className="hidden lg:flex items-center gap-3">
-                        <Link
-                            href="/auth/login"
-                            className="text-[13px] text-[#888] hover:text-[#EDEDED] transition-colors px-3 py-1.5"
-                        >
-                            Sign In
-                        </Link>
-                        <Link
-                            href="/auth/register"
-                            className="relative group flex items-center gap-1.5 text-[13px] font-medium text-white px-4 py-1.5 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-[#9B6EFF]/20 hover:-translate-y-0.5"
-                            style={{ background: 'linear-gradient(135deg, #7C5CBF, #4F6EF7)' }}
-                        >
-                            <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
-                            <span className="relative">Get Started Free</span>
-                            <ArrowRight className="relative w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-                        </Link>
-                    </div>
+                    <div className="flex items-center gap-3">
+                        {pathname.startsWith('/docs') && (
+                            <button
+                                onClick={() => setIsSearchOpen(true)}
+                                className="flex items-center gap-2 px-3 py-1.5 bg-white/[0.03] border border-white/[0.1] rounded-lg text-[#888] text-[12px] hover:border-white/[0.2] transition-colors"
+                            >
+                                <Search className="w-3.5 h-3.5" />
+                                <span className="hidden md:inline">Search...</span>
+                                <kbd className="hidden md:inline ml-2 text-[10px] opacity-30">⌘K</kbd>
+                            </button>
+                        )}
+                        <div className="hidden lg:flex items-center gap-3">
+                            <Link
+                                href="/auth/login"
+                                className="text-[13px] text-[#888] hover:text-[#EDEDED] transition-colors px-3 py-1.5"
+                            >
+                                Sign In
+                            </Link>
+                            <Link
+                                href="/auth/register"
+                                className="relative group flex items-center gap-1.5 text-[13px] font-medium text-white px-4 py-1.5 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-[#9B6EFF]/20 hover:-translate-y-0.5"
+                                style={{ background: 'linear-gradient(135deg, #7C5CBF, #4F6EF7)' }}
+                            >
+                                <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
+                                <span className="relative">Get Started Free</span>
+                                <ArrowRight className="relative w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                            </Link>
+                        </div>
 
-                    <button
-                        className="lg:hidden p-2 -mr-2 text-[#888] hover:text-[#EDEDED] transition-colors"
-                        onClick={() => setMobileOpen(!mobileOpen)}
-                    >
-                        <HamburgerIcon isOpen={mobileOpen} />
-                    </button>
+                        <button
+                            className="lg:hidden p-2 -mr-2 text-[#888] hover:text-[#EDEDED] transition-colors"
+                            onClick={() => setMobileOpen(!mobileOpen)}
+                        >
+                            <HamburgerIcon isOpen={mobileOpen} />
+                        </button>
+                    </div>
                 </div>
             </header>
 
             <MobileNav open={mobileOpen} items={navItems} onClose={() => setMobileOpen(false)} />
+            {isSearchOpen && <DocsSearch onClose={() => setIsSearchOpen(false)} />}
         </>
     )
 }

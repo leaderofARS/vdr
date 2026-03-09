@@ -28,7 +28,6 @@ import {
   ChevronRight,
   Plus
 } from 'lucide-react';
-import LandingNavbar from '@/components/LandingNavbar';
 
 // --- Constants & Config ---
 
@@ -891,7 +890,6 @@ const Footer = () => {
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#0A0A0F] text-[#F8F8FF] selection:bg-[#4F6EF7]/30 selection:text-white overflow-hidden">
-      <LandingNavbar />
       <main>
         <Hero />
         <TrustBar />

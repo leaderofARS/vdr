@@ -9,6 +9,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from 'next/script';
 import "./globals.css";
+import GlobalNavbar from "@/components/navbar/GlobalNavbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -70,13 +71,16 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-950 text-gray-50 flex flex-col min-h-screen`}
       >
+        <GlobalNavbar />
         <Script
           defer
           data-domain="sipheron.com"
           src="https://plausible.io/js/script.js"
           strategy="afterInteractive"
         />
-        {children}
+        <main className="flex-1">
+          {children}
+        </main>
       </body>
     </html>
   );

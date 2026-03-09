@@ -64,7 +64,7 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen bg-bg-primary text-text-primary flex select-none font-sans overflow-hidden">
+        <div className="min-h-screen bg-bg-primary text-text-primary flex select-none font-sans overflow-hidden pt-12">
 
             {/* GitHub Toast */}
             <AnimatePresence>
@@ -88,13 +88,6 @@ export default function LoginPage() {
                 <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-purple-vivid/10 blur-[120px] rounded-full pointer-events-none" />
 
                 <div className="relative z-10">
-                    <Link href="/" className="inline-flex items-center gap-3 group">
-                        <div className="w-10 h-10 rounded-xl bg-purple-dim/10 flex items-center justify-center p-1 border border-bg-border group-hover:bg-purple-dim/20 transition-all group-hover:border-purple-vivid/30 shadow-inner">
-                            <Image src="/sipheron_vdap_logo.png" alt="SipHeron" width={28} height={28} className="object-contain" priority />
-                        </div>
-                        <span className="text-2xl font-black tracking-tight text-white group-hover:text-purple-glow transition-colors">SipHeron</span>
-                    </Link>
-
                     <div className="mt-24 max-w-xl">
                         <motion.h1
                             initial={{ opacity: 0, y: 20 }}
@@ -184,14 +177,6 @@ export default function LoginPage() {
                     transition={{ duration: 0.4 }}
                     className="w-full max-w-[420px] relative z-10"
                 >
-                    {/* Mobile Logo */}
-                    <div className="lg:hidden flex items-center justify-center gap-3 mb-10">
-                        <div className="w-10 h-10 rounded-xl bg-purple-dim/10 flex items-center justify-center p-1 border border-bg-border shadow-inner">
-                            <Image src="/sipheron_vdap_logo.png" alt="SipHeron" width={28} height={28} className="object-contain" priority />
-                        </div>
-                        <span className="text-2xl font-black tracking-tight text-white">SipHeron</span>
-                    </div>
-
                     {/* Form Card */}
                     <motion.div
                         animate={shake ? { x: [-10, 10, -10, 10, 0] } : {}}

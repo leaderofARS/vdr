@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronDown, ExternalLink } from 'lucide-react'
+import { ChevronDown, ExternalLink, Shield, X } from 'lucide-react'
 
 export default function MobileNav({ open, items, onClose }) {
     return (
@@ -13,8 +13,18 @@ export default function MobileNav({ open, items, onClose }) {
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: '100%' }}
                     transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                    className="fixed inset-0 z-[100] bg-[#08080F] pt-16 flex flex-col"
+                    className="fixed inset-0 z-[100] bg-[#08080F] flex flex-col"
                 >
+                    {/* Menu Header with Logo */}
+                    <div className="h-12 px-6 flex items-center justify-between border-b border-white/[0.05]">
+                        <Link href="/" onClick={onClose} className="flex items-center gap-2.5">
+                            <img src="/sipheron_vdap_logo.png" alt="SipHeron" className="w-6 h-6 object-contain" />
+                            <span className="text-[14px] font-bold tracking-tight text-[#EDEDED]">SipHeron</span>
+                        </Link>
+                        <button onClick={onClose} className="p-2 -mr-2 text-[#555] hover:text-[#EDEDED]">
+                            <X className="w-5 h-5" />
+                        </button>
+                    </div>
                     <div className="flex-1 overflow-y-auto px-6 py-4 space-y-2">
                         {items.map(item => (
                             <MobileItem key={item.label} item={item} onClose={onClose} />

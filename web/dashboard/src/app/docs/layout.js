@@ -1,4 +1,3 @@
-import DocsHeader from './components/DocsHeader';
 import DocsSidebar from './components/DocsSidebar';
 import DocsTOC from './components/DocsTOC';
 
@@ -12,7 +11,7 @@ export const metadata = {
 
 export default function DocsLayout({ children }) {
     return (
-        <div className="min-h-screen bg-[#0A0A0A] text-[#EDEDED] font-sans selection:bg-[#9B6EFF]/30 selection:text-white">
+        <div className="min-h-screen bg-[#0A0A0A] text-[#EDEDED] font-sans selection:bg-[#9B6EFF]/30 selection:text-white pt-12">
             <style dangerouslySetInnerHTML={{
                 __html: `
         :root {
@@ -58,8 +57,6 @@ export default function DocsLayout({ children }) {
         /* Transitions */
         a, button { transition: all 150ms ease; }
       `}} />
-
-            <DocsHeader />
 
             <div className="flex max-w-[1400px] mx-auto min-h-[calc(100vh-48px)]">
                 {/* Fixed/Sticky Sidebar Spacer */}

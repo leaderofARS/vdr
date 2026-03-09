@@ -104,7 +104,7 @@ export default function RegisterPage() {
     };
 
     return (
-        <div className="min-h-screen bg-bg-primary text-text-primary flex select-none font-sans overflow-hidden">
+        <div className="min-h-screen bg-bg-primary text-text-primary flex select-none font-sans overflow-hidden pt-12">
 
             {/* Left Column (Desktop Only) */}
             <div className="hidden lg:flex flex-col justify-between w-[45%] lg:w-[50%] xl:w-[55%] p-12 lg:p-16 relative z-10 border-r border-bg-border">
@@ -113,13 +113,6 @@ export default function RegisterPage() {
                 <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-purple-vivid/10 blur-[120px] rounded-full pointer-events-none" />
 
                 <div className="relative z-10">
-                    <Link href="/" className="inline-flex items-center gap-3 group">
-                        <div className="w-10 h-10 rounded-xl bg-purple-dim/10 flex items-center justify-center p-1 border border-bg-border group-hover:bg-purple-dim/20 transition-all group-hover:border-purple-vivid/30 shadow-inner">
-                            <Image src="/sipheron_vdap_logo.png" alt="SipHeron" width={28} height={28} className="object-contain" priority />
-                        </div>
-                        <span className="text-2xl font-black tracking-tight text-white group-hover:text-purple-glow transition-colors">SipHeron</span>
-                    </Link>
-
                     <div className="mt-24 max-w-xl">
                         <motion.h1
                             initial={{ opacity: 0, y: 20 }}
@@ -210,14 +203,6 @@ export default function RegisterPage() {
                     transition={{ duration: 0.4 }}
                     className="w-full max-w-[440px] relative z-10 py-10"
                 >
-                    {/* Mobile Logo */}
-                    <div className="lg:hidden flex items-center justify-center gap-3 mb-10">
-                        <div className="w-10 h-10 rounded-xl bg-purple-dim/10 flex items-center justify-center p-1 border border-bg-border shadow-inner">
-                            <Image src="/sipheron_vdap_logo.png" alt="SipHeron" width={28} height={28} className="object-contain" priority />
-                        </div>
-                        <span className="text-2xl font-black tracking-tight text-white">SipHeron</span>
-                    </div>
-
                     <AnimatePresence mode="wait">
                         {!isSuccess ? (
                             <motion.div
