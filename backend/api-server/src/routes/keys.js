@@ -56,4 +56,40 @@ router.get('/', authenticate, async (req, res, next) => {
     }
 });
 
+/**
+ * @route DELETE /api/keys/:id
+ * @description Revoke (deactivate) an API key. 
+ */
+router.delete('/:id', authenticate, async (req, res, next) => {
+    try {
+        if (!req.organization) {
+            return res.status(403).json({ error: 'Institutional Context Required' });
+        }
+
+        const { id } = req.params;
+
+        // Ensure key belongs to this org
+        const key = await prisma.apiKey.findFirst({
+            where: {
+                id,
+                organizationId: req.organization.id
+            }
+        });
+
+        if (!key) {
+            return res.status(404).json({ error: 'API Key not found in this organization' });
+        }
+
+        // Just mark as revoked instead of hard deleting for audit trail
+        await prisma.apiKey.update({
+            where: { id },
+            data: { status: 'revoked' }
+        });
+
+        res.json({ success: true, message: 'API Key revoked successfully' });
+    } catch (error) {
+        next(error);
+    }
+});
+
 module.exports = router;

@@ -23,8 +23,8 @@ export default function ApiKeysPage() {
                 const { data: orgs } = await api.get('/organizations/my');
                 if (orgs && orgs.length > 0) setOrg(orgs[0]);
 
-                const { data: apiKeys } = await api.get('/auth/api-keys');
-                setKeys(apiKeys || []);
+                const { data: apiKeysResponse } = await api.get('/api/keys');
+                setKeys(apiKeysResponse?.data || []);
             } catch (e) {
                 console.error("Failed to load keys");
             } finally {
@@ -38,18 +38,16 @@ export default function ApiKeysPage() {
         e.preventDefault();
         setLoading(true);
         try {
-            const { data } = await api.post('/auth/api-key', {
+            const { data } = await api.post('/api/keys', {
                 name: nameInput,
-                organizationId: org?.id
             });
             setNewKeyData(data);
 
             setKeys([{
                 id: data.id,
-                name: nameInput,
                 key: data.apiKey,
                 createdAt: new Date().toISOString(),
-                status: 'Active'
+                status: 'active'
             }, ...keys]);
 
             setNameInput('');
@@ -63,7 +61,7 @@ export default function ApiKeysPage() {
     const deleteKey = async (id) => {
         if (!confirm('Are you sure you want to revoke this key?')) return;
         try {
-            await api.delete(`/auth/api-key/${id}`);
+            await api.delete(`/api/keys/${id}`);
             setKeys(keys.filter(k => k.id !== id));
         } catch (e) {
             alert('Failed to revoke key.');
@@ -155,18 +153,21 @@ export default function ApiKeysPage() {
                                             {k.key ? `${k.key.slice(0, 12)}••••••••` : '••••••••••••••••'}
                                         </td>
                                         <td className="px-5 py-3 border-l border-[#2C3038]">
-                                            <span className="inline-flex items-center gap-1.5 text-[#10B981] text-xs">
-                                                <div className="w-2 h-2 rounded-full bg-[#10B981]"></div> Active
+                                            <span className={`inline-flex items-center gap-1.5 text-xs ${k.status === 'active' ? 'text-[#10B981]' : 'text-[#F28B82]'}`}>
+                                                <div className={`w-2 h-2 rounded-full ${k.status === 'active' ? 'bg-[#10B981]' : 'bg-[#F28B82]'}`}></div>
+                                                <span className="capitalize">{k.status}</span>
                                             </span>
                                         </td>
                                         <td className="px-5 py-3 text-right">
-                                            <button
-                                                onClick={() => deleteKey(k.id)}
-                                                className="text-[#9AA0A6] hover:text-[#F28B82] p-1 transition-colors"
-                                                title="Revoke Key"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
+                                            {k.status === 'active' && (
+                                                <button
+                                                    onClick={() => deleteKey(k.id)}
+                                                    className="text-[#9AA0A6] hover:text-[#F28B82] p-1 transition-colors"
+                                                    title="Revoke Key"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            )}
                                         </td>
                                     </tr>
                                 ))

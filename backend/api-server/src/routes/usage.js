@@ -37,67 +37,86 @@ router.get('/', authenticate, async (req, res, next) => {
 
         if (keyId) where.apiKeyId = keyId;
 
-        // 1. Fetch Summary Data
+        // 1. Fetch Summary Data - group by day and success status for chart
         const logs = await prisma.apiUsageLog.findMany({
             where,
             include: {
                 apiKey: {
                     select: { name: true }
                 }
-            }
+            },
+            orderBy: { createdAt: 'asc' }
         });
 
         const totalRequests = logs.length;
         const successCount = logs.filter(l => l.statusCode >= 200 && l.statusCode < 300).length;
-        const successRate = totalRequests > 0 ? (successCount / totalRequests) * 100 : 0;
+        const totalDuration = logs.reduce((sum, l) => sum + l.durationMs, 0);
+        const successRate = totalRequests > 0 ? (successCount / totalRequests * 100).toFixed(1) + "%" : "0%";
+        const avgResponseTime = totalRequests > 0 ? Math.round(totalDuration / totalRequests) : 0;
 
         // 2. Aggregate by Endpoint
         const endpointStats = {};
         logs.forEach(log => {
             if (!endpointStats[log.endpoint]) {
-                endpointStats[log.endpoint] = { count: 0, totalDuration: 0 };
+                endpointStats[log.endpoint] = { endpoint: log.endpoint, method: log.method, total: 0, totalDuration: 0, successCount: 0 };
             }
-            endpointStats[log.endpoint].count++;
+            endpointStats[log.endpoint].total++;
             endpointStats[log.endpoint].totalDuration += log.durationMs;
+            if (log.statusCode >= 200 && log.statusCode < 300) endpointStats[log.endpoint].successCount++;
         });
 
-        const byEndpoint = Object.keys(endpointStats).map(ep => ({
-            endpoint: ep,
-            count: endpointStats[ep].count,
-            avgDurationMs: Math.round(endpointStats[ep].totalDuration / endpointStats[ep].count)
-        })).sort((a, b) => b.count - a.count);
+        const endpoints = Object.values(endpointStats).map(ep => ({
+            ...ep,
+            avgDuration: Math.round(ep.totalDuration / ep.total),
+            successRate: (ep.successCount / ep.total * 100).toFixed(1) + "%"
+        })).sort((a, b) => b.total - a.total);
+
+        const mostUsedEndpoint = endpoints.length > 0 ? endpoints[0].endpoint : 'N/A';
 
         // 3. Aggregate by Key
         const keyStats = {};
         logs.forEach(log => {
             const kid = log.apiKeyId;
             if (!keyStats[kid]) {
-                keyStats[kid] = { keyId: kid, keyName: log.apiKey?.name || 'Unknown', count: 0 };
+                keyStats[kid] = { id: kid, name: log.apiKey?.name || 'Unknown', total: 0, successCount: 0, lastUsed: log.createdAt };
             }
-            keyStats[kid].count++;
+            keyStats[kid].total++;
+            if (log.statusCode >= 200 && log.statusCode < 300) keyStats[kid].successCount++;
+            if (new Date(log.createdAt) > new Date(keyStats[kid].lastUsed)) keyStats[kid].lastUsed = log.createdAt;
         });
 
-        const byKey = Object.values(keyStats).sort((a, b) => b.count - a.count);
+        const apiKeys = Object.values(keyStats).map(k => ({
+            ...k,
+            successRate: (k.successCount / k.total * 100).toFixed(1) + "%"
+        })).sort((a, b) => b.total - a.total);
 
-        // 4. Aggregate by Day
+        // 4. Aggregate by Day for Chart (Success/Error breakdown)
         const dayStats = {};
         logs.forEach(log => {
             const date = log.createdAt.toISOString().split('T')[0];
-            dayStats[date] = (dayStats[date] || 0) + 1;
+            if (!dayStats[date]) {
+                dayStats[date] = { date, success: 0, error: 0 };
+            }
+            if (log.statusCode >= 200 && log.statusCode < 300) {
+                dayStats[date].success++;
+            } else {
+                dayStats[date].error++;
+            }
         });
 
-        const byDay = Object.keys(dayStats).map(date => ({
-            date,
-            count: dayStats[date]
-        })).sort((a, b) => b.date.localeCompare(a.date));
+        const chartData = Object.values(dayStats).sort((a, b) => a.date.localeCompare(b.date));
 
         res.json({
             period,
-            totalRequests,
-            successRate: parseFloat(successRate.toFixed(2)),
-            byEndpoint,
-            byKey,
-            byDay
+            summary: {
+                totalRequests,
+                successRate,
+                avgResponseTime,
+                mostUsedEndpoint
+            },
+            endpoints,
+            apiKeys,
+            chartData
         });
 
     } catch (error) {
