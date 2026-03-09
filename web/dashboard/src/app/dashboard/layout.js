@@ -294,9 +294,9 @@ export default function DashboardLayout({ children }) {
                                                                 className={`p-4 hover:bg-purple-dim/10 cursor-pointer transition-all group flex gap-4 ${!n.isRead ? 'border-l-4 border-purple-vivid' : 'border-l-4 border-transparent'}`}
                                                             >
                                                                 <div className={`shrink-0 w-10 h-10 rounded-xl border flex items-center justify-center transition-transform group-hover:scale-110 ${n.type === 'anchor_success' ? 'bg-success/10 border-success/20 text-success' :
-                                                                        n.type === 'anchor_failed' ? 'bg-danger/10 border-danger/20 text-danger' :
-                                                                            n.type === 'low_balance' ? 'bg-warning/10 border-warning/20 text-warning' :
-                                                                                'bg-purple-vivid/10 border-purple-vivid/20 text-purple-glow'
+                                                                    n.type === 'anchor_failed' ? 'bg-danger/10 border-danger/20 text-danger' :
+                                                                        n.type === 'low_balance' ? 'bg-warning/10 border-warning/20 text-warning' :
+                                                                            'bg-purple-vivid/10 border-purple-vivid/20 text-purple-glow'
                                                                     }`}>
                                                                     {n.type === 'anchor_success' ? <CheckCircle2 className="w-5 h-5" /> :
                                                                         n.type === 'anchor_failed' ? <XCircle className="w-5 h-5" /> :
@@ -476,14 +476,4 @@ function formatRelativeTime(date) {
     if (diff < 3600) return `${Math.floor(diff / 60)}m`;
     if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
     return `${Math.floor(diff / 86400)}d`;
-}
-function formatRelativeTime(date) {
-    const now = new Date();
-    const past = new Date(date);
-    const diff = Math.floor((now - past) / 1000);
-
-    if (diff < 60) return 'just now';
-    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-    return `${Math.floor(diff / 86400)}d ago`;
 }
