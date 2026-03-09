@@ -4,6 +4,7 @@ WORKDIR /app
 RUN apk add --no-cache openssl python3 make g++
 
 COPY package*.json ./
+COPY prisma.config.js ./
 COPY prisma ./prisma/
 RUN npm ci --omit=dev && npx prisma generate
 
