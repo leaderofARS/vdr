@@ -84,10 +84,14 @@ const PriceCard = ({ title, price, period, description, features, cta, ctaHref, 
             </div>
 
             <Link href={ctaHref} className="w-full">
-                <button className={`w-full py-4 rounded-xl font-bold text-sm transition-all duration-300 ${popular
-                    ? 'bg-gradient-to-r from-[#4F6EF7] to-[#9B5CF6] text-white shadow-lg shadow-blue-500/20 hover:opacity-90 active:scale-[0.98]'
-                    : 'bg-white/5 text-white border border-[#1E1E2E] hover:bg-white/10 active:scale-[0.98]'
-                    }`}>
+                <button
+                    onClick={() => {
+                        window.plausible?.('PricingCTA', { props: { plan: title.toLowerCase() } });
+                    }}
+                    className={`w-full py-4 rounded-xl font-bold text-sm transition-all duration-300 ${popular
+                        ? 'bg-gradient-to-r from-[#4F6EF7] to-[#9B5CF6] text-white shadow-lg shadow-blue-500/20 hover:opacity-90 active:scale-[0.98]'
+                        : 'bg-white/5 text-white border border-[#1E1E2E] hover:bg-white/10 active:scale-[0.98]'
+                        }`}>
                     {cta}
                 </button>
             </Link>

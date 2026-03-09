@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
+import Script from 'next/script';
 import {
     LayoutDashboard, Key, LogOut, ShieldCheck, Settings, Menu,
     Search, Bell, User, Binary, AlignLeft, Building2,
@@ -203,6 +204,12 @@ export default function DashboardLayout({ children }) {
 
     return (
         <div className="h-screen flex flex-col bg-bg-primary text-text-primary font-sans overflow-hidden">
+            <Script
+                defer
+                data-domain="app.sipheron.com"
+                src="https://plausible.io/js/script.js"
+                strategy="afterInteractive"
+            />
             <div className="absolute inset-0 ambient-grid pointer-events-none" />
             <div className="absolute inset-x-0 top-0 h-64 ambient-radial pointer-events-none" />
 

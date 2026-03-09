@@ -6,15 +6,15 @@ import ParamTable, { ParamRow } from "@/app/docs/components/ParamTable";
 import ResponseTabs from "@/app/docs/components/ResponseTabs";
 import DocsPrevNext from "@/app/docs/components/DocsPrevNext";
 
-export const metadata = { title: "REST API" };
+export const metadata = { title: "Verification Model" };
 
 export default function Page() {
     return (
         <div>
-            <h1>REST API</h1>
-<p>Comprehensive guide and breakdown for REST API. Ensure your setup follows security protocols natively.</p>
+            <h1>Verification Model</h1>
+<p>Comprehensive guide and breakdown for Verification Model. Ensure your setup follows security protocols natively.</p>
 
-            <DocsPrevNext prev={{ title: 'JavaScript SDK', href: '/docs/sdks/javascript' }} />
+            <DocsPrevNext prev={{ title: 'Anchor Lifecycle', href: '/docs/concepts/lifecycle' }} next={{ title: 'On-Chain Storage', href: '/docs/concepts/storage' }} />
         </div>
     );
 }

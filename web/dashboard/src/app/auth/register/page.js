@@ -85,6 +85,7 @@ export default function RegisterPage() {
                 password,
                 organizationName: orgName
             });
+            window.plausible?.('Signup', { props: { method: 'email' } });
             setIsSuccess(true);
         } catch (err) {
             setError(err.response?.data?.error || 'Initialization failed. Please verify parameters.');
@@ -97,6 +98,7 @@ export default function RegisterPage() {
 
     const handleCopy = () => {
         navigator.clipboard.writeText('npm install -g sipheron-vdr');
+        window.plausible?.('CLICopy');
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     };

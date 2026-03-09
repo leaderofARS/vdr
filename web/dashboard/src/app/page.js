@@ -623,6 +623,7 @@ sipheron-vdr verify document.pdf`;
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(code);
+    window.plausible?.('CLICopy');
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -750,7 +751,13 @@ const Pricing = () => {
                   </div>
                 ))}
               </div>
-              <Button variant={tier.variant} className="w-full">{tier.button}</Button>
+              <Button
+                variant={tier.variant}
+                className="w-full"
+                onClick={() => window.plausible?.('PricingCTA', { props: { plan: tier.name.toLowerCase() } })}
+              >
+                {tier.button}
+              </Button>
             </div>
           ))}
         </div>

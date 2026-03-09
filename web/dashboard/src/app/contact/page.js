@@ -127,10 +127,11 @@ const Footer = () => {
 
 export default function ContactPage() {
     const [status, setStatus] = useState('idle'); // idle, loading, success, error
+    const [errors, setErrors] = useState({});
     const [formData, setFormData] = useState({
         name: '',
         email: '',
-        organization: '',
+        company: '',
         subject: 'General Inquiry',
         message: ''
     });
@@ -145,26 +146,37 @@ export default function ContactPage() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (formData.message.length < 20) {
-            alert("Message must be at least 20 characters.");
+
+        // Validation
+        const newErrors = {};
+        if (!formData.name || formData.name.length < 2) newErrors.name = 'Name must be at least 2 characters.';
+        if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = 'Valid email is required.';
+        if (!formData.message || formData.message.length < 20) newErrors.message = 'Message must be at least 20 characters.';
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
             return;
         }
 
+        setErrors({});
         setStatus('loading');
 
         try {
-            const response = await fetch('https://api.sipheron.com/contact', {
+            const res = await fetch(process.env.NEXT_PUBLIC_FORMSPREE_ENDPOINT || 'https://formspree.io/f/xyzabc', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-            }).catch(() => {
-                // Fallback if domain doesn't exist yet/CORS
-                return { ok: true };
+                body: JSON.stringify({
+                    name: formData.name,
+                    email: formData.email,
+                    company: formData.company,
+                    message: formData.message,
+                    subject: formData.subject
+                })
             });
 
-            if (response.ok) {
+            if (res.ok) {
                 setStatus('success');
-                setFormData({ name: '', email: '', organization: '', subject: 'General Inquiry', message: '' });
+                setFormData({ name: '', email: '', company: '', subject: 'General Inquiry', message: '' });
             } else {
                 setStatus('error');
             }
@@ -175,6 +187,9 @@ export default function ContactPage() {
 
     const handleChange = (e) => {
         setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+        if (errors[e.target.name]) {
+            setErrors(prev => ({ ...prev, [e.target.name]: undefined }));
+        }
     };
 
     return (
@@ -232,8 +247,8 @@ export default function ContactPage() {
                                             <div className="w-20 h-20 bg-[#10B981]/10 rounded-full flex items-center justify-center mx-auto mb-6 text-[#10B981]">
                                                 <CheckCircle2 size={40} />
                                             </div>
-                                            <h4 className="text-2xl font-bold mb-3 text-white">Message sent!</h4>
-                                            <p className="text-[#6B7280]">We'll get back to you within 24 hours.</p>
+                                            <h4 className="text-2xl font-bold mb-3 text-white">Message received!</h4>
+                                            <p className="text-[#6B7280]">We'll respond within 24 hours.</p>
                                             <button
                                                 onClick={() => setStatus('idle')}
                                                 className="mt-8 text-sm font-bold text-[#4F6EF7] hover:underline"
@@ -254,26 +269,26 @@ export default function ContactPage() {
                                                 <div className="space-y-2">
                                                     <label className="text-xs font-bold text-[#6B7280] uppercase tracking-widest ml-1">Full Name *</label>
                                                     <input
-                                                        required
                                                         type="text"
                                                         name="name"
                                                         value={formData.name}
                                                         onChange={handleChange}
                                                         placeholder="Jane Doe"
-                                                        className="w-full bg-[#0A0A0F] border border-[#1E1E2E] rounded-xl px-5 py-4 text-white focus:outline-none focus:border-[#4F6EF7] transition-all placeholder:text-[#3C4043]"
+                                                        className={`w-full bg-[#0A0A0F] border ${errors.name ? 'border-red-500' : 'border-[#1E1E2E]'} rounded-xl px-5 py-4 text-white focus:outline-none focus:border-[#4F6EF7] transition-all placeholder:text-[#3C4043]`}
                                                     />
+                                                    {errors.name && <p className="text-xs text-red-500 font-bold ml-1">{errors.name}</p>}
                                                 </div>
                                                 <div className="space-y-2">
                                                     <label className="text-xs font-bold text-[#6B7280] uppercase tracking-widest ml-1">Work Email *</label>
                                                     <input
-                                                        required
                                                         type="email"
                                                         name="email"
                                                         value={formData.email}
                                                         onChange={handleChange}
                                                         placeholder="jane@company.com"
-                                                        className="w-full bg-[#0A0A0F] border border-[#1E1E2E] rounded-xl px-5 py-4 text-white focus:outline-none focus:border-[#4F6EF7] transition-all placeholder:text-[#3C4043]"
+                                                        className={`w-full bg-[#0A0A0F] border ${errors.email ? 'border-red-500' : 'border-[#1E1E2E]'} rounded-xl px-5 py-4 text-white focus:outline-none focus:border-[#4F6EF7] transition-all placeholder:text-[#3C4043]`}
                                                     />
+                                                    {errors.email && <p className="text-xs text-red-500 font-bold ml-1">{errors.email}</p>}
                                                 </div>
                                             </div>
 
@@ -282,8 +297,8 @@ export default function ContactPage() {
                                                     <label className="text-xs font-bold text-[#6B7280] uppercase tracking-widest ml-1">Organization</label>
                                                     <input
                                                         type="text"
-                                                        name="organization"
-                                                        value={formData.organization}
+                                                        name="company"
+                                                        value={formData.company}
                                                         onChange={handleChange}
                                                         placeholder="SipHeron Labs"
                                                         className="w-full bg-[#0A0A0F] border border-[#1E1E2E] rounded-xl px-5 py-4 text-white focus:outline-none focus:border-[#4F6EF7] transition-all placeholder:text-[#3C4043]"
@@ -308,15 +323,18 @@ export default function ContactPage() {
                                             <div className="space-y-2">
                                                 <label className="text-xs font-bold text-[#6B7280] uppercase tracking-widest ml-1">Message *</label>
                                                 <textarea
-                                                    required
                                                     name="message"
                                                     value={formData.message}
                                                     onChange={handleChange}
                                                     placeholder="How can we help your institution?"
                                                     rows={6}
-                                                    className="w-full bg-[#0A0A0F] border border-[#1E1E2E] rounded-xl px-5 py-4 text-white focus:outline-none focus:border-[#4F6EF7] transition-all placeholder:text-[#3C4043] resize-none"
+                                                    className={`w-full bg-[#0A0A0F] border ${errors.message ? 'border-red-500' : 'border-[#1E1E2E]'} rounded-xl px-5 py-4 text-white focus:outline-none focus:border-[#4F6EF7] transition-all placeholder:text-[#3C4043] resize-none`}
                                                 ></textarea>
-                                                <p className="text-[10px] text-[#3C4043] uppercase tracking-widest font-bold ml-1">Min 20 characters</p>
+                                                {errors.message ? (
+                                                    <p className="text-xs text-red-500 font-bold ml-1">{errors.message}</p>
+                                                ) : (
+                                                    <p className="text-[10px] text-[#3C4043] uppercase tracking-widest font-bold ml-1">Min 20 characters</p>
+                                                )}
                                             </div>
 
                                             <button

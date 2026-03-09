@@ -6,15 +6,15 @@ import ParamTable, { ParamRow } from "@/app/docs/components/ParamTable";
 import ResponseTabs from "@/app/docs/components/ResponseTabs";
 import DocsPrevNext from "@/app/docs/components/DocsPrevNext";
 
-export const metadata = { title: "REST API" };
+export const metadata = { title: "Financial Reports" };
 
 export default function Page() {
     return (
         <div>
-            <h1>REST API</h1>
-<p>Comprehensive guide and breakdown for REST API. Ensure your setup follows security protocols natively.</p>
+            <h1>Financial Reports</h1>
+<p>Comprehensive guide and breakdown for Financial Reports. Ensure your setup follows security protocols natively.</p>
 
-            <DocsPrevNext prev={{ title: 'JavaScript SDK', href: '/docs/sdks/javascript' }} />
+            <DocsPrevNext prev={{ title: 'Legal Documents', href: '/docs/guides/legal' }} next={{ title: 'Enterprise Setup', href: '/docs/guides/enterprise' }} />
         </div>
     );
 }

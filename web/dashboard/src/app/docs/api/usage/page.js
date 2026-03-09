@@ -6,16 +6,16 @@ import ParamTable, { ParamRow } from "@/app/docs/components/ParamTable";
 import ResponseTabs from "@/app/docs/components/ResponseTabs";
 import DocsPrevNext from "@/app/docs/components/DocsPrevNext";
 
-export const metadata = { title: "Webhooks" };
+export const metadata = { title: "Usage & Analytics" };
 
 export default function Page() {
     return (
         <div>
             
-<h1>Webhooks</h1>
-<p>Interact programmatically with Webhooks mechanisms utilizing standard REST paradigms.</p>
-<Endpoint method="POST" path="/api/v1/webhooks">
-    Execute administrative control over Webhooks.
+<h1>Usage & Analytics</h1>
+<p>Interact programmatically with Usage & Analytics mechanisms utilizing standard REST paradigms.</p>
+<Endpoint method="POST" path="/api/v1/usage-& analytics">
+    Execute administrative control over Usage & Analytics.
 </Endpoint>
 <h2>Authentication</h2>
 <p>All API calls require standard Bearer token authorization linked to your API Execution Key generated inside the Operations Dashboard.</p>
@@ -34,7 +34,7 @@ export default function Page() {
 }`}</CodeBlock> }
 ]} />
         
-            <DocsPrevNext prev={{ title: 'Organizations', href: '/docs/api/organizations' }} next={{ title: 'Notifications', href: '/docs/api/notifications' }} />
+            <DocsPrevNext prev={{ title: 'Notifications', href: '/docs/api/notifications' }} next={{ title: 'Legal Documents', href: '/docs/guides/legal' }} />
         </div>
     );
 }

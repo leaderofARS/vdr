@@ -114,6 +114,17 @@ export default function AnalyticsDashboard() {
         return () => clearInterval(interval);
     }, [fetchData, fetchUsage]);
 
+    // Plausible FirstAnchor tracking
+    useEffect(() => {
+        if (stats?.stats?.totalAnchors > 0) {
+            const hasTracked = localStorage.getItem('sipheron_first_anchor_tracked');
+            if (!hasTracked) {
+                window.plausible?.('FirstAnchor');
+                localStorage.setItem('sipheron_first_anchor_tracked', 'true');
+            }
+        }
+    }, [stats?.stats?.totalAnchors]);
+
     useEffect(() => {
         fetchHashes();
     }, [fetchHashes]);

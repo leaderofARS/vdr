@@ -1,28 +1,43 @@
-import TopBar from './components/TopBar';
-import LeftSidebar from './components/LeftSidebar';
-import RightSidebar from './components/RightSidebar';
+import DocsHeader from './components/DocsHeader';
+import DocsSidebar from './components/DocsSidebar';
+import DocsTOC from './components/DocsTOC';
 
 export const metadata = {
-    title: 'SipHeron VDR Documentation',
-    description: 'Enterprise-grade blockchain document verification platform built on Solana.',
+    title: {
+        template: '%s | SipHeron VDR Docs',
+        default: 'SipHeron VDR Documentation'
+    },
+    description: 'Enterprise-grade blockchain document verification platform built on Solana. Learn how to anchor, verify, and integrate.',
 };
 
 export default function DocsLayout({ children }) {
     return (
-        <div className="min-h-screen bg-[#131418] text-gray-300 font-sans selection:bg-[#4285F4] selection:text-white flex flex-col">
-            <TopBar />
-            <div className="flex-1 max-w-[1600px] w-full mx-auto flex flex-col md:flex-row pt-16">
-                <aside className="hidden md:block w-64 lg:w-72 shrink-0 border-r border-gray-800 bg-[#131418] pt-8 pb-24 overflow-y-auto sticky top-16 h-[calc(100vh-4rem)]">
-                    <LeftSidebar />
-                </aside>
-                <main className="flex-1 min-w-0 px-4 sm:px-8 md:px-12 lg:px-16 pt-8 pb-24 docs-content">
-                    <div className="max-w-4xl mx-auto prose prose-invert prose-headings:text-white prose-a:text-[#4285F4] hover:prose-a:text-blue-400 prose-code:text-[#4285F4] prose-code:bg-[#1e1e24] prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-pre:bg-[#1a1b20] prose-pre:border prose-pre:border-gray-800">
+        <div className="min-h-screen bg-[#08080F] text-[#9B8EC4] font-sans selection:bg-[#4F6EF7]/30 selection:text-[#F0EEFF] flex flex-col">
+            <DocsHeader />
+            <div className="flex-1 max-w-[1600px] w-full mx-auto flex flex-col md:flex-row pt-12 lg:pt-16">
+                {/* Left Sidebar (Desktop) */}
+                <DocsSidebar />
+
+                {/* Main Content Area */}
+                <main className="flex-1 min-w-0 px-4 sm:px-8 md:px-12 lg:px-16 pt-0 pb-24 scroll-smooth">
+                    <div className="max-w-3xl mx-auto prose prose-invert 
+                        prose-headings:text-[#F0EEFF] prose-headings:font-bold 
+                        prose-h1:text-3xl sm:prose-h1:text-4xl prose-h1:tracking-tight prose-h1:mb-8 prose-h1:text-transparent prose-h1:bg-clip-text prose-h1:bg-gradient-to-r prose-h1:from-[#F0EEFF] prose-h1:to-[#9B8EC4]
+                        prose-h2:text-2xl prose-h2:mt-12 prose-h2:mb-6 prose-h2:border-b prose-h2:border-[#151525] prose-h2:pb-2
+                        prose-h3:text-lg prose-h3:text-[#B794FF] prose-h3:mt-8
+                        prose-p:text-base prose-p:leading-relaxed prose-p:text-[#9B8EC4]
+                        prose-a:text-[#4F6EF7] hover:prose-a:text-[#B794FF] prose-a:transition-colors prose-a:no-underline hover:prose-a:underline
+                        prose-strong:text-[#F0EEFF] prose-strong:font-bold
+                        prose-ul:list-disc prose-ul:pl-6 prose-li:text-[#9B8EC4] prose-li:marker:text-[#5B5380]
+                        prose-code:text-[#B794FF] prose-code:bg-[#151525] prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:font-mono prose-code:text-[0.85em]
+                        prose-code:before:content-none prose-code:after:content-none
+                        max-w-none">
                         {children}
                     </div>
                 </main>
-                <aside className="hidden xl:block w-64 shrink-0 pt-8 pb-24 overflow-y-auto sticky top-16 h-[calc(100vh-4rem)]">
-                    <RightSidebar />
-                </aside>
+
+                {/* Right TOC (Desktop) */}
+                <DocsTOC />
             </div>
         </div>
     );
