@@ -20,18 +20,20 @@ const crypto = require('crypto');
 
 const router = express.Router();
 
+const isProd = process.env.NODE_ENV === 'production';
+
 const ACCESS_COOKIE_OPTIONS = {
     httpOnly: true,
-    secure: true,
-    sameSite: 'strict',
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'lax',
     maxAge: 15 * 60 * 1000,  // 15 minutes
     path: '/'
 };
 
 const REFRESH_COOKIE_OPTIONS = {
     httpOnly: true,
-    secure: true,
-    sameSite: 'strict',
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000,  // 7 days
     path: '/'
 };
@@ -182,7 +184,7 @@ router.post('/login', validateInput(loginSchema), checkBruteForce, async (req, r
         // Note: sameSite must be strictly 'strict' or 'lax', unless 'none' in production but the prompt dictates 'strict'
         res.cookie('vdr_token', accessToken, ACCESS_COOKIE_OPTIONS);
         res.cookie('vdr_refresh', refreshToken, REFRESH_COOKIE_OPTIONS);
-        res.cookie('csrf_token', csrfToken, { httpOnly: false, secure: true, sameSite: 'strict', path: '/' });
+        res.cookie('csrf_token', csrfToken, { httpOnly: false, secure: isProd, sameSite: isProd ? 'none' : 'lax', path: '/' });
 
         res.json({
             success: true,

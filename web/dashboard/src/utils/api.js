@@ -12,17 +12,19 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export const api = axios.create({
     baseURL: API_BASE,
-    withCredentials: true,  // Fix 1.16: Enable cookie support for HttpOnly cookies
+    withCredentials: true,
 });
 
-// Request interceptor - cookies are automatically sent by browser
 api.interceptors.request.use((config) => {
-    // Cookies are automatically included with withCredentials: true
-    // No need to manually add Authorization header for cookie-based auth
+    if (typeof document !== 'undefined') {
+        const csrfMatch = document.cookie.match(/(^|;)\s*csrf_token\s*=\s*([^;]+)/);
+        if (csrfMatch) {
+            config.headers['X-CSRF-Token'] = csrfMatch[2];
+        }
+    }
     return config;
 });
 
-// Response interceptor with automatic token refresh
 let isRefreshing = false;
 let failedQueue = [];
 
