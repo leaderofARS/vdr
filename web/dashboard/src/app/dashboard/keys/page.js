@@ -23,11 +23,11 @@ export default function ApiKeysPage() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const { data: orgs } = await api.get('/organizations/my');
-                if (orgs && orgs.length > 0) setOrg(orgs[0]);
+                const { data: orgData } = await api.get('/api/org');
+                if (orgData) setOrg(orgData);
 
                 const { data: apiKeysResponse } = await api.get('/api/keys');
-                setKeys(apiKeysResponse?.data || []);
+                setKeys(apiKeysResponse?.keys || apiKeysResponse?.data || apiKeysResponse || []);
             } catch (e) {
                 console.error("Failed to load keys");
             } finally {
@@ -47,6 +47,7 @@ export default function ApiKeysPage() {
             setNewKeyData(data);
             setKeys([{
                 id: data.id,
+                name: nameInput,
                 key: data.apiKey,
                 createdAt: new Date().toISOString(),
                 status: 'active'
@@ -160,7 +161,7 @@ export default function ApiKeysPage() {
                                 </td>
                                 <td className="px-6 py-4">
                                     <div className="font-mono text-xs text-purple-glow bg-purple-glow/5 px-2 py-1 rounded border border-purple-glow/10 inline-block">
-                                        {k.key ? `${k.key.slice(0, 12)}••••••••` : '••••••••••••'}
+                                        {k.key ? `${k.key.slice(0, 12)}••••••••` : k.apiKey ? `${k.apiKey.slice(0, 12)}••••••••` : '••••••••••••'}
                                     </div>
                                 </td>
                                 <td className="px-6 py-4">
