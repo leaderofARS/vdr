@@ -106,17 +106,27 @@ router.get('/', authenticate, async (req, res, next) => {
 
         const chartData = Object.values(dayStats).sort((a, b) => a.date.localeCompare(b.date));
 
+        // Calculate specific summary metrics for main dashboard
+        const today = new Date().toISOString().split('T')[0];
+        const requestsToday = dayStats[today] ? (dayStats[today].success + dayStats[today].error) : 0;
+
+        // Sum last 7 days for requestsThisWeek
+        const requestsThisWeek = chartData.slice(-7).reduce((sum, d) => sum + d.success + d.error, 0);
+
         res.json({
             period,
             summary: {
                 totalRequests,
                 successRate,
                 avgResponseTime,
-                mostUsedEndpoint
+                mostUsedEndpoint,
+                requestsToday,
+                requestsThisWeek
             },
             endpoints,
             apiKeys,
-            chartData
+            chartData,
+            analytics: chartData.map(d => ({ date: d.date, count: d.success + d.error }))
         });
 
     } catch (error) {

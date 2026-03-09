@@ -136,61 +136,8 @@ router.post('/logout', (req, res) => {
     res.json({ success: true, message: 'Logged out successfully' });
 });
 
-// Generate an API Key for an Organization
-router.post('/api-key', authenticate, async (req, res, next) => {
-    try {
-        const { name, organizationId } = req.body;
+// Generate an API Key for an Organization (REMOVED: Moved to /api/keys)
 
-        if (organizationId) {
-            const org = await prisma.organization.findFirst({
-                where: {
-                    id: organizationId,
-                    ownerId: req.user.id
-                }
-            });
-
-            if (!org) {
-                return res.status(403).json({
-                    error: 'Unauthorized: You do not have management rights for this organization'
-                });
-            }
-        }
-
-        const key = require('crypto').randomBytes(32).toString('hex');
-
-        const apiKey = await prisma.apiKey.create({
-            data: {
-                name,
-                key,
-                userId: req.user.id,
-                organizationId: organizationId || null
-            }
-        });
-
-        // Send API Key Creation Notification (Non-blocking)
-        const { sendApiKeyCreatedEmail } = require('../services/emailService');
-        sendApiKeyCreatedEmail(req.user.email, name).catch(console.error);
-
-        if (apiKey.organizationId) {
-            notificationService.createNotification(
-                apiKey.organizationId,
-                'key_created',
-                'API key created',
-                `New API key "${name}" was created`,
-                { keyName: name }
-            ).catch(err => console.error('[Auth] Notification failed:', err.message));
-        }
-
-        res.status(201).json({
-            success: true,
-            apiKey: apiKey.key,
-            id: apiKey.id,
-            message: 'Store this API key securely. It will not be shown again.'
-        });
-    } catch (error) {
-        next(error);
-    }
-});
 
 // Verify API Key — used by CLI link command
 router.get('/verify-key', authenticate, async (req, res, next) => {

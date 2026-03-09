@@ -7,7 +7,9 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 const authenticate = require('../middleware/auth');
+const notificationService = require('../services/notificationService');
 const { parsePagination, buildPaginationResponse, applyPagination } = require('../utils/paginate');
+const crypto = require('crypto');
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -87,6 +89,51 @@ router.delete('/:id', authenticate, async (req, res, next) => {
         });
 
         res.json({ success: true, message: 'API Key revoked successfully' });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @route POST /api/keys
+ * @description Create a new API key for the organization.
+ */
+router.post('/', authenticate, async (req, res, next) => {
+    try {
+        const { name } = req.body;
+        if (!req.organization) {
+            return res.status(403).json({ error: 'Institutional Context Required' });
+        }
+
+        const key = crypto.randomBytes(32).toString('hex');
+
+        const apiKey = await prisma.apiKey.create({
+            data: {
+                name,
+                key,
+                userId: req.user.id,
+                organizationId: req.organization.id
+            }
+        });
+
+        // Send API Key Creation Notification (Non-blocking)
+        const { sendApiKeyCreatedEmail } = require('../services/emailService');
+        sendApiKeyCreatedEmail(req.user.email, name).catch(console.error);
+
+        notificationService.createNotification(
+            req.organization.id,
+            'key_created',
+            'API key created',
+            `New API key "${name}" was created`,
+            { keyName: name }
+        ).catch(err => console.error('[Keys] Notification failed:', err.message));
+
+        res.status(201).json({
+            success: true,
+            apiKey: apiKey.key,
+            id: apiKey.id,
+            message: 'Store this API key securely. It will not be shown again.'
+        });
     } catch (error) {
         next(error);
     }
