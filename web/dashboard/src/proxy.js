@@ -1,6 +1,6 @@
 /**
- * @file middleware.js
- * @module /home/ars0x01/Documents/Github/solana-vdr/web/dashboard/src/middleware.js
+ * @file proxy.js
+ * @module /home/ars0x01/Documents/Github/solana-vdr/web/dashboard/src/proxy.js
  * @description Core component of the SipHeron VDR platform.
  * Part of the SipHeron VDR platform.
  * @author SipHeron Platform
@@ -9,10 +9,10 @@
 import { NextResponse } from 'next/server';
 
 /**
- * Next.js middleware for HTTPS enforcement in production.
+ * Next.js proxy for HTTPS enforcement in production.
  * Redirects HTTP requests to HTTPS and adds security headers.
  */
-export function middleware(request) {
+export function proxy(request) {
     const response = NextResponse.next();
 
     // HTTPS redirect in production
