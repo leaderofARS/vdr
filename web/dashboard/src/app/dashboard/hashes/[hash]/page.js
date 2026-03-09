@@ -10,8 +10,12 @@ import {
     ExternalLink, Copy, CheckCircle2, AlertTriangle,
     ArrowLeft, Printer, FileText, HardDrive,
     Key, Info, Ban, Rocket, Check, X,
-    Download, Clock
+    Download, Clock, Share2, Activity, Globe, RefreshCw
 } from 'lucide-react';
+import {
+    PurpleCard, GlowButton, PurpleBadge, MonoHash,
+    PurpleSkeleton, PurpleModal, PurpleInput
+} from '@/components/ui/PurpleUI';
 
 export default function HashDetailsPage() {
     const { hash } = useParams();
@@ -29,7 +33,7 @@ export default function HashDetailsPage() {
             const { data } = await api.get(`/api/hashes/${hash}`);
             setRecord(data);
         } catch (err) {
-            console.error("Failed to fetch hash record:", err);
+            console.error(err);
             if (err.response?.status === 404) {
                 setError("Record not found");
             } else {
@@ -71,9 +75,9 @@ export default function HashDetailsPage() {
                 <title>SipHeron VDR - Proof Certificate</title>
                 <style>
                     body { font-family: 'Inter', system-ui, sans-serif; padding: 40px; color: #1a1a1a; line-height: 1.6; }
-                    .cert-container { max-width: 800px; margin: 0 auto; border: 12px solid #4285F4; padding: 40px; position: relative; }
+                    .cert-container { max-width: 800px; margin: 0 auto; border: 12px solid #4C3D8F; padding: 40px; position: relative; }
                     .header { text-align: center; border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 30px; }
-                    .logo { font-weight: 800; font-size: 24px; color: #4285F4; display: flex; align-items: center; justify-content: center; gap: 10px; }
+                    .logo { font-weight: 800; font-size: 24px; color: #4C3D8F; display: flex; align-items: center; justify-content: center; gap: 10px; }
                     .title { font-size: 32px; font-weight: 700; margin: 20px 0; text-transform: uppercase; letter-spacing: 2px; }
                     .field { margin-bottom: 20px; }
                     .label { font-size: 10px; font-weight: 800; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
@@ -141,265 +145,215 @@ export default function HashDetailsPage() {
 
     if (loading) {
         return (
-            <div className="max-w-[1200px] mx-auto space-y-8 animate-pulse">
-                <div className="w-24 h-4 bg-[#1A1D24] rounded"></div>
-                <div className="h-48 bg-[#1A1D24] rounded-2xl border border-[#2C3038]"></div>
+            <div className="space-y-8 animate-pulse">
+                <div className="w-24 h-4 bg-bg-surface rounded-full" />
+                <div className="h-40 bg-bg-surface rounded-3xl" />
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <div className="lg:col-span-2 h-[500px] bg-[#1A1D24] rounded-2xl border border-[#2C3038]"></div>
+                    <div className="lg:col-span-2 h-96 bg-bg-surface rounded-3xl" />
                     <div className="space-y-8">
-                        <div className="h-64 bg-[#1A1D24] rounded-2xl border border-[#2C3038]"></div>
-                        <div className="h-48 bg-[#1A1D24] rounded-2xl border border-[#2C3038]"></div>
+                        <div className="h-64 bg-bg-surface rounded-3xl" />
+                        <div className="h-32 bg-bg-surface rounded-3xl" />
                     </div>
                 </div>
-            </div>
-        );
-    }
-
-    if (error === "Record not found") {
-        return (
-            <div className="max-w-[1000px] mx-auto mt-20 text-center space-y-6">
-                <div className="w-20 h-20 bg-[#F28B82]/10 rounded-full flex items-center justify-center mx-auto border border-[#F28B82]/20">
-                    <ShieldAlert className="w-10 h-10 text-[#F28B82]" />
-                </div>
-                <div>
-                    <h1 className="text-2xl font-bold text-white mb-2">Record not found</h1>
-                    <p className="text-[#9AA0A6]">This hash has not been registered in your organization's registry</p>
-                </div>
-                <button
-                    onClick={() => router.push('/dashboard')}
-                    className="inline-flex items-center gap-2 bg-[#1A1D24] hover:bg-[#2C3038] text-white px-6 py-3 rounded-xl font-bold transition-all border border-[#2C3038]"
-                >
-                    <ArrowLeft className="w-4 h-4" /> Back to Dashboard
-                </button>
             </div>
         );
     }
 
     if (error) {
         return (
-            <div className="max-w-[1000px] mx-auto mt-20 text-center space-y-6">
-                <div className="w-20 h-20 bg-[#F28B82]/10 rounded-full flex items-center justify-center mx-auto border border-[#F28B82]/20">
-                    <AlertTriangle className="w-10 h-10 text-[#F28B82]" />
+            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-6">
+                <div className="w-24 h-24 bg-danger/10 border border-danger/20 rounded-full flex items-center justify-center">
+                    <ShieldAlert className="w-12 h-12 text-danger" />
                 </div>
                 <div>
-                    <h1 className="text-2xl font-bold text-white mb-2">Error Loading Record</h1>
-                    <p className="text-[#9AA0A6]">{error}</p>
+                    <h1 className="text-2xl font-bold bg-gradient-to-r from-text-primary to-text-secondary bg-clip-text text-transparent mb-2">
+                        {error === "Record not found" ? "Identity Not Found" : "Connection Error"}
+                    </h1>
+                    <p className="text-text-muted max-w-sm mx-auto">
+                        {error === "Record not found" ? "The requested hash does not exist in your organization's decentralized registry." : error}
+                    </p>
                 </div>
-                <button
-                    onClick={() => fetchRecord()}
-                    className="inline-flex items-center gap-2 bg-[#4285F4] hover:bg-[#3367D6] text-white px-6 py-3 rounded-xl font-bold transition-all"
-                >
-                    <RefreshCw className="w-4 h-4" /> Retry Connection
-                </button>
+                <GlowButton onClick={() => router.push('/dashboard')} icon={ArrowLeft}>BACK TO CONSOLE</GlowButton>
             </div>
         );
     }
 
     return (
-        <div className="max-w-[1200px] mx-auto space-y-8 pb-20 relative">
-            <AnimatePresence>
-                {toast && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20, x: '-50%' }}
-                        animate={{ opacity: 1, y: 0, x: '-50%' }}
-                        exit={{ opacity: 0, scale: 0.95, x: '-50%' }}
-                        className="fixed bottom-8 left-1/2 z-[100] px-6 py-3 rounded-xl bg-[#111118] border border-[#1E1E2E] shadow-2xl flex items-center gap-3 min-w-[320px]"
-                    >
-                        <div className={`p-1.5 rounded-full ${toast.type === 'success' ? 'bg-[#10B981]/10' : 'bg-[#F28B82]/10'}`}>
-                            {toast.type === 'success' ? <CheckCircle2 className="w-4 h-4 text-[#10B981]" /> : <AlertTriangle className="w-4 h-4 text-[#F28B82]" />}
-                        </div>
-                        <span className="text-sm text-white font-medium">{toast.message}</span>
-                        <button onClick={() => setToast(null)} className="ml-auto text-[#9AA0A6] hover:text-white">
-                            <X className="w-4 h-4" />
-                        </button>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+        <div className="space-y-8 pb-32 relative">
+            {/* Ambient Background */}
+            <div className="absolute inset-x-0 -top-40 h-[600px] bg-purple-glow/10 blur-[150px] pointer-events-none opacity-50" />
 
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-8">
                 <button
                     onClick={() => router.push('/dashboard')}
-                    className="w-fit flex items-center gap-2 text-[#9AA0A6] hover:text-white transition-colors text-sm font-medium"
+                    className="group w-fit flex items-center gap-2 text-text-muted hover:text-white transition-colors text-xs font-bold uppercase tracking-widest"
                 >
-                    <ArrowLeft className="w-4 h-4" /> Back to Feed
+                    <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+                    Back to Registry
                 </button>
 
-                <div className="bg-[#111118] border border-[#1E1E2E] rounded-2xl p-8 relative overflow-hidden shadow-sm">
-                    <div className="absolute top-0 left-0 w-1.5 h-full bg-[#4285F4]"></div>
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                        <div className="space-y-3">
-                            <div className="flex items-center gap-3">
-                                <StatusBadge status={record.status} />
-                                <div className="text-[10px] font-bold text-[#5F6368] uppercase tracking-widest bg-[#0A0A0F] px-2 py-1 rounded border border-[#1E1E2E]">DEVNET CLUSTER</div>
+                <div className="relative">
+                    <PurpleCard className="p-8 lg:p-12 overflow-hidden border-purple-vivid/20">
+                        <div className="absolute top-0 right-0 p-8 opacity-5">
+                            <Hash className="w-48 h-48 text-purple-glow" />
+                        </div>
+
+                        <div className="flex flex-col lg:flex-row justify-between gap-10 relative z-10">
+                            <div className="space-y-6 max-w-4xl">
+                                <div className="flex flex-wrap items-center gap-4">
+                                    <PurpleBadge variant={record.status === 'revoked' ? 'danger' : 'success'} pulse={record.status === 'active'}>
+                                        {record.status === 'active' ? 'Active On-Chain' : 'Revoked Proof'}
+                                    </PurpleBadge>
+                                    <div className="flex items-center gap-2 text-[10px] font-bold text-text-muted uppercase tracking-widest bg-black/40 px-3 py-1.5 rounded-full border border-bg-border">
+                                        <Globe className="w-3.5 h-3.5 text-purple-glow" />
+                                        Solana Devnet Cluster
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <h1 className="text-3xl lg:text-4xl font-mono font-bold text-text-primary break-all leading-tight tracking-tight">
+                                        {record.hash}
+                                    </h1>
+                                    <div className="flex items-center gap-4 mt-4">
+                                        <button
+                                            onClick={() => handleCopy(record.hash, 'Hash')}
+                                            className="px-4 py-2 rounded-xl bg-purple-dim/30 border border-purple-vivid/20 text-purple-glow hover:bg-purple-dim/50 transition-all flex items-center gap-2 text-xs font-bold"
+                                        >
+                                            <Copy className="w-4 h-4" /> COPY HASH
+                                        </button>
+                                        <div className="hidden sm:block h-4 w-px bg-bg-border" />
+                                        <span className="text-[10px] text-text-muted font-bold uppercase tracking-widest">
+                                            SHA-256 Digest Standard
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
-                            <div className="flex items-center gap-4">
-                                <h1 className="text-2xl font-mono text-white break-all max-w-[80%] leading-relaxed">
-                                    {record.hash}
-                                </h1>
-                                <button
-                                    onClick={() => handleCopy(record.hash, 'Hash')}
-                                    className="p-2 rounded-lg bg-[#20232A] text-[#9AA0A6] hover:text-white transition-all shadow-sm"
-                                >
-                                    <Copy className="w-5 h-5" />
-                                </button>
+
+                            <div className="flex flex-col sm:flex-row lg:flex-col gap-4 shrink-0">
+                                {record.explorerUrl && (
+                                    <a href={record.explorerUrl} target="_blank" rel="noopener noreferrer">
+                                        <GlowButton className="w-full justify-center px-8" icon={ExternalLink}>SOLANA EXPLORER</GlowButton>
+                                    </a>
+                                )}
+                                <GlowButton variant="ghost" onClick={handleDownloadCertificate} className="w-full justify-center" icon={Download}>DOWNLOAD PROOF</GlowButton>
                             </div>
                         </div>
-                        <div className="flex flex-col gap-3 shrink-0">
-                            {record.explorerUrl && (
-                                <a
-                                    href={record.explorerUrl}
-                                    target="_blank" rel="noopener noreferrer"
-                                    className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#4285F4] hover:bg-[#3367D6] text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-[#4285F4]/20 active:scale-95"
-                                >
-                                    View on Solana Explorer <ExternalLink className="w-4 h-4" />
-                                </a>
-                            )}
-                            <button
-                                onClick={handleDownloadCertificate}
-                                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#1A1D24] border border-[#2C3038] hover:bg-[#2C3038] text-white rounded-xl text-sm font-bold transition-all active:scale-95"
-                            >
-                                <Download className="w-4 h-4" /> Proof Certificate
-                            </button>
-                        </div>
-                    </div>
+                    </PurpleCard>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2 space-y-8">
-                    <div className="bg-[#111118] border border-[#1E1E2E] rounded-2xl overflow-hidden shadow-sm">
-                        <div className="px-6 py-4 border-b border-[#1E1E2E] bg-[#161621] flex items-center justify-between">
-                            <h3 className="text-white text-sm font-bold flex items-center gap-2 uppercase tracking-wider">
-                                <HardDrive className="w-4 h-4 text-[#4285F4]" /> Cryptographic Identity
+                    {/* Security Intel */}
+                    <PurpleCard className="p-0 overflow-hidden">
+                        <div className="px-8 py-6 border-b border-bg-border/50 flex items-center justify-between bg-purple-dim/5">
+                            <h3 className="text-sm font-bold text-text-primary flex items-center gap-3 uppercase tracking-wider">
+                                <Activity className="w-4 h-4 text-purple-vivid" />
+                                Cryptographic Ledger Data
                             </h3>
+                            <PurpleBadge variant="purple">VERIFIED ON-CHAIN</PurpleBadge>
                         </div>
-                        <div className="p-8 space-y-8">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <DetailItem
-                                    label="Owner / Initial Issuer"
-                                    value={record.owner}
-                                    mono
-                                    link={`https://explorer.solana.com/address/${record.owner}?cluster=devnet`}
-                                    onCopy={() => handleCopy(record.owner, 'Owner Address')}
-                                />
-                                <DetailItem
-                                    label="Original Anchor Date"
-                                    value={new Date(record.registeredAt).toLocaleString()}
-                                    icon={Clock}
-                                />
-                                <DetailItem
-                                    label="On-chain Expiry"
-                                    value={record.expiry ? new Date(record.expiry).toLocaleDateString() : 'Infinite / Immutable'}
-                                    icon={Ban}
-                                />
-                                <DetailItem
-                                    label="Registry Account (PDA)"
-                                    value={record.pdaAddress}
-                                    mono
-                                    link={record.pdaExplorerUrl}
-                                    onCopy={() => handleCopy(record.pdaAddress, 'PDA Address')}
-                                />
+                        <div className="p-8">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
+                                <DetailBox label="Initial Issuer (PDA Owner)" value={record.owner} isMono link={`https://explorer.solana.com/address/${record.owner}?cluster=devnet`} />
+                                <DetailBox label="Anchor Timestamp" value={new Date(record.registeredAt).toLocaleString()} icon={Calendar} />
+                                <DetailBox label="On-chain Expiry" value={record.expiry ? new Date(record.expiry).toLocaleDateString() : 'Perpetual Storage'} icon={Ban} />
+                                <DetailBox label="Registry Identity (PDA)" value={record.pdaAddress} isMono link={record.pdaExplorerUrl} />
                             </div>
 
-                            <div className="pt-8 border-t border-[#1E1E2E]">
-                                <DetailItem
-                                    label="Transaction Signature"
-                                    value={record.txSignature || '—'}
-                                    mono
+                            <div className="mt-12 pt-10 border-t border-bg-border/50">
+                                <DetailBox
+                                    label="On-chain Transaction Signature"
+                                    value={record.txSignature || 'PENDING FINALITY'}
+                                    isMono
                                     link={record.explorerUrl}
-                                    onCopy={() => handleCopy(record.txSignature, 'TX Signature')}
+                                    fullWidth
                                 />
                             </div>
 
                             {record.status === 'revoked' && record.revokedAt && (
-                                <div className="pt-8 border-t border-[#F28B82]/20">
-                                    <DetailItem
-                                        label="Revocation Timestamp"
+                                <div className="mt-10 pt-10 border-t border-danger/20">
+                                    <DetailBox
+                                        label="Revocation Event Timestamp"
                                         value={new Date(record.revokedAt).toLocaleString()}
                                         icon={ShieldAlert}
+                                        emphasis="danger"
                                     />
                                 </div>
                             )}
 
-                            <div className="pt-8 border-t border-[#1E1E2E]">
-                                <label className="text-[10px] font-bold text-[#5F6368] uppercase tracking-widest mb-3 block">Metadata Payload</label>
-                                <div className="bg-[#0A0A0F] border border-[#1E1E2E] rounded-xl p-4 text-[#E8EAED] text-sm font-mono leading-relaxed whitespace-pre-wrap">
-                                    {record.metadata || 'No metadata provided for this record.'}
+                            <div className="mt-12 pt-10 border-t border-bg-border/50">
+                                <label className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] mb-4 block">Associated Metadata Payload</label>
+                                <div className="bg-black/40 border border-bg-border rounded-2xl p-6 font-mono text-sm text-text-secondary leading-relaxed bg-grid-white/[0.02]">
+                                    {record.metadata || "// No secondary metadata provided for this record"}
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </PurpleCard>
                 </div>
 
                 <div className="space-y-8">
-                    <div className="bg-[#111118] border border-[#1E1E2E] rounded-2xl overflow-hidden shadow-sm">
-                        <div className="px-6 py-4 border-b border-[#1E1E2E] bg-[#161621]">
-                            <h3 className="text-white text-sm font-bold flex items-center gap-2 uppercase tracking-wider">
-                                <ShieldCheck className="w-4 h-4 text-[#10B981]" /> Verify This Document
-                            </h3>
+                    {/* Verification Action */}
+                    <PurpleCard className="border-purple-vivid/30 bg-purple-vivid/[0.02]">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="p-2 bg-purple-dim/40 rounded-xl text-purple-glow">
+                                <ShieldCheck className="w-5 h-5" />
+                            </div>
+                            <h4 className="font-bold text-sm text-text-primary uppercase tracking-tight">Asset Verification</h4>
                         </div>
-                        <div className="p-6 space-y-6">
-                            <p className="text-xs text-[#9AA0A6] leading-relaxed">
-                                To cryptographically verify that a local file matches this on-chain record, use the SipHeron CLI:
-                            </p>
+                        <p className="text-xs text-text-muted leading-relaxed mb-6">
+                            Execute a cryptographic check against a local asset to verify its integrity
+                            against this immutable on-chain record.
+                        </p>
 
-                            <div className="relative group">
-                                <code className="block bg-[#0A0A0F] border border-[#1E1E2E] rounded-xl p-4 text-xs text-[#8AB4F8] font-mono break-all group-hover:border-[#4285F4]/30 transition-all">
-                                    sipheron-vdr verify ./your-file.pdf
+                        <div className="space-y-4">
+                            <div className="bg-black/60 rounded-2xl p-4 border border-bg-border relative group">
+                                <code className="text-[11px] text-purple-glow font-mono leading-relaxed block overflow-x-auto pb-2">
+                                    sipheron-vdr verify ./path/to/asset
                                 </code>
                                 <button
-                                    onClick={() => handleCopy(`sipheron-vdr verify ./your-file.pdf`, 'Command')}
-                                    className="absolute right-3 top-3 p-1.5 rounded-lg bg-[#20232A] text-[#5F6368] hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                                    onClick={() => handleCopy(`sipheron-vdr verify -h ${record.hash}`, 'CLI Command')}
+                                    className="absolute right-3 top-3 p-2 bg-purple-dim/50 rounded-lg text-text-muted hover:text-white opacity-0 group-hover:opacity-100 transition-all"
                                 >
                                     <Copy className="w-3.5 h-3.5" />
                                 </button>
                             </div>
 
-                            <div className="bg-[#10B981]/5 border border-[#10B981]/20 rounded-xl p-4">
-                                <p className="text-[10px] font-bold text-[#10B981] uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                                    <CheckCircle2 className="w-3.5 h-3.5" /> Expected SHA-256
-                                </p>
-                                <code className="text-[11px] text-[#E8EAED] font-mono break-all opacity-80 leading-relaxed block">
-                                    {record.hash}
-                                </code>
+                            <div className="flex items-center gap-2 p-3 bg-purple-glow/5 border border-purple-glow/10 rounded-xl">
+                                <Info className="w-4 h-4 text-purple-glow shrink-0" />
+                                <span className="text-[10px] text-text-secondary leading-tight">SHA-256 collision-resistant verification protocol enabled.</span>
                             </div>
                         </div>
-                    </div>
+                    </PurpleCard>
 
+                    {/* Revocation Zone */}
                     {record.status === 'active' && (
-                        <div className="bg-[#F28B82]/5 border border-[#F28B82]/20 rounded-2xl overflow-hidden shadow-sm">
-                            <div className="p-6 space-y-4">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-[#F28B82]/10 rounded-lg">
-                                        <Ban className="w-5 h-5 text-[#F28B82]" />
-                                    </div>
-                                    <div>
-                                        <h3 className="text-white text-sm font-bold">Revoke Proof</h3>
-                                        <p className="text-[11px] text-[#9AA0A6]">Permanently invalidate this record.</p>
-                                    </div>
+                        <PurpleCard className="border-danger/20 hover:border-danger/40 transition-colors">
+                            <div className="flex items-center gap-4 mb-6">
+                                <div className="p-3 bg-danger/10 rounded-2xl text-danger">
+                                    <Ban className="w-6 h-6" />
                                 </div>
-                                <button
-                                    onClick={() => setShowRevokeModal(true)}
-                                    className="w-full py-3 bg-[#F28B82]/10 hover:bg-[#F28B82] text-[#F28B82] hover:text-white text-xs font-bold rounded-xl transition-all border border-[#F28B82]/30 active:scale-95 px-4"
-                                >
-                                    INITIATE ON-CHAIN REVOCATION
-                                </button>
-                                <p className="text-[10px] text-[#5F6368] text-center italic">Requires write access to Organization Identity.</p>
+                                <div className="flex-1">
+                                    <h4 className="font-bold text-sm text-white uppercase tracking-tight">Revoke Proof</h4>
+                                    <p className="text-[10px] text-text-muted">Broadcast permanent invalidation</p>
+                                </div>
                             </div>
-                        </div>
+                            <GlowButton variant="danger" onClick={() => setShowRevokeModal(true)} className="w-full py-4 text-xs font-bold uppercase tracking-widest">
+                                INITIATE ON-CHAIN REVOKE
+                            </GlowButton>
+                            <p className="text-[9px] text-center text-text-muted mt-3 italic grayscale opacity-60">This operation consumes network throughput (gas fees).</p>
+                        </PurpleCard>
                     )}
 
-                    <div className="p-6 bg-[#4285F4]/5 border border-[#4285F4]/20 rounded-2xl">
-                        <div className="flex items-start gap-4">
-                            <Info className="w-5 h-5 text-[#4285F4] shrink-0 mt-0.5" />
-                            <div className="space-y-2">
-                                <h4 className="text-white text-[13px] font-bold">Blockchain finality</h4>
-                                <p className="text-[11px] text-[#9AA0A6] leading-relaxed">This record is permanently anchored to the Solana Devnet. Use the CLI `revoke` command or this dashboard to invalidate it.</p>
-                                <Link href="/docs/concepts" className="text-[11px] text-[#4285F4] font-bold hover:underline flex items-center gap-1">
-                                    Learn more <ExternalLink className="w-3 h-3" />
-                                </Link>
-                            </div>
+                    {/* Infrastructure Info */}
+                    <div className="p-6 bg-purple-glow/[0.02] border border-bg-border rounded-3xl space-y-4">
+                        <div className="flex items-center gap-3">
+                            <Globe className="w-5 h-5 text-purple-glow" />
+                            <h4 className="text-[11px] font-bold uppercase tracking-widest text-text-primary">Network Finality</h4>
                         </div>
+                        <p className="text-[11px] text-text-muted leading-relaxed">
+                            Once anchored, document proofs remain immutable on the Solana ledger.
+                            Revocation marks the record as invalid but the history remains for auditing.
+                        </p>
                     </div>
                 </div>
             </div>
@@ -413,56 +367,64 @@ export default function HashDetailsPage() {
                         onError={(msg) => showToast(msg, 'error')}
                     />
                 )}
+                {toast && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 50 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        className="fixed bottom-12 left-1/2 -translate-x-1/2 z-[100] px-6 py-4 rounded-2xl bg-bg-surface border border-purple-vivid/20 shadow-2xl flex items-center gap-4 min-w-[300px]"
+                    >
+                        <div className={`p-2 rounded-full ${toast.type === 'success' ? 'bg-success/10 text-success' : 'bg-danger/10 text-danger'}`}>
+                            {toast.type === 'success' ? <CheckCircle2 className="w-5 h-5" /> : <AlertTriangle className="w-5 h-5" />}
+                        </div>
+                        <span className="text-sm font-bold text-text-primary">{toast.message}</span>
+                        <button onClick={() => setToast(null)} className="ml-auto p-1 text-text-muted hover:text-white">
+                            <X className="w-4 h-4" />
+                        </button>
+                    </motion.div>
+                )}
             </AnimatePresence>
         </div>
     );
 }
 
-function DetailItem({ label, value, mono, link, icon: Icon, onCopy }) {
-    return (
-        <div className="space-y-2">
-            <label className="text-[10px] font-bold text-[#5F6368] uppercase tracking-widest block">{label}</label>
-            <div className="flex items-center gap-2 group">
-                <div className={`flex-1 py-3 px-4 bg-[#0A0A0F] border border-[#1E1E2E] rounded-xl text-sm ${mono ? 'font-mono' : 'text-[#E8EAED]'} break-all flex items-center gap-2`}>
-                    {Icon && <Icon className="w-3.5 h-3.5 text-[#9AA0A6]" />}
-                    <span className="opacity-90">{value}</span>
-                </div>
-                {(link || onCopy) && (
-                    <div className="flex flex-col gap-1 shrink-0">
-                        {onCopy && (
-                            <button
-                                onClick={onCopy}
-                                className="p-2 rounded-lg bg-[#20232A] text-[#9AA0A6] hover:text-white transition-all shadow-sm"
-                            >
-                                <Copy className="w-3.5 h-3.5" />
-                            </button>
-                        )}
-                        {link && (
-                            <a
-                                href={link}
-                                target="_blank" rel="noopener noreferrer"
-                                className="p-2 rounded-lg bg-[#20232A] text-[#9AA0A6] hover:text-white transition-all shadow-sm"
-                            >
-                                <ExternalLink className="w-3.5 h-3.5" />
-                            </a>
-                        )}
-                    </div>
-                )}
-            </div>
-        </div>
-    );
-}
+function DetailBox({ label, value, isMono, link, icon: Icon, fullWidth, emphasis }) {
+    const [copied, setCopied] = useState(false);
 
-function StatusBadge({ status }) {
-    const config = {
-        active: { bg: 'bg-[#10B981]/10', text: 'text-[#10B981]', dot: 'bg-[#10B981]', label: 'Active Status' },
-        revoked: { bg: 'bg-[#F28B82]/10', text: 'text-[#F28B82]', dot: 'bg-[#F28B82]', label: 'Revoked Archive' },
-        expired: { bg: 'bg-[#FBC02D]/10', text: 'text-[#FBC02D]', dot: 'bg-[#FBC02D]', label: 'Expired' }
+    const handleCopy = () => {
+        navigator.clipboard.writeText(value);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
     };
-    const s = config[status] || config.active;
+
     return (
-        <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg ${s.bg} ${s.text} font-bold text-[10px] uppercase tracking-[0.2em] border border-transparent shadow-sm shadow-black/20`}>
-            <div className={`w-1.5 h-1.5 rounded-full ${s.dot} animate-pulse`}></div> {s.label}
+        <div className={fullWidth ? "col-span-full space-y-3" : "space-y-3"}>
+            <label className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] ml-1 block">{label}</label>
+            <div className="flex items-center gap-3 group">
+                <div className={`flex-1 py-4 px-5 bg-black/40 border ${emphasis === 'danger' ? 'border-danger/30' : 'border-bg-border'} rounded-2xl flex items-center gap-4 min-w-0 transition-all hover:bg-black/60`}>
+                    {Icon && <Icon className={`w-4 h-4 shrink-0 ${emphasis === 'danger' ? 'text-danger' : 'text-purple-glow'}`} />}
+                    <span className={`text-[13px] break-all truncate ${isMono ? 'font-mono text-purple-glow' : 'text-text-primary font-medium'} ${emphasis === 'danger' ? 'text-danger' : ''}`}>
+                        {value}
+                    </span>
+                </div>
+                <div className="flex gap-2">
+                    <button
+                        onClick={handleCopy}
+                        className="p-3 bg-bg-surface border border-bg-border rounded-2xl text-text-muted hover:text-white hover:border-purple-vivid/40 transition-all"
+                    >
+                        {copied ? <CheckCircle2 className="w-4 h-4 text-success" /> : <Copy className="w-4 h-4" />}
+                    </button>
+                    {link && (
+                        <a
+                            href={link}
+                            target="_blank" rel="noopener noreferrer"
+                            className="p-3 bg-bg-surface border border-bg-border rounded-2xl text-text-muted hover:text-white hover:border-purple-vivid/40 transition-all"
+                        >
+                            <ExternalLink className="w-4 h-4" />
+                        </a>
+                    )}
+                </div>
+            </div>
         </div>
     );
 }
@@ -478,7 +440,7 @@ function RevokeModal({ record, onClose, onSuccess, onError }) {
             await api.post('/api/hashes/revoke', { hash: record.hash });
             onSuccess();
         } catch (err) {
-            onError(err.response?.data?.error || "On-chain revocation failed. Check registry status.");
+            onError(err.response?.data?.error || "On-chain revocation failed.");
             onClose();
         } finally {
             setLoading(false);
@@ -486,47 +448,47 @@ function RevokeModal({ record, onClose, onSuccess, onError }) {
     };
 
     return (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="relative w-full max-w-md bg-[#111118] border border-[#1E1E2E] rounded-2xl shadow-2xl overflow-hidden p-8" >
-                <div className="w-14 h-14 rounded-full bg-[#F28B82]/10 border border-[#F28B82]/20 flex items-center justify-center mb-6 mx-auto">
-                    <ShieldAlert className="w-7 h-7 text-[#F28B82]" />
+        <PurpleModal isOpen={true} onClose={onClose} title="Permanent Invalidations">
+            <div className="space-y-8">
+                <div className="flex flex-col items-center justify-center text-center space-y-4">
+                    <div className="w-16 h-16 rounded-full bg-danger/10 border border-danger/20 flex items-center justify-center">
+                        <ShieldAlert className="w-8 h-8 text-danger" />
+                    </div>
+                    <div>
+                        <h3 className="text-xl font-bold text-white tracking-tight">Revoke Proof Authority?</h3>
+                        <p className="text-xs text-text-muted max-w-sm mt-1">This operation is cryptographically signed and irreversible. The record will be permanently marked as invalid on-chain.</p>
+                    </div>
                 </div>
 
-                <h3 className="text-xl font-bold text-white text-center mb-2">Revoke Document Proof?</h3>
-                <p className="text-sm text-[#9AA0A6] text-center leading-relaxed mb-6 px-4">
-                    This action is <span className="text-[#F28B82] font-bold">permanent</span> and irreversible. The hash will be marked as revoked on the Solana blockchain.
-                </p>
-
-                <div className="bg-[#0A0A0F] border border-[#1E1E2E] rounded-xl p-4 mb-8 font-mono text-[11px] text-[#4285F4] break-all relative group">
-                    <div className="absolute top-0 left-4 -translate-y-1/2 bg-[#0A0A0F] px-2 text-[8px] font-bold text-[#5F6368] uppercase tracking-widest border border-[#1E1E2E] rounded">Hash Target</div>
+                <div className="bg-black/50 border border-bg-border rounded-2xl p-5 font-mono text-xs text-danger break-all relative">
+                    <span className="text-[10px] text-text-muted absolute -top-2 left-4 bg-bg-surface px-2 uppercase font-bold tracking-widest">Target Hash Digest</span>
                     {record.hash}
                 </div>
 
-                <div className="space-y-3">
-                    <label className="text-[10px] font-bold text-[#5F6368] uppercase tracking-widest ml-1">Type CONFIRM to authorize</label>
-                    <input
-                        type="text"
-                        placeholder="CONFIRM"
-                        value={confirmText}
-                        onChange={(e) => setConfirmText(e.target.value)}
-                        className="w-full bg-[#131418] border border-[#1E1E2E] rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-[#F28B82] uppercase font-bold tracking-widest placeholder:opacity-20"
-                    />
+                <div className="space-y-4 pt-4 border-t border-bg-border">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] ml-1">Type CONFIRM to execute</label>
+                        <PurpleInput
+                            placeholder="CONFIRM"
+                            value={confirmText}
+                            onChange={(e) => setConfirmText(e.target.value)}
+                            className="text-center font-bold border-danger/20"
+                        />
+                    </div>
+                    <div className="flex gap-3">
+                        <GlowButton variant="ghost" onClick={onClose} className="flex-1">CANCEL</GlowButton>
+                        <GlowButton
+                            variant="danger"
+                            disabled={confirmText !== 'CONFIRM'}
+                            loading={loading}
+                            onClick={handleRevoke}
+                            className="flex-1"
+                        >
+                            REVOKE RECORD
+                        </GlowButton>
+                    </div>
                 </div>
-
-                <div className="grid grid-cols-2 gap-3 mt-8">
-                    <button onClick={onClose} className="px-4 py-3.5 rounded-xl text-sm text-[#9AA0A6] font-bold hover:text-white transition-colors" >
-                        CANCEL
-                    </button>
-                    <button
-                        disabled={confirmText !== 'CONFIRM' || loading}
-                        onClick={handleRevoke}
-                        className="px-4 py-3.5 rounded-xl bg-[#F28B82] text-white text-sm font-bold hover:bg-[#EE675C] disabled:bg-[#1A1D24] disabled:text-[#3C4043] transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#F28B82]/10"
-                    >
-                        {loading ? <div className="w-4 h-4 border-2 border-t-white border-white/20 rounded-full animate-spin" /> : "REVOKE PROOF"}
-                    </button>
-                </div>
-            </motion.div>
-        </div>
+            </div>
+        </PurpleModal>
     );
 }

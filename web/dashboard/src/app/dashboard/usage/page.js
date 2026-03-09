@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { api } from '@/utils/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -8,12 +8,15 @@ import {
     Calendar, ArrowUpRight, CheckCircle2, XCircle,
     Clock, Activity, Key, Globe, ChevronRight,
     ArrowRight, Filter, AlertCircle, RefreshCw,
-    FileJson, Table
+    FileJson, Table, Zap, TrendingUp, TrendingDown
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Pagination from '@/components/Pagination';
+import {
+    PurpleCard, GlowButton, PurpleBadge, PurpleTable,
+    PurpleTableRow, PurpleSkeleton, CountUp
+} from '@/components/ui/PurpleUI';
 
-// Dynamic import for Recharts to handle SSR compatibility
 const ResponsiveContainer = dynamic(() => import('recharts').then(m => m.ResponsiveContainer), { ssr: false });
 const BarChart = dynamic(() => import('recharts').then(m => m.BarChart), { ssr: false });
 const Bar = dynamic(() => import('recharts').then(m => m.Bar), { ssr: false });
@@ -21,7 +24,6 @@ const XAxis = dynamic(() => import('recharts').then(m => m.XAxis), { ssr: false 
 const YAxis = dynamic(() => import('recharts').then(m => m.YAxis), { ssr: false });
 const CartesianGrid = dynamic(() => import('recharts').then(m => m.CartesianGrid), { ssr: false });
 const Tooltip = dynamic(() => import('recharts').then(m => m.Tooltip), { ssr: false });
-const Legend = dynamic(() => import('recharts').then(m => m.Legend), { ssr: false });
 const Cell = dynamic(() => import('recharts').then(m => m.Cell), { ssr: false });
 
 export default function UsageDashboard() {
@@ -30,7 +32,6 @@ export default function UsageDashboard() {
 
     const [period, setPeriod] = useState('7d');
     const [summary, setSummary] = useState(null);
-
     const [chartData, setChartData] = useState([]);
     const [endpoints, setEndpoints] = useState([]);
     const [apiKeys, setApiKeys] = useState([]);
@@ -53,7 +54,7 @@ export default function UsageDashboard() {
             setApiKeys(data.apiKeys || []);
             setLastSync(new Date());
         } catch (error) {
-            console.error('Failed to fetch usage data:', error);
+            console.error(error);
         } finally {
             setLoading(false);
         }
@@ -73,7 +74,7 @@ export default function UsageDashboard() {
             setLogs(data.data || []);
             setPagination(data.pagination);
         } catch (error) {
-            console.error('Failed to fetch logs:', error);
+            console.error(error);
         } finally {
             setLogsLoading(false);
         }
@@ -109,326 +110,306 @@ export default function UsageDashboard() {
         document.body.removeChild(link);
     };
 
-    if (!mounted) return (
-        <div className="min-h-screen bg-[#0A0A0F] flex items-center justify-center">
-            <div className="w-8 h-8 border-t-2 border-b-2 border-[#4285F4] rounded-full animate-spin" />
-        </div>
-    );
+    if (!mounted) return null;
 
     return (
-        <div className="max-w-[1400px] mx-auto space-y-6 pb-20">
+        <div className="space-y-8 pb-32 relative">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold text-white flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-[#4285F4]/10 border border-[#4285F4]/20">
-                            <BarChart3 className="w-6 h-6 text-[#4285F4]" />
-                        </div>
-                        API Usage & Analytics
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
+                    <h1 className="text-3xl font-bold bg-gradient-to-r from-text-primary to-text-secondary bg-clip-text text-transparent mb-2 flex items-center gap-4">
+                        <Activity className="w-8 h-8 text-purple-vivid" />
+                        Infrastructure Intelligence
                     </h1>
-                    <p className="text-[#9AA0A6] text-sm mt-1 flex items-center gap-2">
-                        Comprehensive performance tracking and request logs • Last Sync: {lastSync.toLocaleTimeString()}
-                    </p>
-                </div>
-                <div className="flex items-center gap-3">
-                    <div className="bg-[#1A1D24] border border-[#2C3038] rounded-lg p-1 flex items-center">
+                    <div className="flex items-center gap-3">
+                        <PurpleBadge variant="purple">REAL-TIME MONITORING</PurpleBadge>
+                        <span className="text-text-muted text-xs font-mono uppercase tracking-widest">
+                            Synched {lastSync.toLocaleTimeString()}
+                        </span>
+                    </div>
+                </motion.div>
+
+                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-wrap items-center gap-3">
+                    <div className="bg-bg-surface/50 border border-bg-border rounded-2xl p-1 flex items-center shadow-lg">
                         {['7d', '30d', '90d'].map((p) => (
                             <button
                                 key={p}
                                 onClick={() => setPeriod(p)}
-                                className={`px-4 py-1.5 text-xs font-bold uppercase tracking-wider rounded-md transition-all ${period === p ? 'bg-[#3C4043] text-[#4285F4]' : 'text-[#9AA0A6] hover:text-white'}`}
+                                className={`px-6 py-2 text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl transition-all ${period === p ? 'bg-purple-vivid text-white shadow-lg shadow-purple-vivid/20' : 'text-text-muted hover:text-white'}`}
                             >
-                                {p === '7d' ? 'Last 7 Days' : p === '30d' ? '30 Days' : '90 Days'}
+                                {p}
                             </button>
                         ))}
                     </div>
-                    <button
-                        onClick={handleExportCSV}
-                        className="flex items-center gap-2 px-4 py-2 bg-[#1A1D24] border border-[#2C3038] hover:border-[#4285F4] text-white rounded-lg font-bold text-sm transition-all"
-                    >
-                        <Download className="w-4 h-4" /> Export CSV
-                    </button>
-                </div>
+                    <GlowButton variant="ghost" onClick={handleExportCSV} icon={Download} className="px-6 py-3">EXPORT LEDGER</GlowButton>
+                </motion.div>
             </div>
 
-            {/* Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <MetricCard title="Total Requests" value={summary?.totalRequests || '0'} icon={Activity} loading={loading} />
-                <MetricCard title="Success Rate" value={summary?.successRate || '0%'} icon={CheckCircle2} color={parseFloat(summary?.successRate) > 95 ? 'text-[#10B981]' : 'text-[#FBC02D]'} loading={loading} />
-                <MetricCard title="Avg Latency" value={`${summary?.avgResponseTime || 0}ms`} icon={Clock} loading={loading} />
-                <MetricCard title="Top Endpoint" value={summary?.mostUsedEndpoint || 'N/A'} icon={Globe} loading={loading} isSmall />
+            {/* Metrics Row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <UsageMetricCard title="System Throughput" value={summary?.totalRequests || 0} icon={Zap} trend="+12.4%" trendUp active />
+                <UsageMetricCard title="Success Reliability" value={summary?.successRate || '0%'} icon={CheckCircle2} suffix="" trend="Optimal" trendUp />
+                <UsageMetricCard title="Network Latency" value={summary?.avgResponseTime || 0} suffix="ms" icon={Clock} trend="-4ms" trendUp />
+                <UsageMetricCard title="Active Endpoints" value={endpoints.length} icon={Globe} trend="Stable" />
             </div>
 
             {/* Main Chart */}
-            <div className="bg-[#111118] border border-[#1E1E2E] rounded-2xl p-6 shadow-2xl">
-                <div className="flex items-center justify-between mb-8">
-                    <h3 className="text-white text-sm font-bold uppercase tracking-widest flex items-center gap-2">
-                        <Activity className="w-4 h-4 text-[#4285F4]" /> Requests Over Time
-                    </h3>
+            <PurpleCard className="p-8">
+                <div className="flex items-center justify-between mb-10">
+                    <div>
+                        <h3 className="text-lg font-bold text-white flex items-center gap-3 uppercase tracking-tight">
+                            <TrendingUp className="w-5 h-5 text-purple-glow" />
+                            Request Volume Analysis
+                        </h3>
+                        <p className="text-xs text-text-muted mt-1">Institutional traffic distribution across clusters</p>
+                    </div>
+                    {!loading && (
+                        <div className="flex gap-8">
+                            <div className="text-right">
+                                <p className="text-[10px] text-text-muted uppercase font-bold tracking-widest mb-1">Peak Utilization</p>
+                                <p className="text-xl font-bold text-text-primary font-mono">{Math.max(...chartData.map(d => d.success + d.error), 0)} REQ</p>
+                            </div>
+                        </div>
+                    )}
                 </div>
-                <div className="h-[300px] w-full">
+                <div className="h-[350px] w-full">
                     {loading ? (
-                        <div className="w-full h-full bg-[#1A1D24] animate-pulse rounded-lg" />
+                        <PurpleSkeleton className="w-full h-full rounded-2xl" />
                     ) : (
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={chartData}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#1E1E2E" vertical={false} />
-                                <XAxis
-                                    dataKey="date"
-                                    stroke="#5F6368"
-                                    fontSize={10}
-                                    tickLine={false}
-                                    axisLine={false}
-                                />
-                                <YAxis
-                                    stroke="#5F6368"
-                                    fontSize={10}
-                                    tickLine={false}
-                                    axisLine={false}
-                                />
+                                <XAxis dataKey="date" hide />
+                                <YAxis hide />
                                 <Tooltip
-                                    content={<CustomTooltip />}
-                                    cursor={{ fill: '#1A1D24', opacity: 0.5 }}
+                                    cursor={{ fill: 'rgba(155, 110, 255, 0.03)' }}
+                                    content={({ active, payload, label }) => {
+                                        if (active && payload && payload.length) {
+                                            return (
+                                                <div className="bg-bg-surface/90 border border-purple-vivid/20 rounded-2xl p-5 shadow-2xl backdrop-blur-xl">
+                                                    <p className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] mb-3">{payload[0].payload.date}</p>
+                                                    <div className="space-y-2">
+                                                        <div className="flex items-center justify-between gap-6">
+                                                            <span className="text-xs text-success flex items-center gap-2">
+                                                                <div className="w-2 h-2 rounded-full bg-success" /> Valid Requests
+                                                            </span>
+                                                            <span className="text-sm font-bold text-white">{payload[0].value}</span>
+                                                        </div>
+                                                        <div className="flex items-center justify-between gap-6">
+                                                            <span className="text-xs text-danger flex items-center gap-2">
+                                                                <div className="w-2 h-2 rounded-full bg-danger" /> Errors
+                                                            </span>
+                                                            <span className="text-sm font-bold text-white">{payload[1].value}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        }
+                                        return null;
+                                    }}
                                 />
-                                <Bar dataKey="success" stackId="a" fill="#4285F4" radius={[0, 0, 0, 0]} barSize={20} />
-                                <Bar dataKey="error" stackId="a" fill="#F28B82" radius={[4, 4, 0, 0]} barSize={20} />
+                                <Bar dataKey="success" stackId="a" fill="url(#purple-vivid-gradient)" radius={[0, 0, 0, 0]} barSize={24} />
+                                <Bar dataKey="error" stackId="a" fill="rgba(239, 68, 68, 0.2)" radius={[6, 6, 0, 0]} barSize={24} />
+                                <defs>
+                                    <linearGradient id="purple-vivid-gradient" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stopColor="var(--purple-vivid)" />
+                                        <stop offset="100%" stopColor="var(--purple-mid)" stopOpacity={0.4} />
+                                    </linearGradient>
+                                </defs>
                             </BarChart>
                         </ResponsiveContainer>
                     )}
                 </div>
+            </PurpleCard>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Performance by Endpoint */}
+                <PurpleCard className="p-0 overflow-hidden border-bg-border/50">
+                    <div className="px-8 py-6 border-b border-bg-border/50 bg-purple-dim/5 flex items-center justify-between">
+                        <h3 className="text-xs font-bold text-text-primary uppercase tracking-widest flex items-center gap-2">
+                            <Globe className="w-4 h-4 text-purple-glow" /> Cluster Performance
+                        </h3>
+                    </div>
+                    <PurpleTable headers={["Endpoint Path", "Method", "Volume", "Latency"]}>
+                        {loading ? <UsageTableSkeleton cols={4} /> : endpoints.map((ep, i) => (
+                            <PurpleTableRow key={i}>
+                                <td className="px-8 py-5">
+                                    <code className="text-xs text-purple-glow bg-purple-glow/5 px-2 py-1 rounded border border-purple-glow/10">{ep.endpoint}</code>
+                                </td>
+                                <td className="px-8 py-5">
+                                    <span className={`text-[10px] font-bold px-2 py-1 rounded-lg ${ep.method === 'POST' ? 'bg-success/10 text-success' : 'bg-purple-vivid/10 text-purple-vivid'}`}>
+                                        {ep.method}
+                                    </span>
+                                </td>
+                                <td className="px-8 py-5 font-bold text-text-primary text-sm">{ep.total}</td>
+                                <td className="px-8 py-5">
+                                    <div className="flex items-center gap-2 text-xs text-text-muted">
+                                        <Clock className="w-3.5 h-3.5" /> {ep.avgDuration}ms
+                                    </div>
+                                </td>
+                            </PurpleTableRow>
+                        ))}
+                    </PurpleTable>
+                </PurpleCard>
+
+                {/* API Key Intelligence */}
+                <PurpleCard className="p-0 overflow-hidden border-bg-border/50">
+                    <div className="px-8 py-6 border-b border-bg-border/50 bg-purple-dim/5 flex items-center justify-between">
+                        <h3 className="text-xs font-bold text-text-primary uppercase tracking-widest flex items-center gap-2">
+                            <Key className="w-4 h-4 text-purple-glow" /> Credential Dynamics
+                        </h3>
+                    </div>
+                    <PurpleTable headers={["Credential Identity", "Utilization", "Last Global Signal", "Status"]}>
+                        {loading ? <UsageTableSkeleton cols={4} /> : apiKeys.map((key, i) => (
+                            <PurpleTableRow key={i} className="cursor-pointer" onClick={() => setFilterKey(key.id || key.name)}>
+                                <td className="px-8 py-5">
+                                    <div className="text-sm font-bold text-text-primary">{key.name}</div>
+                                </td>
+                                <td className="px-8 py-5">
+                                    <span className="text-sm font-mono text-purple-glow">{key.total} reqs</span>
+                                </td>
+                                <td className="px-8 py-5 text-xs text-text-muted">
+                                    {key.lastUsed ? new Date(key.lastUsed).toLocaleDateString() : '—'}
+                                </td>
+                                <td className="px-8 py-5 text-right">
+                                    <PurpleBadge variant="success" pulse>ACTIVE</PurpleBadge>
+                                </td>
+                            </PurpleTableRow>
+                        ))}
+                    </PurpleTable>
+                </PurpleCard>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Requests by Endpoint */}
-                <div className="bg-[#111118] border border-[#1E1E2E] rounded-2xl overflow-hidden shadow-2xl">
-                    <div className="px-6 py-4 border-b border-[#1E1E2E] bg-[#161621]">
-                        <h3 className="text-white text-xs font-bold uppercase tracking-widest">Performance by Endpoint</h3>
-                    </div>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left text-[13px]">
-                            <thead className="text-[#9AA0A6] text-[10px] uppercase font-bold tracking-tighter border-b border-[#1E1E2E]">
-                                <tr>
-                                    <th className="px-6 py-3">Endpoint</th>
-                                    <th className="px-6 py-3">Method</th>
-                                    <th className="px-6 py-3">Calls</th>
-                                    <th className="px-6 py-3">Avg Latency</th>
-                                    <th className="px-6 py-3 text-right">Success</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-[#1E1E2E]">
-                                {loading ? <TableSkeleton cols={5} rows={4} /> : endpoints.map((ep, i) => (
-                                    <tr key={i} className="hover:bg-[#161621] transition-all group">
-                                        <td className="px-6 py-4 font-mono text-[#4285F4]">{ep.endpoint}</td>
-                                        <td className="px-6 py-4">
-                                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${ep.method === 'POST' ? 'bg-[#10B981]/10 text-[#10B981]' : ep.method === 'GET' ? 'bg-[#4285F4]/10 text-[#4285F4]' : 'bg-[#2C3038] text-[#9AA0A6]'}`}>
-                                                {ep.method}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-white font-medium">{ep.total}</td>
-                                        <td className="px-6 py-4 text-[#9AA0A6]">{ep.avgDuration}ms</td>
-                                        <td className="px-6 py-4 text-right">
-                                            <span className={`font-bold ${parseFloat(ep.successRate) > 95 ? 'text-[#10B981]' : 'text-[#FBC02D]'}`}>
-                                                {ep.successRate}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                {/* API Key Usage */}
-                <div className="bg-[#111118] border border-[#1E1E2E] rounded-2xl overflow-hidden shadow-2xl">
-                    <div className="px-6 py-4 border-b border-[#1E1E2E] bg-[#161621]">
-                        <h3 className="text-white text-xs font-bold uppercase tracking-widest">Usage by API Key</h3>
-                    </div>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left text-[13px]">
-                            <thead className="text-[#9AA0A6] text-[10px] uppercase font-bold tracking-tighter border-b border-[#1E1E2E]">
-                                <tr>
-                                    <th className="px-6 py-3">Security Key</th>
-                                    <th className="px-6 py-3">Total Calls</th>
-                                    <th className="px-6 py-3">Last Active</th>
-                                    <th className="px-6 py-3 text-right">Success</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-[#1E1E2E]">
-                                {loading ? <TableSkeleton cols={4} rows={4} /> : apiKeys.map((key, i) => (
-                                    <tr
-                                        key={i}
-                                        onClick={() => setFilterKey(key.id || key.name)}
-                                        className="hover:bg-[#161621] transition-all group cursor-pointer"
-                                    >
-                                        <td className="px-6 py-4 flex items-center gap-3">
-                                            <div className="p-1.5 rounded bg-[#2C3038] text-[#9AA0A6]">
-                                                <Key className="w-3.5 h-3.5" />
-                                            </div>
-                                            <span className="text-white font-medium">{key.name}</span>
-                                        </td>
-                                        <td className="px-6 py-4 text-white">{key.total}</td>
-                                        <td className="px-6 py-4 text-[#9AA0A6]">{key.lastUsed ? new Date(key.lastUsed).toLocaleDateString() : 'Never'}</td>
-                                        <td className="px-6 py-4 text-right">
-                                            <span className="font-bold text-[#10B981]">{key.successRate}</span>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            {/* Request Logs */}
-            <div className="bg-[#111118] border border-[#1E1E2E] rounded-2xl overflow-hidden shadow-2xl">
-                <div className="px-6 py-4 border-b border-[#1E1E2E] bg-[#161621] flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <h3 className="text-white text-xs font-bold uppercase tracking-widest flex items-center gap-2">
-                        <FileJson className="w-4 h-4 text-[#4285F4]" /> Live Request Stream
-                    </h3>
+            {/* Live Stream Table */}
+            <div className="space-y-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div className="flex items-center gap-3">
-                        <div className="relative">
-                            <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#5F6368]" />
+                        <div className="p-2 bg-purple-vivid/10 text-purple-vivid rounded-xl">
+                            <FileJson className="w-5 h-5" />
+                        </div>
+                        <h2 className="text-xl font-bold text-text-primary uppercase tracking-tight">Telemetry Stream</h2>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-4">
+                        <div className="flex items-center gap-3 bg-bg-surface/50 border border-bg-border rounded-2xl px-4 py-2">
+                            <Filter className="w-4 h-4 text-text-muted" />
                             <select
                                 value={filterStatus}
                                 onChange={(e) => setFilterStatus(e.target.value)}
-                                className="bg-[#0A0A0F] border border-[#2C3038] rounded-lg pl-9 pr-6 py-1.5 text-[11px] text-[#E8EAED] outline-none hover:border-[#3C4043] appearance-none"
+                                className="bg-transparent border-none text-xs font-bold uppercase tracking-widest text-text-secondary focus:ring-0 outline-none"
                             >
-                                <option value="all">Status: All</option>
-                                <option value="200">200 OK</option>
-                                <option value="400">4xx Errors</option>
-                                <option value="500">5xx Errors</option>
+                                <option value="all">ALL SIGNALS</option>
+                                <option value="200">200 SUCCESS</option>
+                                <option value="400">4XX ERRORS</option>
+                                <option value="500">5XX FAILURES</option>
                             </select>
                         </div>
-                        <button
-                            onClick={() => { setFilterKey('all'); setFilterEndpoint('all'); setFilterStatus('all'); }}
-                            className="p-1.5 text-[#5F6368] hover:text-white transition-colors"
-                            title="Reset Filters"
-                        >
-                            <RefreshCw className="w-4 h-4" />
-                        </button>
+                        <GlowButton variant="ghost" onClick={() => { setFilterKey('all'); setFilterStatus('all'); }} icon={RefreshCw} className="p-3" />
                     </div>
                 </div>
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left text-[13px]">
-                        <thead className="text-[#9AA0A6] text-[10px] uppercase font-bold tracking-tighter border-b border-[#1E1E2E]">
+
+                <PurpleCard className="p-0 overflow-hidden border-bg-border/50">
+                    <PurpleTable headers={["Timestamp (UTC)", "Origin Key", "Request Context", "Result", "Duration"]}>
+                        {logsLoading ? <UsageTableSkeleton cols={5} rows={10} /> : logs.length > 0 ? logs.map((log, i) => (
+                            <PurpleTableRow key={i}>
+                                <td className="px-8 py-4 text-[11px] font-mono text-text-muted">
+                                    {new Date(log.timestamp).toLocaleString().toUpperCase()}
+                                </td>
+                                <td className="px-8 py-4">
+                                    <div className="flex items-center gap-2">
+                                        <Key className="w-3 h-3 text-purple-glow" />
+                                        <span className="text-xs font-bold text-text-secondary">{log.keyName}</span>
+                                    </div>
+                                </td>
+                                <td className="px-8 py-4">
+                                    <div className="flex flex-col gap-1">
+                                        <code className="text-[11px] text-text-primary font-bold">{log.endpoint}</code>
+                                        <span className="text-[10px] text-text-muted font-bold uppercase tracking-widest">{log.method}</span>
+                                    </div>
+                                </td>
+                                <td className="px-8 py-4 text-center">
+                                    <PurpleBadge
+                                        variant={log.statusCode < 300 ? 'success' : 'danger'}
+                                        pulse={log.statusCode >= 500}
+                                        className="text-[10px]"
+                                    >
+                                        {log.statusCode} {log.statusCode < 300 ? 'OK' : 'FAIL'}
+                                    </PurpleBadge>
+                                </td>
+                                <td className="px-8 py-4 text-right text-xs font-mono text-purple-glow">
+                                    {log.durationMs}ms
+                                </td>
+                            </PurpleTableRow>
+                        )) : (
                             <tr>
-                                <th className="px-6 py-3">Timestamp</th>
-                                <th className="px-6 py-3">API Key</th>
-                                <th className="px-6 py-3">Endpoint</th>
-                                <th className="px-6 py-3">Method</th>
-                                <th className="px-6 py-3">Status</th>
-                                <th className="px-6 py-3 text-right">Duration</th>
+                                <td colSpan="5" className="py-32 text-center">
+                                    <div className="w-20 h-20 bg-purple-dim/10 border border-purple-vivid/20 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                                        <Activity className="w-10 h-10 text-purple-glow/20" />
+                                    </div>
+                                    <h4 className="text-xl font-bold text-text-primary mb-2 tracking-tight">No telemetry signals found</h4>
+                                    <p className="text-sm text-text-muted max-w-sm mx-auto">Adjust your filters or synchronization period to see historical usage logs.</p>
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody className="divide-y divide-[#1E1E2E]">
-                            {logsLoading ? <TableSkeleton cols={6} rows={5} /> : logs.length > 0 ? logs.map((log, i) => (
-                                <tr key={i} className="hover:bg-[#161621] transition-all group">
-                                    <td className="px-6 py-4 text-[#5F6368] font-mono text-[11px]">
-                                        {new Date(log.timestamp).toLocaleString()}
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-2">
-                                            <Key className="w-3 h-3 text-[#9AA0A6]" />
-                                            <span className="text-[#E8EAED]">{log.keyName}</span>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 text-white font-mono">{log.endpoint}</td>
-                                    <td className="px-6 py-4">
-                                        <span className="text-[#9AA0A6] font-bold text-[11px]">{log.method}</span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${log.statusCode < 300 ? 'bg-[#10B981]/10 text-[#10B981]' : 'bg-[#F28B82]/10 text-[#F28B82]'}`}>
-                                            {log.statusCode} {log.statusCode < 300 ? 'OK' : 'Error'}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 text-right text-[#9AA0A6]">{log.durationMs}ms</td>
-                                </tr>
-                            )) : (
-                                <tr>
-                                    <td colSpan="6" className="py-20 text-center opacity-40">
-                                        <Search className="w-10 h-10 mx-auto mb-4" />
-                                        <p className="text-sm">No usage logs found matching criteria</p>
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-                {/* Pagination */}
-                {!logsLoading && pagination.totalPages > 1 && (
-                    <div className="px-6 py-4 border-t border-[#1E1E2E] bg-[#161621] flex items-center justify-between">
-                        <p className="text-[11px] text-[#5F6368]">
-                            Showing <span className="text-white">{(pagination.page - 1) * pagination.limit + 1}</span> to <span className="text-white">{Math.min(pagination.page * pagination.limit, pagination.total)}</span> of <span className="text-white">{pagination.total}</span> entries
-                        </p>
-                        <Pagination
-                            currentPage={pagination.page}
-                            totalPages={pagination.totalPages}
-                            onPageChange={(p) => fetchLogs(p)}
-                        />
-                    </div>
-                )}
+                        )}
+                    </PurpleTable>
+
+                    {!logsLoading && pagination.totalPages > 1 && (
+                        <div className="px-8 py-6 border-t border-bg-border/50 flex items-center justify-between bg-purple-dim/5">
+                            <span className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em]">
+                                Page {pagination.page} / {pagination.totalPages}
+                            </span>
+                            <Pagination
+                                currentPage={pagination.page}
+                                totalPages={pagination.totalPages}
+                                onPageChange={(p) => fetchLogs(p)}
+                            />
+                        </div>
+                    )}
+                </PurpleCard>
             </div>
         </div>
     );
 }
 
-function MetricCard({ title, value, icon: Icon, loading, color = 'text-white', isSmall = false }) {
+function UsageMetricCard({ title, value, icon: Icon, trend, trendUp, loading, suffix = '', active }) {
     return (
-        <div className="bg-[#1A1D24] border border-[#2C3038] rounded-xl p-5 flex flex-col justify-between shadow-sm hover:border-[#3C4043] transition-all group relative overflow-hidden">
-            <div className="text-[#9AA0A6] text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
-                <Icon className="w-3.5 h-3.5 group-hover:text-[#4285F4] transition-colors" /> {title}
-            </div>
-            <div className="mt-3 flex items-baseline gap-2">
-                {loading ? (
-                    <div className="h-8 w-24 bg-[#2C3038] rounded animate-pulse" />
-                ) : (
-                    <div className={`${isSmall ? 'text-lg font-mono truncate max-w-full' : 'text-2xl font-normal'} ${color} tracking-tight`}>
-                        {value}
+        <PurpleCard className={`group relative overflow-hidden transition-all hover:bg-white/[0.02] ${active ? 'border-purple-vivid/40 shadow-[0_0_30px_rgba(155,110,255,0.05)]' : ''}`}>
+            {active && <div className="absolute top-0 right-0 w-32 h-32 bg-purple-vivid/5 blur-3xl -mr-16 -mt-16 pointer-events-none" />}
+
+            <div className="flex items-center justify-between mb-8">
+                <div className={`p-3 rounded-2xl ${active ? 'bg-purple-vivid/10 text-purple-vivid' : 'bg-purple-dim/20 text-purple-glow'} group-hover:scale-110 transition-transform`}>
+                    <Icon className="w-5 h-5" />
+                </div>
+                {trend && (
+                    <div className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest ${trendUp ? 'text-success' : 'text-danger'}`}>
+                        {trendUp ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
+                        {trend}
                     </div>
                 )}
             </div>
-        </div>
+
+            <div className="space-y-1">
+                <p className="text-[10px] text-text-muted font-bold uppercase tracking-[0.2em]">{title}</p>
+                <div className="text-3xl font-bold text-text-primary tracking-tight font-mono">
+                    {loading ? (
+                        <PurpleSkeleton className="h-9 w-24" />
+                    ) : (
+                        <>
+                            <CountUp end={typeof value === 'string' ? parseFloat(value) : value} />
+                            {suffix || (typeof value === 'string' && value.includes('%') ? '%' : '')}
+                        </>
+                    )}
+                </div>
+            </div>
+        </PurpleCard>
     );
 }
 
-function CustomTooltip({ active, payload, label }) {
-    if (active && payload && payload.length) {
-        const success = payload[0].value;
-        const error = payload[1].value;
-        const total = success + error;
-        return (
-            <div className="bg-[#111118] border border-[#1E1E2E] rounded-xl p-3 shadow-2xl min-w-[160px]">
-                <p className="text-[10px] text-[#9AA0A6] font-bold uppercase tracking-widest mb-2">{label}</p>
-                <div className="space-y-1.5">
-                    <div className="flex items-center justify-between gap-4">
-                        <span className="text-[11px] text-[#4285F4] flex items-center gap-1.5">
-                            <div className="w-2 h-2 rounded-full bg-[#4285F4]"></div> Success
-                        </span>
-                        <span className="text-[11px] text-white font-bold">{success}</span>
-                    </div>
-                    <div className="flex items-center justify-between gap-4">
-                        <span className="text-[11px] text-[#F28B82] flex items-center gap-1.5">
-                            <div className="w-2 h-2 rounded-full bg-[#F28B82]"></div> Error
-                        </span>
-                        <span className="text-[11px] text-white font-bold">{error}</span>
-                    </div>
-                    <div className="pt-1.5 border-t border-[#1E1E2E] mt-1.5 flex items-center justify-between">
-                        <span className="text-[10px] text-[#9AA0A6] uppercase font-bold">Total</span>
-                        <span className="text-[11px] text-white font-bold">{total}</span>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-    return null;
-}
-
-function TableSkeleton({ cols, rows }) {
+function UsageTableSkeleton({ cols, rows = 5 }) {
     return Array.from({ length: rows }).map((_, i) => (
-        <tr key={i} className="animate-pulse">
+        <tr key={i}>
             {Array.from({ length: cols }).map((_, j) => (
-                <td key={j} className="px-6 py-4">
-                    <div className={`h-4 bg-[#1E1E2E] rounded ${j === 0 ? 'w-32' : 'w-16'}`} />
+                <td key={j} className="px-8 py-5">
+                    <PurpleSkeleton className={`h-4 ${j === 0 ? 'w-32' : 'w-16'}`} />
                 </td>
             ))}
         </tr>

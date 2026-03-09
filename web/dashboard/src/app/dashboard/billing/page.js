@@ -7,8 +7,13 @@ import {
     CreditCard, Zap, Check, AlertTriangle, Clock,
     ArrowUpRight, Shield, Globe, FileBarChart,
     ExternalLink, X, Info, Gem, CircleDollarSign,
-    Lock, Sparkles, Plus
+    Lock, Sparkles, Plus, Wallet, TrendingUp, Cpu
 } from 'lucide-react';
+import {
+    PurpleCard, GlowButton, PurpleBadge, PurpleTable,
+    PurpleTableRow, PurpleSkeleton, PurpleModal, PurpleInput,
+    CountUp
+} from '@/components/ui/PurpleUI';
 
 export default function BillingPage() {
     const [stats, setStats] = useState(null);
@@ -22,12 +27,12 @@ export default function BillingPage() {
         try {
             const [statsRes, keysRes] = await Promise.all([
                 api.get('/api/org/stats'),
-                api.get('/api/keys?limit=1') // We just need the total
+                api.get('/api/keys?limit=1')
             ]);
             setStats(statsRes.data);
             setKeysCount(keysRes.data.pagination?.total || 0);
         } catch (error) {
-            console.error('Failed to fetch billing data:', error);
+            console.error(error);
         } finally {
             setLoading(false);
         }
@@ -48,324 +53,324 @@ export default function BillingPage() {
     const anchorUsagePercent = Math.min((totalAnchors / anchorLimit) * 100, 100);
     const isOverLimit = totalAnchors > anchorLimit;
 
-    const getUsageColor = (percent) => {
-        if (percent >= 90) return 'bg-[#F28B82]';
-        if (percent >= 70) return 'bg-[#FBC02D]';
-        return 'bg-[#10B981]';
-    };
-
     return (
-        <div className="max-w-6xl mx-auto space-y-8 pb-20">
+        <div className="space-y-10 pb-32 relative">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold text-white flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-[#4285F4]/10 border border-[#4285F4]/20">
-                            <CreditCard className="w-6 h-6 text-[#4285F4]" />
-                        </div>
-                        Billing & Subscription
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
+                    <h1 className="text-3xl font-bold bg-gradient-to-r from-text-primary to-text-secondary bg-clip-text text-transparent mb-2 flex items-center gap-4">
+                        <Wallet className="w-8 h-8 text-purple-vivid" />
+                        Treasury & Subscriptions
                     </h1>
-                    <p className="text-[#9AA0A6] text-sm mt-1">
-                        Manage your organization's plan, usage limits, and payment methods
-                    </p>
-                </div>
+                    <div className="flex items-center gap-3">
+                        <PurpleBadge variant="purple">FINANCE ENGINE</PurpleBadge>
+                        <span className="text-text-muted text-xs font-mono uppercase tracking-widest">
+                            March 2026 Billing Cycle
+                        </span>
+                    </div>
+                </motion.div>
+
+                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}>
+                    <GlowButton onClick={() => setShowUpgradeModal(true)} icon={Sparkles} className="px-8 py-4">UPGRADE TO PRO</GlowButton>
+                </motion.div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Current Plan Card */}
-                <div className="bg-[#111118] border border-[#1E1E2E] rounded-2xl p-6 shadow-xl flex flex-col justify-between">
-                    <div>
-                        <div className="flex items-center justify-between mb-4">
-                            <span className="text-[10px] font-bold text-[#9AA0A6] uppercase tracking-widest">Current Plan</span>
-                            <span className="px-2 py-0.5 bg-[#2C3038] text-white text-[10px] font-bold rounded uppercase tracking-tighter">Free Tier</span>
-                        </div>
-                        <h2 className="text-3xl font-bold text-white mb-1">Standard</h2>
-                        <p className="text-[#9AA0A6] text-sm mb-6">Ideal for testing and prototypes</p>
-
-                        <div className="space-y-3 mb-8">
-                            <div className="flex items-center gap-2 text-sm text-[#E8EAED]">
-                                <Check className="w-4 h-4 text-[#10B981]" /> 10 anchors per month
-                            </div>
-                            <div className="flex items-center gap-2 text-sm text-[#E8EAED]">
-                                <Check className="w-4 h-4 text-[#10B981]" /> 1 active API key
-                            </div>
-                            <div className="flex items-center gap-2 text-sm text-[#E8EAED]">
-                                <Check className="w-4 h-4 text-[#10B981]" /> Solana Devnet access
-                            </div>
-                        </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Active Plan Intelligence */}
+                <PurpleCard className="relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-6 opacity-[0.03] group-hover:opacity-[0.06] transition-opacity pointer-events-none">
+                        <Gem className="w-48 h-48 text-purple-glow" />
                     </div>
 
-                    <button
-                        onClick={() => setShowUpgradeModal(true)}
-                        className="w-full py-3 bg-gradient-to-r from-[#4285F4] to-[#A06EE1] hover:shadow-[0_0_20px_rgba(66,133,244,0.3)] text-white rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 group"
-                    >
-                        Upgrade to Pro <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                    </button>
-                </div>
-
-                {/* Usage Meter Section */}
-                <div className="lg:col-span-2 bg-[#111118] border border-[#1E1E2E] rounded-2xl p-6 shadow-xl">
-                    <div className="flex items-center justify-between mb-8">
+                    <div className="relative z-10 space-y-8">
                         <div>
-                            <h3 className="text-white font-bold flex items-center gap-2">
-                                <FileBarChart className="w-4 h-4 text-[#4285F4]" /> Current Usage
-                            </h3>
-                            <p className="text-[11px] text-[#9AA0A6] font-medium mt-0.5">March 1 — March 31, 2026</p>
+                            <PurpleBadge variant="ghost" className="mb-4">ACTIVE AUTHORITY</PurpleBadge>
+                            <h2 className="text-4xl font-bold text-white tracking-tight mb-2">Standard</h2>
+                            <p className="text-sm text-text-muted leading-relaxed">
+                                Fundamental on-chain anchoring for institutional research and testing.
+                            </p>
                         </div>
+
+                        <div className="space-y-4">
+                            <PlanFeature label="10 Anchors / Month" active />
+                            <PlanFeature label="1 Integration Credential" active />
+                            <PlanFeature label="Solana Devnet Cluster" active />
+                            <PlanFeature label="Mainnet-Beta Pro Access" />
+                            <PlanFeature label="Dedicated Event Webhooks" />
+                        </div>
+
+                        <GlowButton onClick={() => setShowUpgradeModal(true)} className="w-full py-4 text-xs font-bold uppercase tracking-widest" icon={TrendingUp}>
+                            SCALE OPERATIONS
+                        </GlowButton>
+                    </div>
+                </PurpleCard>
+
+                {/* Utilization Telemetry */}
+                <PurpleCard className="lg:col-span-2 space-y-10">
+                    <div className="flex items-center justify-between">
+                        <h3 className="text-xs font-bold text-text-primary uppercase tracking-[0.2em] flex items-center gap-3">
+                            <FileBarChart className="w-4 h-4 text-purple-glow" />
+                            Quota Utilization
+                        </h3>
                         <div className="text-right">
-                            <p className="text-[10px] text-[#9AA0A6] uppercase font-bold tracking-tighter">Next Reset</p>
-                            <p className="text-xs text-white font-medium">April 1, 2026</p>
+                            <p className="text-[10px] text-text-muted uppercase font-bold tracking-widest mb-1">Cycle Reset In</p>
+                            <p className="text-xs font-mono text-purple-glow uppercase">22 Days 14 Hours</p>
                         </div>
                     </div>
 
-                    <div className="space-y-8">
-                        {/* Anchor Usage */}
-                        <div className="space-y-3">
-                            <div className="flex items-end justify-between">
-                                <div>
-                                    <p className="text-sm font-bold text-[#E8EAED]">On-Chain Proof Anchors</p>
-                                    <p className="text-[11px] text-[#9AA0A6]">Standard registry anchors for verified records</p>
+                    <div className="space-y-12">
+                        {/* Anchor Quota */}
+                        <div className="space-y-4">
+                            <div className="flex items-end justify-between px-1">
+                                <div className="space-y-1">
+                                    <p className="text-sm font-bold text-text-primary uppercase tracking-tight">On-Chain Anchoring</p>
+                                    <p className="text-[10px] text-text-muted font-medium uppercase tracking-[0.1em]">Ledger throughput consumption</p>
                                 </div>
                                 <div className="text-right">
-                                    <span className={`text-sm font-bold ${isOverLimit ? 'text-[#F28B82]' : 'text-white'}`}>
+                                    <span className={`text-xl font-bold font-mono ${isOverLimit ? 'text-danger shadow-[0_0_10px_rgba(239,68,68,0.3)]' : 'text-purple-glow'}`}>
                                         {totalAnchors}
                                     </span>
-                                    <span className="text-[#5F6368] text-sm"> / {anchorLimit}</span>
+                                    <span className="text-text-muted text-xs font-mono ml-2">/ {anchorLimit}</span>
                                 </div>
                             </div>
-                            <div className="h-2 w-full bg-[#1A1D24] rounded-full overflow-hidden">
+                            <div className="h-3 w-full bg-black/40 rounded-full border border-bg-border overflow-hidden p-0.5">
                                 <motion.div
                                     initial={{ width: 0 }}
                                     animate={{ width: `${anchorUsagePercent}%` }}
-                                    className={`h-full ${getUsageColor(anchorUsagePercent)}`}
+                                    className={`h-full rounded-full ${isOverLimit ? 'bg-danger' : 'bg-purple-vivid'} shadow-[0_0_15px_rgba(155,110,255,0.3)]`}
                                 />
                             </div>
                             {isOverLimit && (
-                                <div className="flex items-center gap-1.5 text-[10px] text-[#F28B82] font-bold uppercase tracking-wider">
-                                    <AlertTriangle className="w-3.5 h-3.5" /> Monthly limit exceeded
-                                </div>
+                                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2 text-[10px] text-danger font-bold uppercase tracking-widest">
+                                    <AlertTriangle className="w-3.5 h-3.5" /> CRITICAL: MONTHLY QUOTA REACHED
+                                </motion.div>
                             )}
                         </div>
 
-                        {/* API Key Usage */}
-                        <div className="space-y-3">
-                            <div className="flex items-end justify-between">
-                                <div>
-                                    <p className="text-sm font-bold text-[#E8EAED]">Active API Keys</p>
-                                    <p className="text-[11px] text-[#9AA0A6]">Provisioned production integration keys</p>
+                        {/* Credential Quota */}
+                        <div className="space-y-4">
+                            <div className="flex items-end justify-between px-1">
+                                <div className="space-y-1">
+                                    <p className="text-sm font-bold text-text-primary uppercase tracking-tight">Security Credentials</p>
+                                    <p className="text-[10px] text-text-muted font-medium uppercase tracking-[0.1em]">Provisioned API identities</p>
                                 </div>
                                 <div className="text-right">
-                                    <span className="text-sm font-bold text-white">{keysCount}</span>
-                                    <span className="text-[#5F6368] text-sm"> / {apiKeyLimit}</span>
+                                    <span className="text-xl font-bold font-mono text-purple-glow">{keysCount}</span>
+                                    <span className="text-text-muted text-xs font-mono ml-2">/ {apiKeyLimit}</span>
                                 </div>
                             </div>
-                            <div className="h-2 w-full bg-[#1A1D24] rounded-full overflow-hidden">
+                            <div className="h-3 w-full bg-black/40 rounded-full border border-bg-border overflow-hidden p-0.5">
                                 <motion.div
                                     initial={{ width: 0 }}
                                     animate={{ width: `${(keysCount / apiKeyLimit) * 100}%` }}
-                                    className="h-full bg-[#4285F4]"
+                                    className="h-full rounded-full bg-blue-accent shadow-[0_0_15px_rgba(79,110,247,0.3)]"
                                 />
                             </div>
                         </div>
                     </div>
-                </div>
+
+                    <div className="pt-8 border-t border-bg-border/50 flex flex-wrap gap-4">
+                        <div className="px-4 py-3 bg-purple-glow/5 border border-purple-glow/10 rounded-2xl flex items-center gap-3">
+                            <TrendingUp className="w-4 h-4 text-purple-glow" />
+                            <span className="text-[11px] font-bold text-text-secondary uppercase tracking-tight">System health optimized</span>
+                        </div>
+                        <div className="px-4 py-3 bg-blue-accent/5 border border-blue-accent/10 rounded-2xl flex items-center gap-3">
+                            <Cpu className="w-4 h-4 text-blue-accent" />
+                            <span className="text-[11px] font-bold text-text-secondary uppercase tracking-tight">RPC Nodes synchronized</span>
+                        </div>
+                    </div>
+                </PurpleCard>
             </div>
 
-            {/* Plan Comparison */}
-            <div className="space-y-6">
+            {/* Matrix Comparison */}
+            <div className="space-y-8">
                 <div>
-                    <h3 className="text-lg font-bold text-white mb-1">Available Plans</h3>
-                    <p className="text-[#9AA0A6] text-sm">Choose the right tier for your data integrity requirements</p>
+                    <h3 className="text-2xl font-bold text-white tracking-tight uppercase">Plan Matrix</h3>
+                    <p className="text-sm text-text-muted mt-1 uppercase tracking-widest font-bold opacity-60">Architect the right scale for your cryptographic operations</p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {/* Free Plan */}
-                    <div className="bg-[#111118] border border-[#2C3038] opacity-60 rounded-2xl p-6 relative overflow-hidden">
-                        <div className="mb-6">
-                            <h4 className="text-white font-bold">Standard</h4>
-                            <div className="flex items-baseline gap-1 mt-2">
-                                <span className="text-2xl font-bold text-white">$0</span>
-                                <span className="text-[#9AA0A6] text-xs">/month</span>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    {/* Standard Tier */}
+                    <PurpleCard className="opacity-60 grayscale-[0.5] border-bg-border">
+                        <div className="mb-10">
+                            <h4 className="text-sm font-bold text-text-muted uppercase tracking-[0.2em] mb-2">Fundamental</h4>
+                            <div className="flex items-baseline gap-2">
+                                <span className="text-4xl font-mono font-bold text-white">$0</span>
+                                <span className="text-xs text-text-muted font-bold uppercase tracking-widest">/ Month</span>
                             </div>
                         </div>
-                        <ul className="space-y-3 mb-8 text-xs text-[#9AA0A6]">
-                            <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5" /> 10 anchors / month</li>
-                            <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5" /> 1 API key</li>
-                            <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5" /> Devnet cluster access</li>
-                            <li className="flex items-center gap-2 opacity-30"><X className="w-3.5 h-3.5" /> Mainnet-Beta support</li>
-                            <li className="flex items-center gap-2 opacity-30"><X className="w-3.5 h-3.5" /> Webhook notifications</li>
-                        </ul>
-                        <button disabled className="w-full py-2 bg-[#1A1D24] text-[#5F6368] rounded-lg font-bold text-xs border border-[#2C3038]">
-                            Current Plan
-                        </button>
-                    </div>
+                        <div className="space-y-6 flex-1">
+                            <MatrixFeature icon={Check} label="10 Anchors / mo" active />
+                            <MatrixFeature icon={Check} label="1 Security Key" active />
+                            <MatrixFeature icon={Check} label="Devnet Registry" active />
+                            <MatrixFeature icon={X} label="Mainnet Ledger" />
+                            <MatrixFeature icon={X} label="Live Webhooks" />
+                        </div>
+                        <GlowButton variant="ghost" disabled className="w-full mt-10 py-4 opacity-50">CURRENT AUTHORITY</GlowButton>
+                    </PurpleCard>
 
-                    {/* Pro Plan */}
-                    <div className="bg-[#111118] border-2 border-[#4285F4] rounded-2xl p-6 relative shadow-[0_0_30px_rgba(66,133,244,0.1)]">
-                        <div className="absolute top-0 right-0 bg-[#4285F4] text-white text-[9px] font-bold px-3 py-1 rounded-bl-lg uppercase tracking-widest">
-                            Most Popular
+                    {/* Pro Tier */}
+                    <PurpleCard className="border-purple-vivid/40 bg-purple-vivid/[0.02] shadow-[0_0_40px_rgba(155,110,255,0.1)] relative">
+                        <div className="absolute top-0 right-8 -translate-y-1/2">
+                            <PurpleBadge variant="purple" pulse className="px-4 py-1 flex items-center gap-2">
+                                <Sparkles className="w-3 h-3" /> PRODUCTION READY
+                            </PurpleBadge>
                         </div>
-                        <div className="mb-6">
-                            <h4 className="text-white font-bold flex items-center gap-2">Pro <Sparkles className="w-3.5 h-3.5 text-[#FBC02D]" /></h4>
-                            <div className="flex items-baseline gap-1 mt-2">
-                                <span className="text-2xl font-bold text-white">$29</span>
-                                <span className="text-[#9AA0A6] text-xs">/month</span>
+                        <div className="mb-10">
+                            <h4 className="text-sm font-bold text-purple-glow uppercase tracking-[0.2em] mb-2">Institutional</h4>
+                            <div className="flex items-baseline gap-2">
+                                <span className="text-4xl font-mono font-bold text-white">$29</span>
+                                <span className="text-xs text-text-muted font-bold uppercase tracking-widest">/ Month</span>
                             </div>
                         </div>
-                        <ul className="space-y-3 mb-8 text-xs text-[#E8EAED]">
-                            <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-[#4285F4]" /> <b>Unlimited</b> anchors</li>
-                            <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-[#4285F4]" /> 10 API keys</li>
-                            <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-[#4285F4]" /> Mainnet-Beta cluster</li>
-                            <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-[#4285F4]" /> Webhook notifications</li>
-                            <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-[#4285F4]" /> Bulk data exports</li>
-                        </ul>
-                        <button
-                            onClick={() => setShowUpgradeModal(true)}
-                            className="w-full py-2 bg-[#4285F4] hover:bg-[#3367D6] text-white rounded-lg font-bold text-xs transition-colors shadow-lg shadow-[#4285F4]/20"
-                        >
-                            Upgrade to Pro
-                        </button>
-                    </div>
+                        <div className="space-y-6 flex-1">
+                            <MatrixFeature icon={Check} label="Unlimited Anchoring" active emphasis />
+                            <MatrixFeature icon={Check} label="30 Security Keys" active emphasis />
+                            <MatrixFeature icon={Check} label="Mainnet-Beta Cluster" active emphasis />
+                            <MatrixFeature icon={Check} label="Instant Webhooks" active emphasis />
+                            <MatrixFeature icon={Check} label="Custom Metadata" active emphasis />
+                        </div>
+                        <GlowButton onClick={() => setShowUpgradeModal(true)} className="w-full mt-10 py-4" icon={Gem}>DEPLOY PRO STACK</GlowButton>
+                    </PurpleCard>
 
-                    {/* Enterprise Plan */}
-                    <div className="bg-[#111118] border border-[#A06EE1] rounded-2xl p-6">
-                        <div className="mb-6">
-                            <h4 className="text-white font-bold">Enterprise</h4>
-                            <div className="mt-2">
-                                <span className="text-2xl font-bold text-white">Custom</span>
-                            </div>
+                    {/* Enterprise Tier */}
+                    <PurpleCard className="border-blue-accent/30 bg-blue-accent/[0.02]">
+                        <div className="mb-10">
+                            <h4 className="text-sm font-bold text-blue-accent uppercase tracking-[0.2em] mb-2">Hyper-Scale</h4>
+                            <div className="text-3xl font-bold text-white uppercase tracking-tight">Custom</div>
                         </div>
-                        <ul className="space-y-3 mb-8 text-xs text-[#E8EAED]">
-                            <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-[#A06EE1]" /> <b>Dedicated</b> RPC node</li>
-                            <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-[#A06EE1]" /> Unlimited API keys</li>
-                            <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-[#A06EE1]" /> Protocol Governance</li>
-                            <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-[#A06EE1]" /> 99.9% Siph-Shield SLA</li>
-                            <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-[#A06EE1]" /> SSO / SAML Enforcement</li>
-                        </ul>
-                        <button
-                            onClick={() => window.open('mailto:sales@sipheron.io')}
-                            className="w-full py-2 bg-transparent hover:bg-[#A06EE1]/10 text-[#A06EE1] border border-[#A06EE1] rounded-lg font-bold text-xs transition-colors"
-                        >
-                            Contact Sales
-                        </button>
-                    </div>
+                        <div className="space-y-6 flex-1">
+                            <MatrixFeature icon={Check} label="Dedicated RPC Nodes" active emphasis="blue" />
+                            <MatrixFeature icon={Check} label="Siph-Shield Support" active emphasis="blue" />
+                            <MatrixFeature icon={Check} label="Protocol Governance" active emphasis="blue" />
+                            <MatrixFeature icon={Check} label="SLA 99.9% Finality" active emphasis="blue" />
+                            <MatrixFeature icon={Check} label="SAML Enforcement" active emphasis="blue" />
+                        </div>
+                        <GlowButton onClick={() => window.open('mailto:sales@sipheron.io')} variant="ghost" className="w-full mt-10 py-4 border-blue-accent/30 text-blue-accent" icon={ExternalLink}>CONTACT TREASURY</GlowButton>
+                    </PurpleCard>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Payment Methods */}
-                <div className="bg-[#111118] border border-[#1E1E2E] rounded-2xl p-6 shadow-xl">
-                    <h3 className="text-white text-sm font-bold uppercase tracking-widest mb-6 flex items-center gap-2">
-                        <Plus className="w-4 h-4 text-[#4285F4]" /> Payment Methods
-                    </h3>
-                    <div className="py-12 flex flex-col items-center justify-center text-center opacity-40">
-                        <div className="w-12 h-12 bg-[#1A1D24] rounded-full flex items-center justify-center mb-4">
-                            <CreditCard className="w-6 h-6" />
-                        </div>
-                        <p className="text-sm">No payment method on file</p>
-                        <button
-                            onClick={() => showComingSoonToast("Payment gateway integration starting soon.")}
-                            className="text-[11px] text-[#4285F4] font-bold uppercase mt-4 hover:underline"
-                        >
-                            Add Payment Method →
-                        </button>
-                    </div>
-                </div>
-
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Billing History */}
-                <div className="bg-[#111118] border border-[#1E1E2E] rounded-2xl p-6 shadow-xl">
-                    <h3 className="text-white text-sm font-bold uppercase tracking-widest mb-6 flex items-center gap-2">
-                        <Clock className="w-4 h-4 text-[#4285F4]" /> Billing History
-                    </h3>
-                    <div className="py-12 flex flex-col items-center justify-center text-center opacity-40">
-                        <div className="w-12 h-12 bg-[#1A1D24] rounded-full flex items-center justify-center mb-4">
-                            <FileBarChart className="w-6 h-6" />
-                        </div>
-                        <p className="text-sm">No billing history available</p>
-                        <p className="text-[10px] uppercase mt-2">You are currently on the free Standard plan</p>
+                <PurpleCard className="p-0 overflow-hidden border-bg-border/50">
+                    <div className="px-8 py-6 border-b border-bg-border/50 bg-purple-dim/5 flex items-center justify-between">
+                        <h3 className="text-xs font-bold text-text-primary uppercase tracking-widest flex items-center gap-2">
+                            <Clock className="w-4 h-4 text-purple-glow" /> Treasury Signals
+                        </h3>
                     </div>
-                </div>
+                    <div className="p-12 text-center">
+                        <div className="w-16 h-16 bg-purple-dim/10 rounded-2xl flex items-center justify-center mx-auto mb-6 opacity-30">
+                            <Activity className="w-8 h-8 text-purple-glow" />
+                        </div>
+                        <h4 className="text-sm font-bold text-white uppercase tracking-widest mb-2">No historical events</h4>
+                        <p className="text-xs text-text-muted max-w-xs mx-auto">Standard Tier organizations do not generate subscription invoices.</p>
+                    </div>
+                </PurpleCard>
+
+                {/* Secure Payment */}
+                <PurpleCard className="p-0 overflow-hidden border-bg-border/50">
+                    <div className="px-8 py-6 border-b border-bg-border/50 bg-purple-dim/5 flex items-center justify-between">
+                        <h3 className="text-xs font-bold text-text-primary uppercase tracking-widest flex items-center gap-2">
+                            <Plus className="w-4 h-4 text-purple-glow" /> Settlement Methods
+                        </h3>
+                    </div>
+                    <div className="p-12 text-center">
+                        <div className="w-16 h-16 bg-purple-dim/10 rounded-2xl flex items-center justify-center mx-auto mb-6 opacity-30">
+                            <CreditCard className="w-8 h-8 text-purple-glow" />
+                        </div>
+                        <h4 className="text-sm font-bold text-white uppercase tracking-widest mb-2">Locked Ecosystem</h4>
+                        <p className="text-xs text-text-muted max-w-xs mx-auto mb-8">Add a settlement method to provision production-grade Mainnet access.</p>
+                        <GlowButton variant="ghost" className="text-[10px]" onClick={() => showComingSoonToast()}>ADD PAYMENT INTERFACE</GlowButton>
+                    </div>
+                </PurpleCard>
             </div>
 
-            {/* Upgrade Modal */}
             <AnimatePresence>
                 {showUpgradeModal && (
-                    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowUpgradeModal(false)} className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="relative w-full max-w-lg bg-[#111118] border border-[#1E1E2E] rounded-2xl shadow-2xl overflow-hidden"
-                        >
-                            <div className="p-8 space-y-6">
-                                <div className="flex items-center justify-between">
-                                    <div className="p-3 rounded-xl bg-[#4285F4]/10 border border-[#4285F4]/20">
-                                        <Sparkles className="w-6 h-6 text-[#4285F4]" />
-                                    </div>
-                                    <button onClick={() => setShowUpgradeModal(false)} className="text-[#5F6368] hover:text-white transition-colors">
-                                        <X className="w-6 h-6" />
-                                    </button>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <h3 className="text-2xl font-bold text-white">Upgrade to SipHeron Pro</h3>
-                                    <p className="text-sm text-[#9AA0A6]">Unlock professional features and production-grade on-chain monitoring.</p>
-                                </div>
-
-                                <div className="bg-[#1A1D24] rounded-xl p-4 space-y-3 border border-[#2C3038]">
-                                    {[
-                                        "Unlimited document and digest anchors",
-                                        "Solana Mainnet-Beta registry access",
-                                        "Dedicated webhook event pipelines",
-                                        "Advanced analytics & CSV audit export",
-                                        "Multi-user organization management"
-                                    ].map((feature, i) => (
-                                        <div key={i} className="flex items-center gap-3 text-sm text-[#E8EAED]">
-                                            <div className="w-5 h-5 rounded-full bg-[#10B981]/10 flex items-center justify-center">
-                                                <Check className="w-3 h-3 text-[#10B981]" />
-                                            </div>
-                                            {feature}
-                                        </div>
-                                    ))}
-                                </div>
-
-                                <div className="pt-2">
-                                    <button
-                                        onClick={() => showComingSoonToast("Mainnet billing coming soon. You'll be notified when Pro is available.")}
-                                        className="w-full py-4 bg-[#4285F4] hover:bg-[#3367D6] text-white rounded-xl font-bold transition-all shadow-lg shadow-[#4285F4]/30"
-                                    >
-                                        Continue to Checkout →
-                                    </button>
-                                    <p className="text-[10px] text-[#5F6368] text-center mt-4">
-                                        By upgrading, you agree to SipHeron's Terms of Service and Privacy Policy.
-                                    </p>
-                                </div>
-                            </div>
-                        </motion.div>
-                    </div>
+                    <UpgradeModal onClose={() => setShowUpgradeModal(false)} onAction={showComingSoonToast} />
                 )}
-            </AnimatePresence>
-
-            {/* Toast */}
-            <AnimatePresence>
                 {toast && (
                     <motion.div
                         initial={{ opacity: 0, y: 50, x: '-50%' }}
                         animate={{ opacity: 1, y: 0, x: '-50%' }}
                         exit={{ opacity: 0, scale: 0.95, x: '-50%' }}
-                        className="fixed bottom-8 left-1/2 z-[120] px-6 py-3 rounded-xl bg-[#111118] border border-[#1E1E2E] shadow-2xl flex items-center gap-3 min-w-[320px]"
+                        className="fixed bottom-12 left-1/2 z-[150] px-6 py-4 rounded-2xl bg-bg-surface border border-purple-vivid/20 shadow-2xl flex items-center gap-4 min-w-[320px]"
                     >
-                        <div className="p-1.5 rounded-full bg-[#4285F4]/10">
-                            <Info className="w-4 h-4 text-[#4285F4]" />
+                        <div className="p-2 rounded-full bg-purple-vivid/10 text-purple-vivid">
+                            <Info className="w-5 h-5" />
                         </div>
-                        <span className="text-sm text-white font-medium">{toast}</span>
-                        <button onClick={() => setToast(null)} className="ml-auto text-[#5F6368] hover:text-white">
+                        <span className="text-sm font-bold text-text-primary">{toast}</span>
+                        <button onClick={() => setToast(null)} className="ml-auto text-text-muted hover:text-white">
                             <X className="w-4 h-4" />
                         </button>
                     </motion.div>
                 )}
             </AnimatePresence>
         </div>
+    );
+}
+
+function PlanFeature({ label, active }) {
+    return (
+        <div className={`flex items-center gap-3 text-sm ${active ? 'text-text-primary' : 'text-text-muted opacity-40'}`}>
+            <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${active ? 'bg-success/10 text-success' : 'bg-bg-border text-text-muted'}`}>
+                {active ? <Check className="w-3.5 h-3.5" /> : <X className="w-3.5 h-3.5" />}
+            </div>
+            <span className={active ? 'font-medium' : 'line-through'}>{label}</span>
+        </div>
+    );
+}
+
+function MatrixFeature({ icon: Icon, label, active, emphasis }) {
+    const colorClass = emphasis === 'blue' ? 'text-blue-accent' : emphasis ? 'text-purple-glow' : 'text-text-muted';
+    return (
+        <div className={`flex items-center gap-4 text-xs ${active ? 'text-text-secondary' : 'text-text-muted opacity-30'}`}>
+            <Icon className={`w-4 h-4 shrink-0 ${active ? (emphasis === 'blue' ? 'text-blue-accent' : 'text-purple-glow') : ''}`} />
+            <span className={active ? 'font-bold tracking-tight' : ''}>{label}</span>
+        </div>
+    );
+}
+
+function UpgradeModal({ onClose, onAction }) {
+    return (
+        <PurpleModal isOpen={true} onClose={onClose} title="Institutional Upgrade">
+            <div className="space-y-8">
+                <div className="flex flex-col items-center justify-center text-center space-y-4">
+                    <div className="w-20 h-20 rounded-3xl bg-purple-vivid/10 border border-purple-vivid/20 flex items-center justify-center relative overflow-hidden group">
+                        <div className="absolute inset-0 bg-purple-vivid/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <Sparkles className="w-10 h-10 text-purple-vivid relative z-10" />
+                    </div>
+                    <div>
+                        <h3 className="text-2xl font-bold text-white tracking-tight">SipHeron Pro Dynamics</h3>
+                        <p className="text-sm text-text-muted mt-2">Scale your cryptographic footprint to the global Solana Mainnet ecosystem.</p>
+                    </div>
+                </div>
+
+                <div className="bg-black/40 border border-bg-border rounded-3xl p-6 space-y-4">
+                    {[
+                        "Zero monthly anchoring limitations",
+                        "High-throughput Mainnet clusters",
+                        "Immutable event log webhooks",
+                        "Advanced multi-organizational telemetry",
+                        "Siph-Shield cryptographic insurance"
+                    ].map((feat, i) => (
+                        <div key={i} className="flex items-center gap-3 text-sm text-text-primary font-medium">
+                            <div className="w-5 h-5 bg-success/10 rounded-full flex items-center justify-center">
+                                <Check className="w-3 h-3 text-success" />
+                            </div>
+                            {feat}
+                        </div>
+                    ))}
+                </div>
+
+                <div className="space-y-4">
+                    <GlowButton onClick={() => onAction("Mainnet bridge is being finalized. You'll be notified via institutional email.")} className="w-full py-5 text-sm font-bold uppercase tracking-widest shadow-2xl" icon={ArrowUpRight}>
+                        INITIATE DEPLOYMENT
+                    </GlowButton>
+                    <p className="text-[10px] text-center text-text-muted uppercase font-bold tracking-[0.2em] opacity-60">Settle in USDC, SOL, or Terminal Currency</p>
+                </div>
+            </div>
+        </PurpleModal>
     );
 }

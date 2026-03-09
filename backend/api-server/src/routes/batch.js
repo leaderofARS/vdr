@@ -10,27 +10,20 @@ const express = require('express');
 const authenticate = require('../middleware/auth');
 const { hashQueue } = require('../workers/batchQueue');
 const { sanitizeMetadata } = require('../utils/sanitizer');
+const { z } = require('zod');
+const { validateInput } = require('../middleware/security');
 
 const router = express.Router();
 
-router.post('/batch-register', authenticate, async (req, res, next) => {
+const batchRegisterSchema = z.object({
+    hashes: z.array(z.string().length(64).regex(/^[a-fA-F0-9]+$/)).min(1).max(100),
+    metadata: z.string().optional().default("Batch API Hash"),
+    expiry: z.number().int().nonnegative().optional().default(0)
+});
+
+router.post('/batch-register', authenticate, validateInput(batchRegisterSchema), async (req, res, next) => {
     try {
         const { hashes, metadata, expiry } = req.body;
-
-        if (!Array.isArray(hashes) || hashes.length === 0) {
-            return res.status(400).json({ error: 'hashes array is required' });
-        }
-
-        if (hashes.length > 100) {
-            return res.status(400).json({ error: 'Maximum batch size is 100' });
-        }
-
-        const hexRegex = /^[a-fA-F0-9]{64}$/;
-        for (const hash of hashes) {
-            if (!hexRegex.test(hash)) {
-                return res.status(400).json({ error: `Invalid SHA-256 hash provided in batch: ${hash}` });
-            }
-        }
 
         const organizationId = req.organization ? req.organization.id : null;
 

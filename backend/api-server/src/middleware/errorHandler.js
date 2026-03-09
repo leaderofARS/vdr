@@ -7,25 +7,22 @@
  */
 
 module.exports = (err, req, res, next) => {
-    // Log full error details server-side for debugging and incident response
-    console.error('Backend API Error:', {
+    const isDev = process.env.NODE_ENV === 'development';
+
+    // Log full error internally
+    console.error('[ERROR]', {
         message: err.message,
         stack: err.stack,
-        timestamp: new Date().toISOString(),
         path: req.path,
-        method: req.method
+        method: req.method,
+        timestamp: new Date().toISOString()
     });
 
     const status = err.status || 500;
 
-    // Return generic messages to clients. Never expose internals.
-    const clientMessage = status === 500
-        ? 'Internal Server Error'
-        : err.message || 'An error occurred';
-
+    // Return safe error to client
     res.status(status).json({
-        success: false,
-        error: clientMessage
+        error: isDev ? err.message : (status === 500 ? 'Internal Server Error' : (err.message || 'An error occurred')),
+        ...(isDev && { stack: err.stack })
     });
 };
-

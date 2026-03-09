@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from 'react';
-import { Binary, Copy, Check, AlertCircle, Terminal, CheckCircle2 } from 'lucide-react';
+import { Binary, Copy, Check, AlertCircle, Terminal, CheckCircle2, Cpu, Zap, Link } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { PurpleCard, GlowButton, PurpleInput, PurpleBadge } from '@/components/ui/PurpleUI';
 
 export default function HashDecoder() {
     const [input, setInput] = useState('');
@@ -58,96 +60,173 @@ export default function HashDecoder() {
         : '';
 
     return (
-        <div className="max-w-[1000px] mx-auto space-y-6">
-            <div className="mb-6">
-                <h1 className="text-2xl font-normal text-white mb-1">Hash Decoder Utility</h1>
-                <p className="text-sm text-[#9AA0A6]">
-                    Convert raw on-chain byte arrays back to hex hashes for verification.
+        <div className="max-w-4xl mx-auto space-y-8 pb-32">
+            {/* Header */}
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-text-primary to-text-secondary bg-clip-text text-transparent mb-2 flex items-center gap-3">
+                    <Binary className="w-8 h-8 text-purple-vivid" />
+                    Byte Array Decoder
+                </h1>
+                <p className="text-sm text-text-muted">
+                    Translate raw on-chain byte buffers into human-readable cryptographic hex strings.
+                    Useful for debugging low-level Solana program outputs.
                 </p>
-            </div>
+            </motion.div>
 
-            <div className="bg-[#1A1D24] border border-[#2C3038] rounded shadow-sm">
-                <div className="border-b border-[#2C3038] px-5 py-3 bg-[#1D2128]">
-                    <h2 className="text-[#E8EAED] text-sm font-medium">Input Configuration</h2>
-                </div>
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+                {/* Input Area */}
+                <div className="lg:col-span-3 space-y-6">
+                    <PurpleCard className="h-full flex flex-col">
+                        <div className="flex items-center justify-between mb-6">
+                            <h2 className="text-xs font-bold text-text-muted uppercase tracking-[0.2em]">Source Buffer</h2>
+                            <PurpleBadge variant="purple">32-BYTE ARRAY</PurpleBadge>
+                        </div>
 
-                <div className="p-5 space-y-4">
-                    <div>
-                        <label className="block text-xs font-medium text-[#9AA0A6] mb-2 uppercase">Raw Byte Array</label>
-                        <textarea
-                            value={input}
-                            onChange={(e) => setInput(e.target.value)}
-                            placeholder="e.g. [249, 245, 167, 3, 111, 164, 68, 96, ...]"
-                            className="w-full h-32 px-3 py-2 bg-[#131418] border border-[#3C4043] rounded text-sm text-[#4285F4] font-mono focus:outline-none focus:border-[#4285F4] transition-colors resize-none mb-4"
-                        />
-
-                        {error && (
-                            <div className="bg-[#3C2A2A] border border-[#F28B82]/30 rounded p-3 mb-4 flex items-start gap-2 text-sm text-[#F28B82]">
-                                <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                                <span>{error}</span>
-                            </div>
-                        )}
-
-                        <button
-                            onClick={handleDecode}
-                            className="bg-[#4285F4] hover:bg-[#3367D6] text-white px-5 py-2 rounded text-sm font-medium transition-colors flex items-center gap-2"
-                        >
-                            <Binary className="w-4 h-4" />
-                            DECODE TO HEX
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            {output && (
-                <div className="bg-[#1A1D24] border border-[#2C3038] rounded shadow-sm">
-                    <div className="border-b border-[#2C3038] px-5 py-3 bg-[#1D2128]">
-                        <h2 className="text-[#E8EAED] text-sm font-medium">Decoding Results</h2>
-                    </div>
-
-                    <div className="p-5 space-y-8">
-                        <div>
-                            <label className="block text-xs font-medium text-[#9AA0A6] mb-2 uppercase">Decoded Hex String</label>
-                            <div className="flex items-center gap-3">
-                                <input
-                                    type="text"
-                                    readOnly
-                                    value={output}
-                                    className="w-full bg-[#131418] border border-[#3C4043] rounded px-3 py-2.5 text-sm text-[#10B981] font-mono focus:outline-none"
+                        <div className="flex-1 space-y-6">
+                            <div className="relative group flex-1">
+                                <textarea
+                                    value={input}
+                                    onChange={(e) => setInput(e.target.value)}
+                                    placeholder="e.g. [249, 245, 167, 3, 111, 164, 68, 96, ...]"
+                                    className="w-full h-48 px-4 py-4 bg-black/40 border border-bg-border rounded-2xl text-sm text-purple-glow font-mono focus:outline-none focus:border-purple-vivid transition-all resize-none placeholder:text-text-muted/20"
                                 />
-                                <button
-                                    onClick={() => copyToClipboard(output, 'hex')}
-                                    className="shrink-0 p-2.5 bg-[#2C3038] hover:bg-[#3C4043] text-white rounded transition-colors"
-                                    title="Copy hex to clipboard"
-                                >
-                                    {copiedHex ? <CheckCircle2 className="w-4 h-4 text-[#10B981]" /> : <Copy className="w-4 h-4" />}
-                                </button>
+                                <div className="absolute inset-0 bg-purple-vivid/5 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity rounded-2xl" />
                             </div>
-                            <p className="mt-2 text-xs text-[#9AA0A6]">
-                                Use this hex with <code className="bg-[#131418] border border-[#2C3038] px-1 rounded text-[#E8EAED]">sipheron-vdr verify &lt;file&gt;</code>
-                            </p>
-                        </div>
 
-                        <div className="border-t border-[#2C3038] pt-6">
-                            <label className="flex items-center gap-2 text-xs font-medium text-[#9AA0A6] mb-2 uppercase">
-                                <Terminal className="w-4 h-4" /> Verify via API
-                            </label>
-                            <div className="relative group">
-                                <pre className="w-full bg-[#131418] border border-[#3C4043] rounded p-4 text-sm text-[#E8EAED] font-mono overflow-x-auto whitespace-pre-wrap">
-                                    {curlCommand}
-                                </pre>
-                                <button
-                                    onClick={() => copyToClipboard(curlCommand, 'curl')}
-                                    className="absolute top-3 right-3 p-1.5 bg-[#2C3038] hover:bg-[#3C4043] text-[#9AA0A6] hover:text-white rounded transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
-                                    title="Copy command"
-                                >
-                                    {copiedCurl ? <CheckCircle2 className="w-4 h-4 text-[#10B981]" /> : <Copy className="w-4 h-4" />}
-                                </button>
-                            </div>
+                            <AnimatePresence>
+                                {error && (
+                                    <motion.div
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: 'auto' }}
+                                        exit={{ opacity: 0, height: 0 }}
+                                        className="bg-danger/10 border border-danger/30 rounded-xl p-4 flex items-start gap-3 text-[11px] font-bold text-danger uppercase tracking-tight"
+                                    >
+                                        <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                                        <span>{error}</span>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+
+                            <GlowButton
+                                onClick={handleDecode}
+                                className="w-full py-4 text-xs font-bold uppercase tracking-widest"
+                                icon={Zap}
+                            >
+                                EXECUTE DECODING
+                            </GlowButton>
                         </div>
+                    </PurpleCard>
+                </div>
+
+                {/* Info / Quick Reference */}
+                <div className="lg:col-span-2 space-y-6">
+                    <PurpleCard className="bg-purple-dim/10 border-purple-vivid/20">
+                        <div className="flex items-center gap-3 mb-4">
+                            <Terminal className="w-5 h-5 text-purple-glow" />
+                            <h4 className="font-bold text-sm text-text-primary uppercase tracking-tight">Quick Usage</h4>
+                        </div>
+                        <p className="text-xs text-text-muted leading-relaxed mb-6">
+                            Raw data from Solana accounts often arrives as a <code>Uint8Array</code>.
+                            Paste the JSON representation here to derive the original SHA-256 hash.
+                        </p>
+                        <ul className="space-y-3 text-[11px] text-text-secondary">
+                            <li className="flex items-center gap-2">
+                                <div className="w-1.5 h-1.5 rounded-full bg-purple-vivid" />
+                                Must be exactly 32 bytes
+                            </li>
+                            <li className="flex items-center gap-2">
+                                <div className="w-1.5 h-1.5 rounded-full bg-purple-vivid" />
+                                Values between 0 and 255
+                            </li>
+                            <li className="flex items-center gap-2">
+                                <div className="w-1.5 h-1.5 rounded-full bg-purple-vivid" />
+                                Comma-separated format
+                            </li>
+                        </ul>
+                    </PurpleCard>
+
+                    <div className="p-6 bg-purple-glow/5 border border-purple-glow/10 rounded-3xl">
+                        <p className="text-[10px] text-text-muted uppercase font-bold tracking-[0.2em] mb-3">Integration Tip</p>
+                        <p className="text-[11px] text-text-secondary leading-relaxed font-medium">
+                            Automate this in your app using <code className="text-purple-glow">Buffer.from(data).toString('hex')</code> if using Node.js.
+                        </p>
                     </div>
                 </div>
-            )}
+            </div>
+
+            {/* Results section */}
+            <AnimatePresence>
+                {output && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="space-y-6"
+                    >
+                        <PurpleCard className="border-success/20 bg-success/[0.02]">
+                            <div className="flex items-center justify-between mb-8">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-success/10 text-success rounded-xl">
+                                        <CheckCircle2 className="w-5 h-5" />
+                                    </div>
+                                    <h2 className="text-xl font-bold text-text-primary uppercase tracking-tight">Decoded Result</h2>
+                                </div>
+                                <PurpleBadge variant="success">READY FOR VERIFICATION</PurpleBadge>
+                            </div>
+
+                            <div className="space-y-10">
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] ml-1">Cryptographic Hex String</label>
+                                    <div className="flex gap-3">
+                                        <div className="flex-1 bg-black/50 border border-bg-border rounded-2xl px-5 py-4 font-mono text-sm text-success break-all flex items-center shadow-inner">
+                                            {output}
+                                        </div>
+                                        <button
+                                            onClick={() => copyToClipboard(output, 'hex')}
+                                            className="p-4 bg-bg-surface border border-bg-border rounded-2xl text-text-muted hover:text-white hover:border-purple-vivid/40 transition-all flex items-center justify-center min-w-[64px]"
+                                        >
+                                            {copiedHex ? <CheckCircle2 className="w-6 h-6 text-success" /> : <Copy className="w-6 h-6" />}
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="pt-8 border-t border-bg-border/50">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <label className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] ml-1 flex items-center gap-2">
+                                            <Link className="w-3.5 h-3.5 text-purple-glow" />
+                                            Verify via Enterprise API
+                                        </label>
+                                        <GlowButton
+                                            variant="ghost"
+                                            onClick={() => copyToClipboard(curlCommand, 'curl')}
+                                            className="px-4 py-2 text-[9px] font-bold uppercase tracking-widest"
+                                            icon={copiedCurl ? Check : Copy}
+                                        >
+                                            {copiedCurl ? "COPIED" : "COPY CURL"}
+                                        </GlowButton>
+                                    </div>
+                                    <div className="relative group">
+                                        <pre className="w-full bg-black/60 border border-bg-border rounded-2xl p-6 text-xs text-text-secondary font-mono overflow-x-auto whitespace-pre-wrap leading-relaxed">
+                                            {curlCommand}
+                                        </pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </PurpleCard>
+
+                        <div className="flex justify-center">
+                            <motion.button
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={() => router.push(`/dashboard/hashes/${output}`)}
+                                className="px-10 py-5 bg-purple-vivid text-white rounded-3xl font-bold uppercase tracking-[0.2em] text-xs shadow-[0_0_50px_rgba(155,110,255,0.3)] hover:shadow-[0_0_70px_rgba(155,110,255,0.5)] transition-all flex items-center gap-3"
+                            >
+                                <Cpu className="w-5 h-5" />
+                                Lookup Hash Identity
+                            </motion.button>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

@@ -16,13 +16,42 @@ const authenticate = async (req, res, next) => {
 
         // 1. Check API Key
         if (apiKeyHeader) {
-            const apiKeyRecord = await prisma.apiKey.findUnique({
-                where: { key: apiKeyHeader },
+            const crypto = require('crypto');
+            const hashedKey = crypto.createHash('sha256').update(apiKeyHeader).digest('hex');
+
+            let apiKeyRecord = await prisma.apiKey.findUnique({
+                where: { key: hashedKey },
                 include: { organization: true, user: true }
             });
 
+            // Fallback for legacy plain-text keys (flyway migration pattern to prevent breakage)
+            if (!apiKeyRecord) {
+                apiKeyRecord = await prisma.apiKey.findUnique({
+                    where: { key: apiKeyHeader },
+                    include: { organization: true, user: true }
+                });
+                if (apiKeyRecord) {
+                    await prisma.apiKey.update({
+                        where: { id: apiKeyRecord.id },
+                        data: { key: hashedKey }
+                    });
+                }
+            }
+
             if (!apiKeyRecord) {
                 return res.status(401).json({ error: 'Invalid API Key' });
+            }
+
+            // Scope validation
+            // read - GET, write - POST/PUT/PATCH, admin - DELETE + org
+            const scope = apiKeyRecord.scope || 'write'; 
+            const reqMethod = req.method.toUpperCase();
+
+            if (scope === 'read' && reqMethod !== 'GET') {
+                return res.status(403).json({ error: 'API key scope insufficient: read-only access' });
+            }
+            if (scope === 'write' && reqMethod === 'DELETE') {
+                return res.status(403).json({ error: 'API key scope insufficient: admin access required for DELETE' });
             }
 
             await prisma.apiKey.update({
@@ -46,7 +75,7 @@ const authenticate = async (req, res, next) => {
         }
 
         if (token) {
-            const decoded = verifyToken(token);
+            const decoded = await verifyToken(token);
 
             const user = await prisma.user.findUnique({
                 where: { id: decoded.userId },

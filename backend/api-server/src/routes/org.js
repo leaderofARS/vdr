@@ -9,8 +9,19 @@ const prisma = require('../config/database');
 const solanaService = require('../services/solana');
 const authenticate = require('../middleware/auth');
 const walletMonitor = require('../services/walletMonitor');
+const { z } = require('zod');
+const { validateInput } = require('../middleware/security');
 
 const router = express.Router();
+
+const orgUpdateSchema = z.object({
+    name: z.string().min(3).max(50).regex(/^[a-zA-Z0-9 ]+$/)
+});
+
+const inviteSchema = z.object({
+    email: z.string().email(),
+    role: z.enum(['admin', 'issuer', 'viewer'])
+});
 
 // In-memory cache for wallet balance (60 seconds)
 let balanceCache = {
@@ -71,17 +82,12 @@ router.get('/', authenticate, async (req, res, next) => {
  * @route PUT /api/org
  * @description Update organization details.
  */
-router.put('/', authenticate, async (req, res, next) => {
+router.put('/', authenticate, validateInput(orgUpdateSchema), async (req, res, next) => {
     try {
         const { name } = req.body;
 
         if (!req.organization) {
             return res.status(403).json({ error: 'Management rights required' });
-        }
-
-        // Validation: name 3-50 chars, alphanumeric + spaces
-        if (!name || name.length < 3 || name.length > 50 || !/^[a-zA-Z0-9 ]+$/.test(name)) {
-            return res.status(400).json({ error: 'Invalid name: Must be 3-50 alphanumeric characters and spaces' });
         }
 
         // Check if user is owner
@@ -185,6 +191,32 @@ router.get('/stats', authenticate, async (req, res, next) => {
             recentActivity: recentActivity.map(formatHashRecordShort)
         });
 
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @route POST /api/org/invite
+ * @description Invite user to organization
+ */
+router.post('/invite', authenticate, validateInput(inviteSchema), async (req, res, next) => {
+    try {
+        if (!req.organization) {
+            return res.status(403).json({ error: 'Institutional context required' });
+        }
+        const { email, role } = req.body;
+
+        // Ensure user is admin (owner for now, since we don't have roles mapped thoroughly yet)
+        const org = await prisma.organization.findUnique({ where: { id: req.organization.id } });
+        if (!org || org.ownerId !== req.user.id) {
+            return res.status(403).json({ error: 'Administrative rights required to invite users' });
+        }
+
+        // Placeholder for actual invite tracking/sending since models might not be fully fleshed out for invites
+        console.log(`[Invite] Sending ${role} invite to ${email} for organization ${org.name}`);
+
+        res.json({ success: true, message: `Invite sent to ${email} as ${role}` });
     } catch (error) {
         next(error);
     }

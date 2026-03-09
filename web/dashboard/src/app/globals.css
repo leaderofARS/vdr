@@ -1,66 +1,169 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0A0A0F;
-  --foreground: #F8F8FF;
-  --accent-primary: #4F6EF7;
-  --accent-secondary: #9B5CF6;
-  --surface: #111118;
-  --border: #1E1E2E;
-  --text-muted: #6B7280;
-  --success: #10B981;
+  --bg-primary: #08080f;
+  --bg-surface: #0f0f1a;
+  --bg-elevated: #151525;
+  --bg-border: #1e1e3a;
+  --purple-dim: #2d2b55;
+  --purple-mid: #4c3d8f;
+  --purple-bright: #7c5cbf;
+  --purple-vivid: #9b6eff;
+  --purple-glow: #b794ff;
+  --blue-accent: #4f6ef7;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --text-primary: #f0eeff;
+  --text-secondary: #9b8ec4;
+  --text-muted: #5b5380;
+
+  /* Additional Design Tokens */
+  --transition-speed: 150ms;
+  --radius-card: 12px;
+}
+
+.light {
+  --bg-primary: #f8f7ff;
+  --bg-surface: #ffffff;
+  --bg-elevated: #f0f0ff;
+  --bg-border: #e0e0f0;
+  --text-primary: #08080f;
+  --text-secondary: #4c3d8f;
+  --text-muted: #7c5cbf;
+  --purple-dim: #e0dbff;
+
+  /* Retain brand purples even in light mode for consistency */
+  color-scheme: light;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-accent-primary: var(--accent-primary);
-  --color-accent-secondary: var(--accent-secondary);
-  --color-surface: var(--surface);
-  --color-border: var(--border);
-  --color-text-muted: var(--text-muted);
+  --color-bg-primary: var(--bg-primary);
+  --color-bg-surface: var(--bg-surface);
+  --color-bg-elevated: var(--bg-elevated);
+  --color-bg-border: var(--bg-border);
+  --color-purple-dim: var(--purple-dim);
+  --color-purple-mid: var(--purple-mid);
+  --color-purple-bright: var(--purple-bright);
+  --color-purple-vivid: var(--purple-vivid);
+  --color-purple-glow: var(--purple-glow);
+  --color-blue-accent: var(--blue-accent);
   --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
 }
 
 html {
   scroll-behavior: smooth;
   color-scheme: dark;
-}
-
-[id] {
-  scroll-margin-top: 6rem;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-geist-sans), 'Inter', system-ui, -apple-system, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Glassmorphism Utilities */
-.glass {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+/* Glassmorphism Classes */
+.glass-card {
+  background: rgba(15, 15, 26, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(155, 110, 255, 0.1);
+  box-shadow: 0 0 40px rgba(155, 110, 255, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.glass-accent {
-  background: rgba(59, 130, 246, 0.1);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(59, 130, 246, 0.2);
+.light .glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(155, 110, 255, 0.2);
+  box-shadow: 0 4px 20px rgba(124, 92, 191, 0.08);
 }
 
-/* Animated Mesh Gradient Background */
-.bg-mesh {
-  background-color: #050505;
-  background-image:
-    radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.15) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(16, 185, 129, 0.1) 0px, transparent 50%);
-  background-attachment: fixed;
+.glass-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 30px rgba(155, 110, 255, 0.15);
+  border-color: rgba(155, 110, 255, 0.3);
+}
+
+/* Gradients and Glows */
+.bg-purple-gradient {
+  background: linear-gradient(135deg, #7c5cbf, #4f6ef7);
+}
+
+.purple-glow:hover {
+  box-shadow: 0 0 20px rgba(155, 110, 255, 0.3);
+}
+
+.button-primary-glow {
+  background: linear-gradient(135deg, #7c5cbf, #4f6ef7);
+  transition: all 0.2s ease;
+}
+
+.button-primary-glow:hover {
+  box-shadow: 0 0 40px rgba(124, 92, 191, 0.4);
+  transform: scale(1.02);
+}
+
+.button-primary-glow:active {
+  transform: scale(0.98);
+}
+
+/* Animations */
+@keyframes pulse-glow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+  }
+
+  70% {
+    box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+.animate-status-pulse {
+  animation: pulse-glow 2s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.loader-shimmer {
+  background: linear-gradient(90deg, var(--bg-surface) 25%, var(--purple-dim) 50%, var(--bg-surface) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+}
+
+/* Particles Background Shell */
+.ambient-grid {
+  background-image: radial-gradient(var(--bg-border) 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-position: -19px -19px;
+  opacity: 0.15;
+}
+
+.ambient-radial {
+  background: radial-gradient(circle at top left, rgba(124, 92, 191, 0.03), transparent 70%);
+}
+
+/* Accessibility */
+.focus-purple:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--bg-surface), 0 0 0 4px var(--purple-vivid);
 }

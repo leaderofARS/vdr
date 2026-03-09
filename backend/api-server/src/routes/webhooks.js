@@ -7,8 +7,16 @@
 const express = require('express');
 const authenticate = require('../middleware/auth');
 const webhookService = require('../services/webhookService');
+const { z } = require('zod');
+const { validateInput } = require('../middleware/security');
 
 const router = express.Router();
+
+const webhookSchema = z.object({
+    url: z.string().url().regex(/^https:\/\//, "Webhook URL must be HTTPS"),
+    events: z.array(z.enum(["anchor_success", "anchor_failed", "hash_revoked"])).min(1),
+    secret: z.string().min(16).max(128)
+});
 
 /**
  * @route GET /api/webhooks
@@ -31,7 +39,7 @@ router.get('/', authenticate, async (req, res, next) => {
  * @route POST /api/webhooks
  * @description Register a new webhook.
  */
-router.post('/', authenticate, async (req, res, next) => {
+router.post('/', authenticate, validateInput(webhookSchema), async (req, res, next) => {
     try {
         if (!req.organization) {
             return res.status(403).json({ error: 'Institutional Context Required' });

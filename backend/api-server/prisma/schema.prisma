@@ -52,6 +52,7 @@ model ApiKey {
   createdAt  DateTime      @default(now())
   lastUsedAt DateTime?
   status     String        @default("active") // Added: active / revoked
+  scope      String        @default("write") // read, write, admin
   usageLogs  ApiUsageLog[]
 }
 

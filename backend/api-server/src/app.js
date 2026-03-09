@@ -10,10 +10,31 @@ const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const cookieParser = require("cookie-parser");
-const helmetConfig = require("./middleware/helmet-config");
+const hpp = require("hpp");
 const { globalLimiter, authLimiter, batchRegisterLimiter, keyCreationLimiter } = require("./middleware/rateLimiter");
+const { requireHttps, detectSuspicious, securityHeaders } = require("./middleware/security");
 
 dotenv.config();
+
+// Environment variable validation on startup
+const requiredEnvVars = [
+    'DATABASE_URL',
+    'JWT_SECRET',
+    'WALLET_PRIVATE_KEY',
+    'PROGRAM_ID',
+    'REDIS_URL',
+    'RESEND_API_KEY'
+];
+
+for (const envVar of requiredEnvVars) {
+    if (!process.env[envVar]) {
+        throw new Error(`[FATAL] Missing required environment variable: ${envVar}`);
+    }
+}
+
+if (process.env.NODE_ENV === 'production' && process.env.DATABASE_URL && !process.env.DATABASE_URL.includes('sslmode=require')) {
+    console.warn('[WARNING] DATABASE_URL should enforce SSL in production mode with ?sslmode=require appended.');
+}
 
 const registerRoute = require("./routes/register");
 const verifyRoute = require("./routes/verify");
@@ -44,45 +65,88 @@ const app = express();
 // Trust Railway/Vercel proxy (required for rate limiting behind load balancers)
 app.set('trust proxy', 1);
 
-// Apply Security Headers
-app.use(helmetConfig);
+// Require HTTPS in production
+app.use(requireHttps);
 
-// Enable cookie parsing for HttpOnly JWT cookies
+// Apply Security Headers
+app.use(securityHeaders);
+
+// Enable cookie parsing for HttpOnly JWT cookies and CSRF
 app.use(cookieParser());
 
+// Strict CORS
+const allowedOrigins = [
+    'https://sipheron.com',
+    'https://app.sipheron.com',
+    'https://www.sipheron.com'
+];
+
+if (process.env.NODE_ENV === 'development') {
+    allowedOrigins.push('http://localhost:3000');
+    allowedOrigins.push('http://localhost:3001');
+}
+
 app.use(cors({
-    origin: function (origin, callback) {
-        const allowedOrigins = process.env.ALLOWED_ORIGINS
-            ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
-            : [process.env.FRONTEND_URL || 'http://localhost:3000'];
-
-        // Allow requests with no origin (server-to-server, CLI, Postman)
+    origin: (origin, callback) => {
+        // Allow requests with no origin (CLI, curl, mobile)
         if (!origin) return callback(null, true);
-
-        if (allowedOrigins.indexOf(origin) !== -1) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
+        if (allowedOrigins.includes(origin)) return callback(null, true);
+        callback(new Error(`CORS policy violation: ${origin} not allowed`));
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key', 'X-CSRF-Token']
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key', 'X-CSRF-Token', 'x-csrf-token'],
+    exposedHeaders: ['X-RateLimit-Limit', 'X-RateLimit-Remaining'],
+    maxAge: 86400
 }));
 
 // Specific body-parser limits for batch registrations
 app.use('/api/batch-register', express.json({ limit: '10mb' }));
 
 // Global body-parser and global rate limiting
-app.use(express.json({ limit: '1mb' }));
+app.use(express.json({ limit: '100kb' }));
+app.use(hpp()); // HTTP Parameter Pollution prevention
+app.use(detectSuspicious); // Suspicious pattern detection
 app.use(globalLimiter);
 app.use(usageLogger); // Log all requests that have an API key (non-blocking)
 
+// Double Submit Cookie CSRF logic
+// API key auth assumes no cookies and no CSRF token check (stateless)
+const timingSafeComparePath = require('crypto');
+function timingSafeCompareCSRF(a, b) {
+    const bufA = Buffer.from(a);
+    const bufB = Buffer.from(b);
+    if (bufA.length !== bufB.length) return false;
+    return timingSafeComparePath.timingSafeEqual(bufA, bufB);
+}
 
-// CSRF token endpoint — returns null since API uses stateless JWT auth
-// csurf removed: incompatible with Express 5
-app.get("/api/csrf-token", (req, res) => {
-    res.json({ csrfToken: null });
+app.use((req, res, next) => {
+    if (req.headers['x-api-key']) return next(); // Exclude API key requests from CSRF
+
+    if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(req.method)) {
+        // some routes such as generic register might not be api keys but handle exceptions where needed, or enforce on all non-api-key routes.
+        // wait: login also is a POST, but maybe it doesn't need CSRF token since you get the CSRF token ON login?
+        // Actually, on login: set CSRF token in cookie + return in response. 
+        // Wait, if login is a POST, it won't have the CSRF token yet before login!
+        // So if the path contains auth/login or auth/register we bypass.
+        if (req.path.includes('/auth/login') || req.path.includes('/auth/register') || req.path.includes('/auth/forgot-password') || req.path === '/register' || req.path === '/api/webhooks') {
+            return next();
+        }
+
+        const headerToken = req.headers['x-csrf-token'];
+        const cookieToken = req.cookies['csrf_token'];
+        if (!headerToken || !cookieToken || !timingSafeCompareCSRF(headerToken, cookieToken)) {
+            console.log(JSON.stringify({
+                type: 'SECURITY_EVENT',
+                event: 'CSRF_VIOLATION',
+                timestamp: new Date().toISOString(),
+                ip: req.ip || req.connection.remoteAddress,
+                path: req.path
+            }));
+            return res.status(403).json({ error: 'Invalid CSRF token' });
+        }
+    }
+    next();
 });
 
 // Routes

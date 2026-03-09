@@ -10,9 +10,10 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { ShieldCheck, Monitor, ArrowRight, CheckCircle2, XCircle } from 'lucide-react';
+import { ShieldCheck, Monitor, ArrowRight, CheckCircle2, XCircle, Terminal, AlertTriangle, ShieldAlert } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { api } from '@/utils/api';
+import { PurpleCard, GlowButton, PurpleSkeleton } from '@/components/ui/PurpleUI';
 
 function AuthContent() {
     const searchParams = useSearchParams();
@@ -42,91 +43,122 @@ function AuthContent() {
 
     if (!code) {
         return (
-            <div className="flex flex-col items-center justify-center h-[60vh]">
-                <XCircle className="w-16 h-16 text-red-500 mb-4" />
-                <h1 className="text-2xl font-bold">Invalid Request</h1>
-                <p className="text-gray-400">No authorization code provided.</p>
+            <div className="flex flex-col items-center justify-center min-h-[60vh]">
+                <PurpleCard className="max-w-md text-center p-12 border-danger/20 flex flex-col items-center">
+                    <div className="w-20 h-20 rounded-3xl bg-danger/10 flex items-center justify-center mb-6 border border-danger/20">
+                        <XCircle className="w-10 h-10 text-danger" />
+                    </div>
+                    <h1 className="text-2xl font-bold text-white mb-2 tracking-tight">Invalid Request</h1>
+                    <p className="text-sm text-text-muted">No authorization code provided in the URI parameters.</p>
+                </PurpleCard>
             </div>
         );
     }
 
     return (
-        <div className="max-w-2xl mx-auto pt-12">
+        <div className="max-w-2xl mx-auto pt-16 pb-32 px-4 relative">
+            {/* Background Effects */}
+            <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-purple-vivid/10 blur-[120px] rounded-full pointer-events-none" />
+
             <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="glass border border-white/5 rounded-3xl p-8 md:p-12 text-center"
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
             >
-                {status === 'confirming' && (
-                    <>
-                        <div className="w-20 h-20 rounded-2xl bg-blue-600/10 flex items-center justify-center mx-auto mb-8">
-                            <Monitor className="w-10 h-10 text-blue-400" />
-                        </div>
-                        <h1 className="text-3xl font-bold mb-4">Authorize CLI Access</h1>
-                        <p className="text-gray-400 text-lg mb-8">
-                            A CLI device is requesting access to your SipHeron VDR organization.
-                            Please verify that the code on your terminal matches the one below.
-                        </p>
+                <PurpleCard className="p-8 md:p-12 text-center relative overflow-hidden group">
+                    {/* Top Accent */}
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-purple-vivid to-transparent opacity-50" />
 
-                        <div className="bg-white/5 rounded-2xl p-6 mb-10 border border-white/5">
-                            <span className="text-5xl font-mono tracking-[0.5em] text-white font-bold pl-[0.5em]">
-                                {code}
-                            </span>
-                        </div>
+                    {status === 'confirming' && (
+                        <>
+                            <div className="absolute top-0 right-0 p-12 opacity-[0.02] group-hover:opacity-[0.05] transition-opacity pointer-events-none">
+                                <Terminal className="w-64 h-64 text-purple-glow" />
+                            </div>
 
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                            <button
+                            <div className="relative z-10 flex flex-col items-center">
+                                <div className="w-24 h-24 rounded-3xl bg-purple-vivid/10 border border-purple-vivid/20 flex items-center justify-center mb-8 relative overflow-hidden shadow-2xl">
+                                    <div className="absolute inset-0 bg-gradient-to-br from-purple-vivid/20 to-transparent" />
+                                    <Monitor className="w-10 h-10 text-purple-vivid relative z-10" />
+                                </div>
+                                <h1 className="text-3xl font-bold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-white to-text-secondary tracking-tight">
+                                    Authorize Developer terminal
+                                </h1>
+                                <p className="text-text-muted text-sm leading-relaxed mb-10 max-w-sm">
+                                    A programmatic environment is requesting institutional access to <strong className="text-white font-medium">SipHeron VDR</strong>. Verify the operational code below matches your prompt.
+                                </p>
+
+                                <div className="bg-black/60 rounded-3xl p-8 mb-12 border border-bg-border/50 shadow-inner w-full sm:w-auto relative overflow-hidden group/code">
+                                    <div className="absolute inset-0 bg-purple-vivid/5 opacity-0 group-hover/code:opacity-100 transition-opacity" />
+                                    <span className="text-5xl font-mono tracking-[0.5em] text-purple-glow font-bold pl-[0.5em] relative z-10 drop-shadow-[0_0_15px_rgba(183,148,255,0.3)]">
+                                        {code}
+                                    </span>
+                                </div>
+
+                                <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto justify-center">
+                                    <GlowButton
+                                        variant="ghost"
+                                        onClick={() => router.push('/dashboard')}
+                                        className="px-10 py-4 text-xs font-bold uppercase tracking-widest sm:w-auto w-full"
+                                    >
+                                        REJECT ACCESS
+                                    </GlowButton>
+                                    <GlowButton
+                                        onClick={handleAuthorize}
+                                        loading={loading}
+                                        className="px-10 py-4 text-xs font-bold uppercase tracking-widest shadow-2xl sm:w-auto w-full"
+                                        icon={ShieldCheck}
+                                    >
+                                        AUTHORIZE TERMINAL
+                                    </GlowButton>
+                                </div>
+
+                                <div className="mt-8 flex items-center gap-2 text-[10px] text-text-muted font-bold uppercase tracking-widest border border-bg-border/50 px-4 py-2 rounded-full bg-bg-surface/50">
+                                    <ShieldAlert className="w-3.5 h-3.5 text-purple-glow" /> Protocol security enforced
+                                </div>
+                            </div>
+                        </>
+                    )}
+
+                    {status === 'success' && (
+                        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="flex flex-col items-center">
+                            <div className="w-24 h-24 rounded-3xl bg-success/10 border border-success/20 flex items-center justify-center mb-8 relative overflow-hidden shadow-2xl">
+                                <div className="absolute inset-0 bg-gradient-to-br from-success/20 to-transparent" />
+                                <CheckCircle2 className="w-12 h-12 text-success relative z-10" />
+                            </div>
+                            <h1 className="text-3xl font-bold mb-3 text-white tracking-tight">Identity Authorized</h1>
+                            <p className="text-text-muted text-sm leading-relaxed mb-10 max-w-sm">
+                                Your terminal session has been cryptographically linked to <strong className="text-purple-glow font-bold">{orgName}</strong>. You may now return to your command line interface.
+                            </p>
+                            <GlowButton
                                 onClick={() => router.push('/dashboard')}
-                                className="px-8 py-4 rounded-2xl bg-white/5 hover:bg-white/10 transition-all font-bold"
+                                className="px-10 py-4 text-xs font-bold uppercase tracking-widest shadow-[0_0_30px_rgba(155,110,255,0.2)]"
+                                icon={ArrowRight}
                             >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleAuthorize}
-                                disabled={loading}
-                                className="px-8 py-4 rounded-2xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 transition-all font-bold flex items-center justify-center gap-2 group"
+                                CONTINUE TO DASHBOARD
+                            </GlowButton>
+                        </motion.div>
+                    )}
+
+                    {status === 'error' && (
+                        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="flex flex-col items-center">
+                            <div className="w-24 h-24 rounded-3xl bg-danger/10 border border-danger/20 flex items-center justify-center mb-8 relative overflow-hidden shadow-2xl group/error">
+                                <div className="absolute inset-0 bg-danger/10 blur-xl opacity-0 group-hover/error:opacity-100 transition-opacity" />
+                                <AlertTriangle className="w-12 h-12 text-danger relative z-10" />
+                            </div>
+                            <h1 className="text-3xl font-bold mb-3 text-white tracking-tight">Handshake Failed</h1>
+                            <p className="text-danger text-sm font-medium mb-10 bg-danger/10 border border-danger/20 px-6 py-3 rounded-2xl max-w-sm break-words">
+                                {error}
+                            </p>
+                            <GlowButton
+                                onClick={() => setStatus('confirming')}
+                                variant="ghost"
+                                className="px-10 py-4 text-xs font-bold uppercase tracking-widest border-bg-border hover:border-purple-vivid/30"
                             >
-                                {loading ? 'Authorizing...' : 'Confirm & Authorize'}
-                                {!loading && <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />}
-                            </button>
-                        </div>
-                    </>
-                )}
-
-                {status === 'success' && (
-                    <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }}>
-                        <div className="w-20 h-20 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-8">
-                            <CheckCircle2 className="w-12 h-12 text-emerald-400" />
-                        </div>
-                        <h1 className="text-3xl font-bold mb-4">CLI Authorized!</h1>
-                        <p className="text-gray-400 text-lg mb-8">
-                            Your terminal has been successfully linked to <span className="text-white font-bold">{orgName}</span>.
-                            You can now close this window and return to your terminal.
-                        </p>
-                        <button
-                            onClick={() => router.push('/dashboard')}
-                            className="px-8 py-4 rounded-2xl bg-blue-600 hover:bg-blue-500 transition-all font-bold"
-                        >
-                            Return to Dashboard
-                        </button>
-                    </motion.div>
-                )}
-
-                {status === 'error' && (
-                    <>
-                        <div className="w-20 h-20 rounded-full bg-red-500/20 flex items-center justify-center mx-auto mb-8">
-                            <XCircle className="w-12 h-12 text-red-400" />
-                        </div>
-                        <h1 className="text-3xl font-bold mb-4">Authorization Failed</h1>
-                        <p className="text-red-400 text-lg mb-8">{error}</p>
-                        <button
-                            onClick={() => setStatus('confirming')}
-                            className="px-8 py-4 rounded-2xl bg-white/5 hover:bg-white/10 transition-all font-bold"
-                        >
-                            Try Again
-                        </button>
-                    </>
-                )}
+                                RETRY HANDSHAKE
+                            </GlowButton>
+                        </motion.div>
+                    )}
+                </PurpleCard>
             </motion.div>
         </div>
     );
@@ -134,7 +166,11 @@ function AuthContent() {
 
 export default function CliAuthorizePage() {
     return (
-        <Suspense fallback={<div className="flex items-center justify-center h-[60vh]">Loading...</div>}>
+        <Suspense fallback={
+            <div className="flex flex-col items-center justify-center min-h-[60vh] max-w-2xl mx-auto px-4">
+                <PurpleSkeleton className="w-full h-96 rounded-[2rem]" />
+            </div>
+        }>
             <AuthContent />
         </Suspense>
     );

@@ -60,6 +60,9 @@ async function ensureInitialized() {
  * Must be a plain JS number array — not a Buffer or Uint8Array
  */
 function hexToHashArray(hexHash) {
+    if (!/^[a-fA-F0-9]{64}$/.test(hexHash)) {
+        throw new Error("Invalid hash: must be exactly 64 hex characters (32 bytes)");
+    }
     const buf = Buffer.from(hexHash, "hex");
     if (buf.length !== 32) throw new Error(`Invalid hash length: expected 32 bytes, got ${buf.length}`);
     return Array.from(buf); // plain number array [0..255]
@@ -85,7 +88,7 @@ async function registerHash(hexHash, metadata = "", expiry = 0) {
     const config = await program.account.protocolConfig.fetchNullable(protocolConfigPda);
     if (!config) throw new Error("VDR Protocol is not initialized");
 
-    const tx = await program.methods
+    const txPromise = program.methods
         .registerHash(
             hashArray,                      // [u8; 32] — plain number array
             metadata,                       // String
@@ -100,6 +103,17 @@ async function registerHash(hexHash, metadata = "", expiry = 0) {
             systemProgram: SystemProgram.programId,
         })
         .rpc();
+
+    const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Transaction timeout: no confirmation in 60s")), 60000)
+    );
+
+    const tx = await Promise.race([txPromise, timeoutPromise]);
+
+    // Verify signature format before returning for storage (Solana sigs are base58 encoded 64 bytes -> ~87-88 chars)
+    if (!tx || !/^[1-9A-HJ-NP-Za-km-z]{86,89}$/.test(tx)) {
+        throw new Error("Invalid transaction signature format received");
+    }
 
     return { tx, owner: wallet.publicKey.toBase58(), pdaAddress: pdaAddress.toBase58() };
 }
@@ -174,7 +188,7 @@ async function revokeHash(hexHash) {
         programId
     );
 
-    const tx = await program.methods
+    const txPromise = program.methods
         .revokeHash()
         .accounts({
             hashRecord: pdaAddress,
@@ -182,6 +196,16 @@ async function revokeHash(hexHash) {
             systemProgram: SystemProgram.programId,
         })
         .rpc();
+
+    const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Transaction timeout: no confirmation in 60s")), 60000)
+    );
+
+    const tx = await Promise.race([txPromise, timeoutPromise]);
+
+    if (!tx || !/^[1-9A-HJ-NP-Za-km-z]{86,89}$/.test(tx)) {
+        throw new Error("Invalid transaction signature format received");
+    }
 
     return { tx };
 }

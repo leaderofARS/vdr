@@ -10,8 +10,15 @@ const authenticate = require('../middleware/auth');
 const notificationService = require('../services/notificationService');
 const { parsePagination, buildPaginationResponse, applyPagination } = require('../utils/paginate');
 const crypto = require('crypto');
+const { z } = require('zod');
+const { validateInput } = require('../middleware/security');
 
 const router = express.Router();
+
+const createKeySchema = z.object({
+    name: z.string().max(50).regex(/^[a-zA-Z0-9 ]+$/),
+    scope: z.enum(['read', 'write', 'admin']).optional().default('write')
+});
 
 /**
  * @route GET /api/keys
@@ -97,19 +104,21 @@ router.delete('/:id', authenticate, async (req, res, next) => {
  * @route POST /api/keys
  * @description Create a new API key for the organization.
  */
-router.post('/', authenticate, async (req, res, next) => {
+router.post('/', authenticate, validateInput(createKeySchema), async (req, res, next) => {
     try {
-        const { name } = req.body;
+        const { name, scope } = req.body;
         if (!req.organization) {
             return res.status(403).json({ error: 'Institutional Context Required' });
         }
 
-        const key = crypto.randomBytes(32).toString('hex');
+        const rawKey = 'svdr_' + crypto.randomBytes(32).toString('hex');
+        const hashedKey = crypto.createHash('sha256').update(rawKey).digest('hex');
 
         const apiKey = await prisma.apiKey.create({
             data: {
                 name,
-                key,
+                key: hashedKey,
+                scope,
                 userId: req.user.id,
                 organizationId: req.organization.id
             }
@@ -129,7 +138,7 @@ router.post('/', authenticate, async (req, res, next) => {
 
         res.status(201).json({
             success: true,
-            apiKey: apiKey.key,
+            apiKey: rawKey,
             id: apiKey.id,
             message: 'Store this API key securely. It will not be shown again.'
         });

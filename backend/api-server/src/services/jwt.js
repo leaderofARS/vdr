@@ -9,6 +9,8 @@
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
+const redisClient = require('./redis');
 
 const KEYS_DIR = path.join(__dirname, '../../keys');
 const PRIVATE_KEY_PATH = path.join(KEYS_DIR, 'private.pem');
@@ -50,12 +52,20 @@ function getVerifyKey() {
     return publicKey || process.env.JWT_SECRET;
 }
 
+// Enforce strong JWT secret (minimum 256 bytes hex ≈ 32 chars check, or minimum 32 bytes)
+if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
+    console.warn('[JWT] Warning: JWT_SECRET is weak or missing. Generating 256-bit ephemeral secret.');
+    // Keep it constant during runtime
+    process.env.JWT_SECRET = crypto.randomBytes(32).toString('hex');
+}
+
 /**
  * Generate a short-lived access token.
  */
 function generateToken(userId, email) {
+    const jti = crypto.randomUUID();
     return jwt.sign(
-        { userId, email },
+        { userId, email, jti },
         getSigningKey(),
         {
             algorithm: getAlgorithm(),
@@ -70,8 +80,9 @@ function generateToken(userId, email) {
  * Generate a long-lived refresh token.
  */
 function generateRefreshToken(userId) {
+    const jti = crypto.randomUUID();
     return jwt.sign(
-        { userId, type: 'refresh' },
+        { userId, type: 'refresh', jti },
         getSigningKey(),
         {
             algorithm: getAlgorithm(),
@@ -85,12 +96,29 @@ function generateRefreshToken(userId) {
 /**
  * Verify a token (access or refresh).
  */
-function verifyToken(token) {
-    return jwt.verify(token, getVerifyKey(), {
+async function verifyToken(token) {
+    const decoded = jwt.verify(token, getVerifyKey(), {
         algorithms: [getAlgorithm()],
         issuer: 'sipheron-vdr',
         audience: 'sipheron-api'
     });
+
+    if (decoded.jti) {
+        const isRevoked = await redisClient.get(`revoked_jti:${decoded.jti}`);
+        if (isRevoked) {
+            throw new Error('Token has been revoked');
+        }
+    }
+    return decoded;
 }
 
-module.exports = { generateToken, generateRefreshToken, verifyToken, getAlgorithm };
+async function revokeToken(decodedToken) {
+    if (!decodedToken.jti) return;
+    const now = Math.floor(Date.now() / 1000);
+    const ttl = decodedToken.exp - now;
+    if (ttl > 0) {
+        await redisClient.set(`revoked_jti:${decodedToken.jti}`, 'true', 'EX', ttl);
+    }
+}
+
+module.exports = { generateToken, generateRefreshToken, verifyToken, revokeToken, getAlgorithm };

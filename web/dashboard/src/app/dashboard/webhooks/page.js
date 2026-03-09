@@ -6,8 +6,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     Zap, Plus, MoreVertical, Trash2, Play, ChevronDown,
     ChevronUp, Globe, Clock, AlertCircle, CheckCircle2,
-    X, Copy, RefreshCw, Shield, ExternalLink, Activity
+    X, Copy, RefreshCw, Shield, ExternalLink, Activity,
+    Webhook, Terminal, Code, Info, Send
 } from 'lucide-react';
+import {
+    PurpleCard, GlowButton, PurpleBadge, PurpleTable,
+    PurpleTableRow, PurpleSkeleton, PurpleModal, PurpleInput
+} from '@/components/ui/PurpleUI';
 
 export default function WebhooksPage() {
     const [webhooks, setWebhooks] = useState([]);
@@ -26,7 +31,6 @@ export default function WebhooksPage() {
             const { data } = await api.get('/api/webhooks');
             setWebhooks(data);
         } catch (error) {
-            console.error('Failed to fetch webhooks:', error);
             showToast('Failed to load webhooks', 'error');
         } finally {
             setLoading(false);
@@ -67,7 +71,6 @@ export default function WebhooksPage() {
                     statusCode: data.statusCode
                 }
             }));
-            // Refresh logs if open
             if (selectedWebhook === id) fetchLogs(id);
         } catch (error) {
             setTestResults(prev => ({
@@ -88,7 +91,7 @@ export default function WebhooksPage() {
             const { data } = await api.get(`/api/webhooks/${id}/logs`);
             setLogs(prev => ({ ...prev, [id]: data }));
         } catch (error) {
-            console.error('Failed to fetch logs:', error);
+            console.error(error);
         } finally {
             setLogsLoading(prev => ({ ...prev, [id]: false }));
         }
@@ -104,72 +107,62 @@ export default function WebhooksPage() {
     };
 
     return (
-        <div className="max-w-6xl mx-auto space-y-8">
+        <div className="space-y-8 pb-32">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold text-white flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-[#4285F4]/10 border border-[#4285F4]/20">
-                            <Zap className="w-6 h-6 text-[#4285F4]" />
-                        </div>
-                        Webhooks
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
+                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
+                    <h1 className="text-3xl font-bold bg-gradient-to-r from-text-primary to-text-secondary bg-clip-text text-transparent mb-2 flex items-center gap-4">
+                        <Webhook className="w-8 h-8 text-purple-vivid" />
+                        Platform Events
                     </h1>
-                    <p className="text-[#9AA0A6] text-sm mt-1">
-                        Receive real-time notifications when events occur in your organization
+                    <p className="text-sm text-text-muted max-w-lg">
+                        Connect external services to real-time on-chain actions via secure cryptographic webhooks.
                     </p>
-                </div>
-                <button
-                    onClick={() => setIsCreateModalOpen(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-[#4285F4] hover:bg-[#3367D6] text-white rounded-lg font-bold text-sm transition-all shadow-lg shadow-[#4285F4]/20"
-                >
-                    <Plus className="w-4 h-4" /> Add Webhook
-                </button>
+                </motion.div>
+
+                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}>
+                    <GlowButton onClick={() => setIsCreateModalOpen(true)} icon={Plus} className="px-8 py-4">PROVISION ENDPOINT</GlowButton>
+                </motion.div>
             </div>
 
             {/* Main Table */}
-            <div className="bg-[#111118] border border-[#1E1E2E] rounded-2xl overflow-hidden shadow-2xl">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
-                        <thead className="bg-[#161621] border-b border-[#1E1E2E]">
-                            <tr className="text-[#9AA0A6] text-[11px] uppercase tracking-widest font-bold">
-                                <th className="px-6 py-4">Endpoint URL</th>
-                                <th className="px-6 py-4">Events</th>
-                                <th className="px-6 py-4">Status</th>
-                                <th className="px-6 py-4">Performance</th>
-                                <th className="px-6 py-4 text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-[#1E1E2E]">
-                            {loading ? (
-                                <TableSkeleton />
-                            ) : webhooks.length > 0 ? (
-                                webhooks.map((webhook) => (
-                                    <WebhookRow
-                                        key={webhook.id}
-                                        webhook={webhook}
-                                        onDelete={handleDelete}
-                                        onTest={handleTest}
-                                        isTesting={testingId === webhook.id}
-                                        testResult={testResults[webhook.id]}
-                                        isSelected={selectedWebhook === webhook.id}
-                                        onToggleLogs={toggleLogs}
-                                        logs={logs[webhook.id] || []}
-                                        logsLoading={logsLoading[webhook.id]}
-                                    />
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan="5">
-                                        <EmptyState onAdd={() => setIsCreateModalOpen(true)} />
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+            <PurpleCard className="p-0 overflow-hidden border-bg-border/50">
+                <PurpleTable headers={["Endpoint Configuration", "Subscribed Events", "Network Status", "Signal Performance", "Actions"]}>
+                    {loading ? (
+                        <TableSkeleton rows={3} />
+                    ) : webhooks.length > 0 ? (
+                        webhooks.map((webhook) => (
+                            <WebhookRow
+                                key={webhook.id}
+                                webhook={webhook}
+                                onDelete={handleDelete}
+                                onTest={handleTest}
+                                isTesting={testingId === webhook.id}
+                                testResult={testResults[webhook.id]}
+                                isSelected={selectedWebhook === webhook.id}
+                                onToggleLogs={toggleLogs}
+                                logs={logs[webhook.id] || []}
+                                logsLoading={logsLoading[webhook.id]}
+                            />
+                        ))
+                    ) : (
+                        <tr>
+                            <td colSpan="5">
+                                <div className="py-24 text-center">
+                                    <div className="w-20 h-20 bg-purple-dim/10 border border-purple-vivid/20 rounded-full flex items-center justify-center mx-auto mb-6 relative">
+                                        <Zap className="w-10 h-10 text-purple-glow/20" />
+                                        <div className="absolute inset-0 rounded-full border border-purple-vivid/20 animate-ping opacity-20" />
+                                    </div>
+                                    <h3 className="text-xl font-bold text-white mb-2">No active endpoints</h3>
+                                    <p className="text-text-muted text-sm max-w-sm mx-auto mb-8">Provision a webhook endpoint to receive real-time cryptographic registry updates.</p>
+                                    <GlowButton onClick={() => setIsCreateModalOpen(true)} icon={Plus} variant="ghost">ADD YOUR FIRST ENDPOINT</GlowButton>
+                                </div>
+                            </td>
+                        </tr>
+                    )}
+                </PurpleTable>
+            </PurpleCard>
 
-            {/* Create Modal */}
             <CreateWebhookModal
                 isOpen={isCreateModalOpen}
                 onClose={() => setIsCreateModalOpen(false)}
@@ -180,24 +173,19 @@ export default function WebhooksPage() {
                 }}
             />
 
-            {/* Toast */}
             <AnimatePresence>
                 {toast && (
                     <motion.div
                         initial={{ opacity: 0, y: 50, x: '-50%' }}
                         animate={{ opacity: 1, y: 0, x: '-50%' }}
                         exit={{ opacity: 0, scale: 0.95, x: '-50%' }}
-                        className="fixed bottom-8 left-1/2 z-[100] px-6 py-3 rounded-xl bg-[#111118] border border-[#1E1E2E] shadow-2xl flex items-center gap-3 min-w-[320px]"
+                        className="fixed bottom-12 left-1/2 z-[150] px-6 py-4 rounded-2xl bg-bg-surface border border-purple-vivid/20 shadow-2xl flex items-center gap-4 min-w-[320px]"
                     >
-                        <div className={`p-1.5 rounded-full ${toast.type === 'success' ? 'bg-[#10B981]/10' : 'bg-[#F28B82]/10'}`}>
-                            {toast.type === 'success' ? (
-                                <CheckCircle2 className="w-4 h-4 text-[#10B981]" />
-                            ) : (
-                                <AlertCircle className="w-4 h-4 text-[#F28B82]" />
-                            )}
+                        <div className={`p-2 rounded-full ${toast.type === 'success' ? 'bg-success/10 text-success' : 'bg-danger/10 text-danger'}`}>
+                            {toast.type === 'success' ? <CheckCircle2 className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
                         </div>
-                        <span className="text-sm text-white font-medium">{toast.message}</span>
-                        <button onClick={() => setToast(null)} className="ml-auto text-[#9AA0A6] hover:text-white">
+                        <span className="text-sm font-bold text-text-primary">{toast.message}</span>
+                        <button onClick={() => setToast(null)} className="ml-auto text-text-muted hover:text-white">
                             <X className="w-4 h-4" />
                         </button>
                     </motion.div>
@@ -210,153 +198,145 @@ export default function WebhooksPage() {
 function WebhookRow({ webhook, onDelete, onTest, isTesting, testResult, isSelected, onToggleLogs, logs, logsLoading }) {
     return (
         <>
-            <tr className={`hover:bg-[#161621] transition-all group ${isSelected ? 'bg-[#161621]' : ''}`}>
-                <td className="px-6 py-4">
-                    <div className="flex flex-col">
-                        <div className="flex items-center gap-2">
-                            <Globe className="w-3.5 h-3.5 text-[#5F6368]" />
-                            <span className="text-white font-mono text-xs truncate max-w-[240px]">
+            <PurpleTableRow className={isSelected ? 'bg-purple-vivid/[0.03]' : ''}>
+                <td className="px-8 py-5">
+                    <div className="flex flex-col gap-1.5 min-w-0">
+                        <div className="flex items-center gap-2 group">
+                            <Globe className="w-3.5 h-3.5 text-purple-glow shrink-0" />
+                            <span className="text-text-primary font-mono text-xs truncate max-w-[280px]">
                                 {webhook.url}
                             </span>
                         </div>
                         {testResult && (
                             <motion.div
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: 'auto' }}
-                                className={`text-[10px] mt-1 font-bold ${testResult.success ? 'text-[#10B981]' : 'text-[#F28B82]'}`}
+                                initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }}
+                                className={`text-[10px] font-bold flex items-center gap-1.5 uppercase tracking-wide ${testResult.success ? 'text-success' : 'text-danger'}`}
                             >
+                                {testResult.success ? <CheckCircle2 className="w-3 h-3" /> : <AlertCircle className="w-3 h-3" />}
                                 {testResult.message}
                             </motion.div>
                         )}
                     </div>
                 </td>
-                <td className="px-6 py-4">
-                    <div className="flex flex-wrap gap-1.5">
-                        {webhook.events.map(event => (
-                            <span key={event} className="px-2 py-0.5 rounded-md bg-[#2C3038] text-[#9AA0A6] text-[10px] font-bold uppercase tracking-tight">
-                                {event.replace('_', ' ')}
-                            </span>
+                <td className="px-8 py-5">
+                    <div className="flex flex-wrap gap-1.5 max-w-[200px]">
+                        {webhook.events.slice(0, 2).map(event => (
+                            <PurpleBadge key={event} variant="purple" className="text-[9px] px-2 py-0.5 whitespace-nowrap">
+                                {event.toUpperCase().replace('_', ' ')}
+                            </PurpleBadge>
                         ))}
+                        {webhook.events.length > 2 && (
+                            <span className="text-[10px] text-text-muted font-bold ml-1">+{webhook.events.length - 2} MORE</span>
+                        )}
                     </div>
                 </td>
-                <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                        <div className={`w-1.5 h-1.5 rounded-full ${webhook.isActive ? 'bg-[#10B981]' : 'bg-[#5F6368]'}`}></div>
-                        <span className={`text-[11px] font-bold uppercase ${webhook.isActive ? 'text-[#10B981]' : 'text-[#5F6368]'}`}>
-                            {webhook.isActive ? 'Active' : 'Inactive'}
-                        </span>
-                    </div>
+                <td className="px-8 py-5 text-center">
+                    <PurpleBadge variant={webhook.isActive ? 'success' : 'ghost'} pulse={webhook.isActive}>
+                        {webhook.isActive ? 'ACTIVE' : 'INACTIVE'}
+                    </PurpleBadge>
                 </td>
-                <td className="px-6 py-4">
-                    <div className="flex flex-col gap-1">
-                        <div className="flex items-center gap-2 text-[11px]">
-                            <Clock className="w-3 h-3 text-[#5F6368]" />
-                            <span className="text-[#9AA0A6]">
-                                {webhook.lastTriggeredAt ? new Date(webhook.lastTriggeredAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Never triggered'}
-                            </span>
+                <td className="px-8 py-5">
+                    <div className="flex flex-col gap-1.5">
+                        <div className="flex items-center gap-2 text-[10px] font-bold text-text-muted">
+                            <Clock className="w-3.5 h-3.5 text-purple-glow" />
+                            {webhook.lastTriggeredAt ? new Date(webhook.lastTriggeredAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }).toUpperCase() : 'NEVER TRIGGERED'}
                         </div>
                         {webhook.failureCount > 0 && (
-                            <div className="flex items-center gap-2 text-[11px] text-[#F28B82] font-bold">
-                                <AlertCircle className="w-3 h-3" />
-                                {webhook.failureCount} Failures
+                            <div className="flex items-center gap-2 text-[10px] text-danger font-bold uppercase tracking-tight">
+                                <AlertCircle className="w-3 h-3" /> {webhook.failureCount} NETWORK ERRORS
                             </div>
                         )}
                     </div>
                 </td>
-                <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
+                <td className="px-8 py-5 text-right">
+                    <div className="flex items-center justify-end gap-3">
                         <button
                             onClick={() => onTest(webhook.id)}
                             disabled={isTesting}
-                            className="p-2 rounded-lg hover:bg-[#2C3038] text-[#9AA0A6] hover:text-[#4285F4] transition-all disabled:opacity-50"
-                            title="Test Webhook"
+                            className="p-3 rounded-2xl bg-purple-dim/10 border border-bg-border text-purple-glow hover:text-white hover:border-purple-vivid/40 transition-all disabled:opacity-50"
+                            title="Trigger Test Delivery"
                         >
-                            {isTesting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
+                            {isTesting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                         </button>
                         <button
                             onClick={() => onToggleLogs(webhook.id)}
-                            className={`p-2 rounded-lg hover:bg-[#2C3038] transition-all ${isSelected ? 'text-[#4285F4] bg-[#4285F4]/10' : 'text-[#9AA0A6]'}`}
-                            title="View Logs"
+                            className={`p-3 rounded-2xl border transition-all ${isSelected ? 'bg-purple-vivid/20 border-purple-vivid/40 text-purple-glow' : 'bg-purple-dim/10 border-bg-border text-text-muted hover:text-white hover:border-purple-vivid/40'}`}
+                            title="Inspect Telemetry Logs"
                         >
                             <Activity className="w-4 h-4" />
                         </button>
                         <button
                             onClick={() => onDelete(webhook.id)}
-                            className="p-2 rounded-lg hover:bg-[#F28B82]/10 text-[#5F6368] hover:text-[#F28B82] transition-all"
-                            title="Delete Webhook"
+                            className="p-3 rounded-2xl bg-danger/5 border border-bg-border text-text-muted hover:text-danger hover:border-danger/30 transition-all"
+                            title="Remove Configuration"
                         >
                             <Trash2 className="w-4 h-4" />
                         </button>
                     </div>
                 </td>
-            </tr>
+            </PurpleTableRow>
+
             <AnimatePresence>
                 {isSelected && (
                     <tr>
-                        <td colSpan="5" className="px-0 py-0 bg-[#0A0A0F]">
+                        <td colSpan="5" className="px-0 py-0 border-b border-bg-border/50 bg-black/40">
                             <motion.div
-                                initial={{ height: 0, opacity: 0 }}
-                                animate={{ height: 'auto', opacity: 1 }}
-                                exit={{ height: 0, opacity: 0 }}
+                                initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
                                 className="overflow-hidden"
                             >
-                                <div className="p-6 border-b border-[#1E1E2E]">
-                                    <div className="flex items-center justify-between mb-4">
-                                        <h4 className="text-xs font-bold text-[#E8EAED] uppercase tracking-widest flex items-center gap-2">
-                                            <Activity className="w-3 h-3 text-[#4285F4]" /> Delivery Logs (Last 20)
-                                        </h4>
-                                        <button className="text-[10px] text-[#4285F4] font-bold uppercase hover:underline">
-                                            Refresh Logs
+                                <div className="p-8 space-y-6">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 bg-purple-vivid/10 text-purple-vivid rounded-xl">
+                                                <Terminal className="w-4 h-4" />
+                                            </div>
+                                            <h4 className="text-[11px] font-bold text-text-primary uppercase tracking-[0.2em]">Transmission Logs</h4>
+                                        </div>
+                                        <button onClick={() => onToggleLogs(webhook.id)} className="text-[10px] text-text-muted hover:text-white uppercase font-bold tracking-widest flex items-center gap-2">
+                                            CLOSE LOGS <ChevronUp className="w-3.5 h-3.5" />
                                         </button>
                                     </div>
 
                                     {logsLoading ? (
-                                        <div className="py-8 flex justify-center">
-                                            <RefreshCw className="w-6 h-6 text-[#4285F4] animate-spin" />
+                                        <div className="py-12 flex flex-col items-center gap-4">
+                                            <RefreshCw className="w-8 h-8 text-purple-vivid animate-spin" />
+                                            <span className="text-[10px] font-bold text-purple-glow uppercase tracking-widest">Retrieving telemetry...</span>
                                         </div>
                                     ) : logs.length > 0 ? (
-                                        <div className="rounded-xl border border-[#1E1E2E] overflow-hidden">
-                                            <table className="w-full text-left text-[11px]">
-                                                <thead className="bg-[#161621] text-[#9AA0A6] font-bold uppercase">
-                                                    <tr>
-                                                        <th className="px-4 py-2 text-[9px] tracking-tighter">Timestamp</th>
-                                                        <th className="px-4 py-2 text-[9px] tracking-tighter">Event</th>
-                                                        <th className="px-4 py-2 text-[9px] tracking-tighter">Status</th>
-                                                        <th className="px-4 py-2 text-[9px] tracking-tighter">Duration</th>
-                                                        <th className="px-4 py-2 text-[9px] tracking-tighter text-right">Response</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody className="divide-y divide-[#1E1E2E] bg-[#111118]">
-                                                    {logs.map((log, i) => (
-                                                        <tr key={i} className="hover:bg-[#161621]">
-                                                            <td className="px-4 py-2 text-[#9AA0A6]">
-                                                                {new Date(log.createdAt).toLocaleString()}
-                                                            </td>
-                                                            <td className="px-4 py-2">
-                                                                <span className="px-1.5 py-0.5 rounded bg-[#2C3038] text-white">
-                                                                    {log.event}
+                                        <div className="rounded-3xl border border-bg-border overflow-hidden bg-black/20 backdrop-blur-md">
+                                            <PurpleTable headers={["Timestamp (UTC)", "Event Context", "Execution Status", "Latency", "Server Response"]} density="tight">
+                                                {logs.map((log, i) => (
+                                                    <PurpleTableRow key={i}>
+                                                        <td className="px-6 py-4 text-[10px] font-mono text-text-muted">
+                                                            {new Date(log.createdAt).toLocaleString().toUpperCase()}
+                                                        </td>
+                                                        <td className="px-6 py-4">
+                                                            <PurpleBadge variant="purple" className="text-[9px] uppercase">{log.event.replace('_', ' ')}</PurpleBadge>
+                                                        </td>
+                                                        <td className="px-6 py-4">
+                                                            <div className="flex items-center gap-2">
+                                                                <div className={`w-1.5 h-1.5 rounded-full ${log.statusCode >= 200 && log.statusCode < 300 ? 'bg-success shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-danger shadow-[0_0_8px_rgba(239,68,68,0.5)]'}`} />
+                                                                <span className={`text-[11px] font-bold ${log.statusCode >= 200 && log.statusCode < 300 ? 'text-success' : 'text-danger'}`}>
+                                                                    {log.statusCode || 'NETWORK ERROR'}
                                                                 </span>
-                                                            </td>
-                                                            <td className="px-4 py-2">
-                                                                <div className="flex items-center gap-1.5">
-                                                                    <div className={`w-1 h-1 rounded-full ${log.statusCode >= 200 && log.statusCode < 300 ? 'bg-[#10B981]' : 'bg-[#F28B82]'}`}></div>
-                                                                    <span className={log.statusCode >= 200 && log.statusCode < 300 ? 'text-[#10B981]' : 'text-[#F28B82]'}>
-                                                                        {log.statusCode || 'FAILED'}
-                                                                    </span>
-                                                                </div>
-                                                            </td>
-                                                            <td className="px-4 py-2 text-[#9AA0A6]">{log.durationMs}ms</td>
-                                                            <td className="px-4 py-2 text-right text-[#5F6368] font-mono italic">
-                                                                {log.responseSummary || 'N/A'}
-                                                            </td>
-                                                        </tr>
-                                                    ))}
-                                                </tbody>
-                                            </table>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-4 text-[11px] font-mono text-purple-glow">{log.durationMs}ms</td>
+                                                        <td className="px-6 py-4 text-right">
+                                                            <code className="text-[10px] text-text-muted italic bg-white/[0.02] px-2 py-1 rounded truncate max-w-[150px] inline-block">
+                                                                {log.responseSummary || "// N/A"}
+                                                            </code>
+                                                        </td>
+                                                    </PurpleTableRow>
+                                                ))}
+                                            </PurpleTable>
                                         </div>
                                     ) : (
-                                        <div className="py-8 text-center text-[#5F6368] text-[11px] italic">
-                                            No delivery attempts recorded yet
+                                        <div className="py-12 text-center bg-white/[0.01] rounded-3xl border border-bg-border/30 border-dashed">
+                                            <div className="p-3 bg-purple-dim/10 rounded-2xl inline-block mb-3">
+                                                <Activity className="w-6 h-6 text-text-muted opacity-40" />
+                                            </div>
+                                            <p className="text-[11px] text-text-muted font-bold uppercase tracking-widest">No signals recorded yet</p>
                                         </div>
                                     )}
                                 </div>
@@ -394,18 +374,14 @@ function CreateWebhookModal({ isOpen, onClose, onSuccess }) {
     };
 
     const toggleEvent = (event) => {
-        if (events.includes(event)) {
-            setEvents(events.filter(e => e !== event));
-        } else {
-            setEvents([...events, event]);
-        }
+        setEvents(prev => prev.includes(event) ? prev.filter(e => e !== event) : [...prev, event]);
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         const newErrors = {};
-        if (!url.startsWith('https://')) newErrors.url = 'Endpoint must use HTTPS';
-        if (events.length === 0) newErrors.events = 'Select at least one event';
+        if (!url.startsWith('https://')) newErrors.url = 'Endpoint must be encrypted (HTTPS)';
+        if (events.length === 0) newErrors.events = 'Identify at least one event type';
 
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
@@ -417,172 +393,128 @@ function CreateWebhookModal({ isOpen, onClose, onSuccess }) {
             const { data } = await api.post('/api/webhooks', { url, events, secret });
             onSuccess(data);
         } catch (error) {
-            setErrors({ submit: error.response?.data?.error || 'Failed to create webhook' });
+            setErrors({ submit: error.response?.data?.error || 'Failed to initialize endpoint' });
         } finally {
             setLoading(false);
         }
     };
 
-    if (!isOpen) return null;
-
     const availableEvents = [
-        { id: 'anchor_success', label: 'Hash anchored successfully', desc: 'Triggered when a document is successfully recorded on-chain.' },
-        { id: 'anchor_failed', label: 'Hash registration failed', desc: 'Triggered when a document anchor fails (e.g., insufficient funds).' },
-        { id: 'hash_revoked', label: 'Hash revoked', desc: 'Triggered when a proof is explicitly invalidated on-chain.' },
-        { id: 'key_created', label: 'API key created', desc: 'Triggered when a new integration key is provisioned.' },
-        { id: 'low_balance', label: 'Wallet balance low', desc: 'Triggered when the node identity falls below threshold.' },
+        { id: 'anchor_success', label: 'Hash Success', desc: 'On-chain registration finalized' },
+        { id: 'anchor_failed', label: 'Hash Failure', desc: 'Registry anchor failed' },
+        { id: 'hash_revoked', label: 'Proof Revoked', desc: 'Identity invalidated on-chain' },
+        { id: 'key_created', label: 'Credential Issued', desc: 'API key provisioned' },
+        { id: 'low_balance', label: 'Balance Warning', desc: 'Institutional wallet below threshold' },
     ];
 
     return (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-            <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                className="relative w-full max-w-2xl bg-[#111118] border border-[#1E1E2E] rounded-2xl shadow-2xl overflow-hidden"
-            >
-                <div className="px-6 py-4 border-b border-[#1E1E2E] bg-[#161621] flex items-center justify-between">
-                    <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                        <Plus className="w-5 h-5 text-[#4285F4]" /> Add New Webhook
-                    </h3>
-                    <button onClick={onClose} className="text-[#9AA0A6] hover:text-white transition-colors">
-                        <X className="w-5 h-5" />
-                    </button>
+        <PurpleModal isOpen={isOpen} onClose={onClose} title="Configure Webhook Endpoint">
+            <form onSubmit={handleSubmit} className="space-y-8">
+                <div className="space-y-3">
+                    <label className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] ml-1">Payload Distribution URL</label>
+                    <div className="relative group">
+                        <PurpleInput
+                            placeholder="https://api.domain.io/v1/webhooks"
+                            value={url}
+                            onChange={(e) => setUrl(e.target.value)}
+                            className={errors.url ? 'border-danger/40 ring-danger/10' : ''}
+                        />
+                        {errors.url && <p className="text-[10px] text-danger font-bold mt-2 ml-1 uppercase tracking-tight">{errors.url}</p>}
+                    </div>
                 </div>
 
-                <form onSubmit={handleSubmit} className="p-6 space-y-6">
-                    <div className="space-y-2">
-                        <label className="text-[11px] font-bold text-[#9AA0A6] uppercase tracking-widest ml-1">Payload URL</label>
-                        <div className="relative">
-                            <input
-                                type="text"
-                                placeholder="https://api.yourdomain.com/webhooks"
-                                value={url}
-                                onChange={(e) => setUrl(e.target.value)}
-                                className={`w-full bg-[#0A0A0F] border ${errors.url ? 'border-[#F28B82]' : 'border-[#1E1E2E]'} rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#4285F4] transition-all`}
-                            />
-                            {errors.url && <p className="text-[10px] text-[#F28B82] font-bold mt-1 ml-1">{errors.url}</p>}
-                        </div>
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between ml-1">
+                        <label className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em]">Telemetry Triggers</label>
+                        {errors.events && <span className="text-[10px] text-danger font-bold uppercase">{errors.events}</span>}
                     </div>
-
-                    <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                            <label className="text-[11px] font-bold text-[#9AA0A6] uppercase tracking-widest ml-1">Event Subscriptions</label>
-                            {errors.events && <span className="text-[10px] text-[#F28B82] font-bold">{errors.events}</span>}
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            {availableEvents.map((evt) => (
-                                <div
-                                    key={evt.id}
-                                    onClick={() => toggleEvent(evt.id)}
-                                    className={`p-3 rounded-xl border cursor-pointer transition-all ${events.includes(evt.id) ? 'bg-[#4285F4]/5 border-[#4285F4]/30' : 'bg-[#0A0A0F] border-[#1E1E2E] hover:border-[#1E1E2E]'}`}
-                                >
-                                    <div className="flex items-start gap-3">
-                                        <div className={`mt-0.5 w-4 h-4 rounded border transition-all flex items-center justify-center ${events.includes(evt.id) ? 'bg-[#4285F4] border-[#4285F4]' : 'border-[#2C3038]'}`}>
-                                            {events.includes(evt.id) && <CheckCircle2 className="w-3 h-3 text-white" />}
-                                        </div>
-                                        <div>
-                                            <p className={`text-[12px] font-bold ${events.includes(evt.id) ? 'text-[#4285F4]' : 'text-white'}`}>{evt.label}</p>
-                                            <p className="text-[10px] text-[#9AA0A6] mt-0.5 leading-tight">{evt.desc}</p>
-                                        </div>
-                                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {availableEvents.map((evt) => (
+                            <div
+                                key={evt.id}
+                                onClick={() => toggleEvent(evt.id)}
+                                className={`p-4 rounded-3xl border cursor-pointer transition-all flex items-start gap-4 ${events.includes(evt.id) ? 'bg-purple-vivid/10 border-purple-vivid/40 shadow-lg shadow-purple-vivid/5' : 'bg-black/40 border-bg-border hover:border-purple-vivid/30'}`}
+                            >
+                                <div className={`mt-0.5 w-5 h-5 rounded-lg border-2 transition-all flex items-center justify-center shrink-0 ${events.includes(evt.id) ? 'bg-purple-vivid border-purple-vivid' : 'border-bg-border'}`}>
+                                    {events.includes(evt.id) && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
                                 </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="space-y-2">
-                        <label className="text-[11px] font-bold text-[#9AA0A6] uppercase tracking-widest ml-1 flex items-center justify-between">
-                            Signing Secret
-                            <span className="text-[9px] text-[#5F6368] normal-case">HMAC-SHA256 verification</span>
-                        </label>
-                        <div className="flex gap-2">
-                            <div className="flex-1 relative group">
-                                <input
-                                    type="text"
-                                    readOnly
-                                    value={secret}
-                                    className="w-full bg-[#0A0A0F] border border-[#1E1E2E] rounded-xl px-4 py-3 text-xs font-mono text-[#8AB4F8]"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => navigator.clipboard.writeText(secret)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg hover:bg-[#1E1E2E] text-[#5F6368] hover:text-white transition-all"
-                                >
-                                    <Copy className="w-3.5 h-3.5" />
-                                </button>
+                                <div>
+                                    <p className={`text-sm font-bold ${events.includes(evt.id) ? 'text-white' : 'text-text-secondary'}`}>{evt.label}</p>
+                                    <p className="text-[10px] text-text-muted mt-1 leading-tight font-medium uppercase tracking-tighter">{evt.desc}</p>
+                                </div>
                             </div>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="space-y-3 pt-4 border-t border-bg-border/50">
+                    <label className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] ml-1 flex items-center justify-between">
+                        Security Signature Secret
+                        <PurpleBadge variant="purple" className="text-[9px]">HMAC-SHA256</PurpleBadge>
+                    </label>
+                    <div className="flex gap-3">
+                        <div className="flex-1 relative">
+                            <PurpleInput
+                                readOnly
+                                value={secret}
+                                className="font-mono text-purple-glow text-xs bg-black/60"
+                            />
                             <button
                                 type="button"
-                                onClick={regenerateSecret}
-                                className="p-3 bg-[#0A0A0F] border border-[#1E1E2E] rounded-xl text-[#9AA0A6] hover:text-[#E8EAED] hover:border-[#2C3038] transition-all"
-                                title="Regenerate Secret"
+                                onClick={() => navigator.clipboard.writeText(secret)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-xl bg-purple-dim/30 text-text-muted hover:text-white transition-all shadow-inner"
                             >
-                                <RefreshCw className="w-4 h-4" />
+                                <Copy className="w-4 h-4" />
                             </button>
                         </div>
-                        <p className="text-[10px] text-[#5F6368] leading-normal ml-1">
-                            Used to sign the payload. Verify the <code className="text-[#8AB4F8]">x-hub-signature-256</code> header to ensure requests are authentic.
+                        <GlowButton
+                            type="button"
+                            variant="ghost"
+                            onClick={regenerateSecret}
+                            className="p-4 rounded-3xl"
+                            icon={RefreshCw}
+                        />
+                    </div>
+                    <div className="p-4 bg-purple-glow/[0.03] border border-bg-border/50 rounded-2xl flex items-start gap-3">
+                        <Info className="w-4 h-4 text-purple-glow shrink-0 mt-0.5" />
+                        <p className="text-[10px] text-text-secondary leading-relaxed">
+                            Every request include a <code className="text-purple-glow">x-hub-signature-256</code> header.
+                            Use this secret to verify payload authenticity.
                         </p>
                     </div>
+                </div>
 
-                    {errors.submit && (
-                        <div className="p-3 rounded-lg bg-[#F28B82]/10 border border-[#F28B82]/20 flex items-center gap-2 text-[#F28B82] text-xs">
-                            <AlertCircle className="w-4 h-4" /> {errors.submit}
-                        </div>
-                    )}
-
-                    <div className="flex items-center justify-end gap-3 pt-2">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="px-6 py-2.5 rounded-xl text-sm font-bold text-[#9AA0A6] hover:text-white transition-colors"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={loading || !url}
-                            className="px-8 py-2.5 rounded-xl bg-[#4285F4] hover:bg-[#3367D6] disabled:bg-[#1E1E2E] disabled:text-[#5F6368] text-white text-sm font-bold transition-all flex items-center gap-2 shadow-lg shadow-[#4285F4]/20"
-                        >
-                            {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : "Create Webhook"}
-                        </button>
+                {errors.submit && (
+                    <div className="p-4 rounded-2xl bg-danger/10 border border-danger/20 flex items-center gap-3 text-danger text-[11px] font-bold uppercase tracking-tight">
+                        <AlertCircle className="w-4 h-4" /> {errors.submit}
                     </div>
-                </form>
-            </motion.div>
-        </div>
+                )}
+
+                <div className="flex items-center justify-end gap-4 pt-4 border-t border-bg-border/50">
+                    <button type="button" onClick={onClose} className="text-xs font-bold text-text-muted hover:text-white uppercase tracking-[0.2em] px-4">DISMISS</button>
+                    <GlowButton
+                        type="submit"
+                        disabled={loading || !url}
+                        loading={loading}
+                        className="px-8 py-4 text-xs font-bold uppercase tracking-widest"
+                        icon={Webhook}
+                    >
+                        ACTIVATE ENDPOINT
+                    </GlowButton>
+                </div>
+            </form>
+        </PurpleModal>
     );
 }
 
-function TableSkeleton() {
-    return Array.from({ length: 3 }).map((_, i) => (
-        <tr key={i} className="animate-pulse">
-            <td className="px-6 py-5"><div className="h-4 w-48 bg-[#1E1E2E] rounded" /></td>
-            <td className="px-6 py-5"><div className="h-4 w-32 bg-[#1E1E2E] rounded" /></td>
-            <td className="px-6 py-5"><div className="h-4 w-16 bg-[#1E1E2E] rounded" /></td>
-            <td className="px-6 py-5"><div className="h-4 w-24 bg-[#1E1E2E] rounded" /></td>
-            <td className="px-6 py-5 text-right"><div className="h-8 w-24 ml-auto bg-[#1E1E2E] rounded" /></td>
+function TableSkeleton({ rows = 3 }) {
+    return Array.from({ length: rows }).map((_, i) => (
+        <tr key={i}>
+            <td className="px-8 py-5"><PurpleSkeleton className="h-4 w-48" /></td>
+            <td className="px-8 py-5"><PurpleSkeleton className="h-4 w-32" /></td>
+            <td className="px-8 py-5"><PurpleSkeleton className="h-4 w-16 mx-auto" /></td>
+            <td className="px-8 py-5"><PurpleSkeleton className="h-4 w-24" /></td>
+            <td className="px-8 py-5"><PurpleSkeleton className="h-10 w-32 ml-auto" /></td>
         </tr>
     ));
-}
-
-function EmptyState({ onAdd }) {
-    return (
-        <div className="py-24 flex flex-col items-center justify-center text-center px-6">
-            <div className="w-20 h-20 rounded-full bg-[#1E1E2E] flex items-center justify-center mb-6 relative">
-                <Zap className="w-10 h-10 text-[#5F6368]" />
-                <div className="absolute inset-0 rounded-full border border-[#2C3038] animate-ping scale-150 opacity-20"></div>
-            </div>
-            <h3 className="text-white text-lg font-bold mb-2">No webhooks configured</h3>
-            <p className="text-[#9AA0A6] text-sm max-w-sm mx-auto mb-8">
-                Connect your external applications to receive real-time cryptographic registry events via standard webhooks.
-            </p>
-            <button
-                onClick={onAdd}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-[#4285F4] hover:bg-[#3367D6] text-white rounded-xl font-bold transition-all shadow-lg shadow-[#4285F4]/20"
-            >
-                Add your first webhook
-            </button>
-        </div>
-    );
 }
