@@ -1,36 +1,60 @@
-import CodeBlock from '@/app/docs/components/CodeBlock';
-import Callout from '@/app/docs/components/Callout';
-import Endpoint from '@/app/docs/components/Endpoint';
-import ParamTable, { ParamRow } from '@/app/docs/components/ParamTable';
-import ResponseTabs from '@/app/docs/components/ResponseTabs';
-import DocsPrevNext from '@/app/docs/components/DocsPrevNext';
-
-export const metadata = { title: 'CI/CD Integration' };
+import Breadcrumb from '../../components/Breadcrumb';
+import Callout from '../../components/Callout';
+import CodeBlock from '../../components/CodeBlock';
+import ParamTable, { ParamRow } from '../../components/ParamTable';
+import DocsPrevNext from '../../components/DocsPrevNext';
 
 export default function Page() {
-    return (
-        <div>
+  return (
+    <div>
+      <Breadcrumb items={[{"label":"Guides","href":"/docs/guides"},{"label":"CICD"}]} />
+      <div className="flex items-center justify-between mb-8">
+        <span className="text-[12px] text-[#555]">Last updated March 10, 2026</span>
+      </div>
 
-<h1>CI/CD Integration</h1>
-<p>This section provides a deep dive into CI/CD Integration and its role within the SipHeron VDR ecosystem. Understanding this component is crucial for maintaining document integrity and ensuring that your cryptographic anchors are correctly dispatched to the Solana blockchain.</p>
-<p>By following the patterns outlined here, developers can ensure their integrations are robust, secure, and fully compatible with the latest decentralized identity standards. We recommend reviewing the security implications of this feature before deploying to a production environment.</p>
+      <h1 id="title">CI/CD Integration</h1>
+      <p className="text-[18px] text-[#EDEDED] leading-relaxed mb-10">
+        Extensive documentation for CI/CD Integration. Learn how to leverage SipHeron VDR for your enterprise needs.
+      </p>
 
-<Callout type="info">
-    Always ensure you are using the latest version of the SipHeron CLI or SDK to access the most optimized implementation of CI/CD Integration.
-</Callout>
+      <h2 id="overview">Overview</h2>
+      <p>This section provides a comprehensive overview of CI/CD Integration. Our platform ensures that every interaction is secure, immutable, and verifiable.</p>
+      <div className="min-h-[50vh]" />
 
-<h2>Implementation Details</h2>
-<p>Integrating CI/CD Integration into your workflow is straightforward. Below is a standard implementation pattern that handles configuration, execution, and error boundary management natively.</p>
+      <h2 id="how-it-works">How It Works</h2>
+      <p>Detailed technical explanation of CI/CD Integration.</p>
+      <CodeBlock language="text">
+{`Technical flow for CI/CD Integration...`}
+      </CodeBlock>
+      <div className="min-h-[50vh]" />
 
-<CodeBlock language="javascript" filename="example.js">{`// Example implementation for CI/CD Integration
-const sipheron = require('sipheron-vdr');
+      <h2 id="examples">Detailed Examples</h2>
+      <CodeBlock language="bash">
+# Example command for CI/CD Integration
+vdr example --flag
+      </CodeBlock>
+      <div className="min-h-[100vh]" />
 
-async function main() {
-  const result = await sipheron.cicdintegration.init();
-  console.log('Result:', result);
-}`}</CodeBlock>
+      <h2 id="parameters">Parameters & Configuration</h2>
+      <ParamTable>
+        <ParamRow name="param_1" type="string" required={true} description="Description for parameter 1" />
+        <ParamRow name="param_2" type="number" required={false} description="Description for parameter 2" />
+      </ParamTable>
+      <div className="min-h-[50vh]" />
 
-            <DocsPrevNext prev={{ title: 'Enterprise Setup', href: '/docs/guides/enterprise' }} next={{ title: 'Webhook Integration', href: '/docs/guides/webhook' }} />
+      <h2 id="best-practices">Best Practices</h2>
+      <Callout type="tip">Always test your CI/CD Integration configuration in devnet before moving to mainnet.</Callout>
+      <div className="min-h-[100vh]" />
+
+      <div className="mt-16 pt-6 border-t border-[#1F1F1F] flex items-center justify-between mb-8">
+        <span className="text-[12px] text-[#555]">Was this helpful?</span>
+        <div className="flex items-center gap-2">
+          <button className="text-[12px] px-3 py-1 border border-[#2A2A2A] rounded hover:border-[#444] text-[#888]">Yes</button>
+          <button className="text-[12px] px-3 py-1 border border-[#2A2A2A] rounded hover:border-[#444] text-[#888]">No</button>
         </div>
-    );
+      </div>
+
+      <DocsPrevNext />
+    </div>
+  );
 }

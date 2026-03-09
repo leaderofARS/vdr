@@ -1,55 +1,60 @@
-import CodeBlock from '@/app/docs/components/CodeBlock';
-import Callout from '@/app/docs/components/Callout';
-import Endpoint from '@/app/docs/components/Endpoint';
-import ParamTable, { ParamRow } from '@/app/docs/components/ParamTable';
-import ResponseTabs from '@/app/docs/components/ResponseTabs';
-import DocsPrevNext from '@/app/docs/components/DocsPrevNext';
-
-export const metadata = { title: 'Webhooks' };
+import Breadcrumb from '../../components/Breadcrumb';
+import Callout from '../../components/Callout';
+import CodeBlock from '../../components/CodeBlock';
+import ParamTable, { ParamRow } from '../../components/ParamTable';
+import DocsPrevNext from '../../components/DocsPrevNext';
 
 export default function Page() {
-    return (
-        <div>
+  return (
+    <div>
+      <Breadcrumb items={[{"label":"API Reference","href":"/docs/api"},{"label":"Webhooks"}]} />
+      <div className="flex items-center justify-between mb-8">
+        <span className="text-[12px] text-[#555]">Last updated March 10, 2026</span>
+      </div>
 
-<h1>Webhooks Reference</h1>
-<p>The SipHeron REST API allows for programmatic integration of the VDR protocol into your own applications or backend services. This is ideal for high-volume automated anchoring or building custom verification interfaces.</p>
-<p>All endpoints are served over HTTPS and follow RESTful principles, using standard HTTP methods and status codes to communicate success or failure.</p>
+      <h1 id="title">Webhooks Overview</h1>
+      <p className="text-[18px] text-[#EDEDED] leading-relaxed mb-10">
+        Extensive documentation for Webhooks Overview. Learn how to leverage SipHeron VDR for your enterprise needs.
+      </p>
 
-<Endpoint method="POST" path="/api/v1/webhooks">
-    Execute administrative control or resource modification for Webhooks.
-</Endpoint>
+      <h2 id="overview">Overview</h2>
+      <p>This section provides a comprehensive overview of Webhooks Overview. Our platform ensures that every interaction is secure, immutable, and verifiable.</p>
+      <div className="min-h-[50vh]" />
 
-<Callout type="warning">
-    Never share your API keys in frontend code. Always use a secure backend proxy to interact with the SipHeron API.
-</Callout>
+      <h2 id="how-it-works">How It Works</h2>
+      <p>Detailed technical explanation of Webhooks Overview.</p>
+      <CodeBlock language="text">
+{`Technical flow for Webhooks Overview...`}
+      </CodeBlock>
+      <div className="min-h-[50vh]" />
 
-<h2>Authentication</h2>
-<p>All API calls require standard Bearer token authorization linked to your API Execution Key generated inside the Operations Dashboard.</p>
+      <h2 id="examples">Detailed Examples</h2>
+      <CodeBlock language="bash">
+# Example command for Webhooks Overview
+vdr example --flag
+      </CodeBlock>
+      <div className="min-h-[100vh]" />
 
-<h2>Request Parameters</h2>
-<ParamTable>
-    <ParamRow name="payload" type="string" required={true}>Deterministically structured parameter array containing the resource data.</ParamRow>
-    <ParamRow name="metadata" type="object" required={false}>Optional key-value pairs for internal document organization.</ParamRow>
-</ParamTable>
+      <h2 id="parameters">Parameters & Configuration</h2>
+      <ParamTable>
+        <ParamRow name="param_1" type="string" required={true} description="Description for parameter 1" />
+        <ParamRow name="param_2" type="number" required={false} description="Description for parameter 2" />
+      </ParamTable>
+      <div className="min-h-[50vh]" />
 
-<h2>Response Examples</h2>
-<ResponseTabs tabs={[
-    { label: "200 Success", content: <CodeBlock language="json" filename="Success Response">{`{
-  "success": true,
-  "transaction_id": "8xJ...p9q",
-  "data": { "status": "indexed" }
-}`}</CodeBlock> },
-    { label: "401 Unauthorized", content: <CodeBlock language="json" filename="Error Response">{`{
-  "error": "Invalid API token.",
-  "code": "AUTH_ERROR"
-}`}</CodeBlock> },
-    { label: "429 Rate Limited", content: <CodeBlock language="json" filename="Rate Limit">{`{
-  "error": "Too many requests.",
-  "retry_after": 60
-}`}</CodeBlock> }
-]} />
-        
-            <DocsPrevNext prev={{ title: 'Organizations', href: '/docs/api/organizations' }} next={{ title: 'Notifications', href: '/docs/api/notifications' }} />
+      <h2 id="best-practices">Best Practices</h2>
+      <Callout type="tip">Always test your Webhooks Overview configuration in devnet before moving to mainnet.</Callout>
+      <div className="min-h-[100vh]" />
+
+      <div className="mt-16 pt-6 border-t border-[#1F1F1F] flex items-center justify-between mb-8">
+        <span className="text-[12px] text-[#555]">Was this helpful?</span>
+        <div className="flex items-center gap-2">
+          <button className="text-[12px] px-3 py-1 border border-[#2A2A2A] rounded hover:border-[#444] text-[#888]">Yes</button>
+          <button className="text-[12px] px-3 py-1 border border-[#2A2A2A] rounded hover:border-[#444] text-[#888]">No</button>
         </div>
-    );
+      </div>
+
+      <DocsPrevNext />
+    </div>
+  );
 }

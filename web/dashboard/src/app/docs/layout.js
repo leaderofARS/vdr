@@ -5,38 +5,77 @@ import DocsTOC from './components/DocsTOC';
 export const metadata = {
     title: {
         template: '%s | SipHeron VDR Docs',
-        default: 'SipHeron VDR Documentation'
+        default: 'SipHeron VDR Documentation',
     },
-    description: 'Enterprise-grade blockchain document verification platform built on Solana. Learn how to anchor, verify, and integrate.',
+    description: 'Enterprise-grade blockchain document verification platform built on Solana.',
 };
 
 export default function DocsLayout({ children }) {
     return (
-        <div className="min-h-screen bg-[#08080F] text-[#9B8EC4] font-sans selection:bg-[#4F6EF7]/30 selection:text-[#F0EEFF] flex flex-col">
+        <div className="min-h-screen bg-[#0A0A0A] text-[#EDEDED] font-sans selection:bg-[#9B6EFF]/30 selection:text-white">
+            <style dangerouslySetInnerHTML={{
+                __html: `
+        :root {
+          --bg-page: #0A0A0A;
+          --bg-sidebar: #0A0A0A;
+          --bg-surface: #111111;
+          --bg-hover: #1A1A1A;
+          --bg-active: #1F1F1F;
+          --border: #2A2A2A;
+          --border-subtle: #1F1F1F;
+          --text-primary: #EDEDED;
+          --text-secondary: #888888;
+          --text-muted: #555555;
+          --text-accent: #9B6EFF;
+        }
+
+        body {
+          background-color: var(--bg-page);
+          color: var(--text-primary);
+          -webkit-font-smoothing: antialiased;
+        }
+
+        /* Vercel Typography Replay */
+        h1 { font-size: 28px; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 24px; color: var(--text-primary); }
+        h2 { font-size: 20px; font-weight: 600; margin-top: 40px; margin-bottom: 16px; border-bottom: 1px solid #1F1F1F; padding-bottom: 8px; color: var(--text-primary); }
+        h3 { font-size: 16px; font-weight: 600; margin-top: 28px; margin-bottom: 12px; color: var(--text-primary); }
+        p { font-size: 14px; line-height: 1.7; color: var(--text-secondary); margin-bottom: 16px; }
+        
+        .docs-content strong { color: var(--text-primary); font-weight: 600; }
+        .docs-content ul, .docs-content ol { margin-bottom: 16px; padding-left: 20px; color: var(--text-secondary); font-size: 14px; }
+        .docs-content li { margin-bottom: 8px; }
+        
+        .docs-content code:not(pre code) {
+          background: var(--bg-surface);
+          border: 1px solid var(--border);
+          padding: 0.2rem 0.4rem;
+          border-radius: 4px;
+          font-size: 0.85em;
+          font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+          color: var(--text-accent);
+        }
+
+        /* Transitions */
+        a, button { transition: all 150ms ease; }
+      `}} />
+
             <DocsHeader />
-            <div className="flex-1 max-w-[1600px] w-full mx-auto flex flex-col md:flex-row pt-12 lg:pt-16">
-                {/* Left Sidebar (Desktop) */}
+
+            <div className="flex max-w-[1400px] mx-auto min-h-[calc(100vh-48px)]">
+                {/* Fixed/Sticky Sidebar Spacer */}
+                <div className="w-[240px] shrink-0 hidden md:block" />
+
+                {/* Real Sidebar is fixed in its component */}
                 <DocsSidebar />
 
-                {/* Main Content Area */}
-                <main className="flex-1 min-w-0 px-4 sm:px-8 md:px-12 lg:px-16 pt-0 pb-24 scroll-smooth">
-                    <div className="max-w-3xl mx-auto prose prose-invert 
-                        prose-headings:text-[#F0EEFF] prose-headings:font-bold 
-                        prose-h1:text-3xl sm:prose-h1:text-4xl prose-h1:tracking-tight prose-h1:mb-8 prose-h1:text-transparent prose-h1:bg-clip-text prose-h1:bg-gradient-to-r prose-h1:from-[#F0EEFF] prose-h1:to-[#9B8EC4]
-                        prose-h2:text-2xl prose-h2:mt-12 prose-h2:mb-6 prose-h2:border-b prose-h2:border-[#151525] prose-h2:pb-2
-                        prose-h3:text-lg prose-h3:text-[#B794FF] prose-h3:mt-8
-                        prose-p:text-base prose-p:leading-relaxed prose-p:text-[#9B8EC4]
-                        prose-a:text-[#4F6EF7] hover:prose-a:text-[#B794FF] prose-a:transition-colors prose-a:no-underline hover:prose-a:underline
-                        prose-strong:text-[#F0EEFF] prose-strong:font-bold
-                        prose-ul:list-disc prose-ul:pl-6 prose-li:text-[#9B8EC4] prose-li:marker:text-[#5B5380]
-                        prose-code:text-[#B794FF] prose-code:bg-[#151525] prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:font-mono prose-code:text-[0.85em]
-                        prose-code:before:content-none prose-code:after:content-none
-                        max-w-none">
+                {/* Main Content */}
+                <main className="flex-1 w-full min-w-0 pt-10 pb-24 px-6 md:px-10 lg:px-16 flex justify-center">
+                    <div className="w-full max-w-[680px] docs-content">
                         {children}
                     </div>
                 </main>
 
-                {/* Right TOC (Desktop) */}
+                {/* Right TOC */}
                 <DocsTOC />
             </div>
         </div>

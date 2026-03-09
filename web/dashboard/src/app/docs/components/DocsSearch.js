@@ -1,107 +1,88 @@
-'use client';
-import { useState, useEffect } from 'react';
+'use client'
+import { useEffect, useState, useRef } from 'react';
+import { Search, Command } from 'lucide-react';
 import Link from 'next/link';
-import { Search, ChevronRight } from 'lucide-react';
 
-export default function DocsSearch({ isOpen, onClose }) {
+export default function DocsSearch({ onClose }) {
     const [query, setQuery] = useState('');
-    const [index, setIndex] = useState([]);
     const [results, setResults] = useState([]);
-
-    useEffect(() => {
-        if (isOpen && index.length === 0) {
-            fetch('/docs-search-index.json')
-                .then(res => res.json())
-                .then(data => setIndex(data))
-                .catch(err => console.error(err));
-        }
-    }, [isOpen, index.length]);
-
-    useEffect(() => {
-        if (query.length > 1) {
-            const lowerQuery = query.toLowerCase();
-            const filtered = index.filter(item =>
-                item.title.toLowerCase().includes(lowerQuery) ||
-                item.snippet.toLowerCase().includes(lowerQuery)
-            ).slice(0, 5); // Limit results to 5
-            setResults(filtered);
-        } else {
-            setResults([]);
-        }
-    }, [query, index]);
+    const modalRef = useRef(null);
 
     useEffect(() => {
         const handleKeyDown = (e) => {
             if (e.key === 'Escape') onClose();
         };
-        if (isOpen) {
-            window.addEventListener('keydown', handleKeyDown);
-            document.body.style.overflow = 'hidden';
-            // Wait for render
-            setTimeout(() => document.getElementById('docs-search-input')?.focus(), 100);
-        } else {
-            document.body.style.overflow = '';
-        }
+        window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [isOpen]);
+    }, [onClose]);
 
-    if (!isOpen) return null;
+    // Mock search results
+    useEffect(() => {
+        if (query.length > 2) {
+            setResults([
+                { title: 'Introduction to VDR', section: 'Getting Started', snippet: 'Vessel Daily Report (VDR) is an enterprise-grade...', href: '/docs' },
+                { title: 'sipheron-vdr anchor', section: 'CLI Reference', snippet: 'Anchors a file hash to the Solana blockchain...', href: '/docs/cli/anchor' },
+                { title: 'REST API Overview', section: 'API Reference', snippet: 'Complete documentation for the SipHeron API...', href: '/docs/api' },
+                { title: 'Webhook Integration', section: 'Guides', snippet: 'Learn how to receive real-time notifications...', href: '/docs/guides/webhooks' },
+            ].filter(r => r.title.toLowerCase().includes(query.toLowerCase()) || r.snippet.toLowerCase().includes(query.toLowerCase())));
+        } else {
+            setResults([]);
+        }
+    }, [query]);
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-start justify-center pt-24 px-4 pb-20 text-center sm:block sm:p-0">
-            <div className="fixed inset-0 bg-[#08080F]/80 backdrop-blur-md transition-opacity" onClick={onClose} />
-            <span className="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
-            <div className="inline-block align-bottom bg-[#0F0F1A] rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl w-full border border-[#151525]">
-                <div className="relative flex items-center px-4 py-4 border-b border-[#151525]">
-                    <Search className="w-5 h-5 text-[#9B8EC4] absolute left-4" />
+        <div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-start justify-center pt-[15vh] px-4">
+            <div
+                ref={modalRef}
+                className="w-full max-w-[560px] bg-[#111] border border-[#2A2A2A] rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+            >
+                <div className="flex items-center gap-3 px-4 py-3 border-b border-[#2A2A2A]">
+                    <Search className="w-4 h-4 text-[#555]" />
                     <input
-                        id="docs-search-input"
-                        type="text"
-                        className="w-full bg-transparent border-none focus:ring-0 text-[#F0EEFF] placeholder-[#5B5380] pl-10 pr-4 text-lg"
+                        autoFocus
                         placeholder="Search documentation..."
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
+                        className="flex-1 bg-transparent text-[#EDEDED] text-[14px] outline-none placeholder:text-[#555]"
                     />
-                    <kbd className="hidden sm:inline-flex items-center px-2 py-1 bg-[#151525] rounded-md text-[#5B5380] text-[10px] font-mono border border-[#5B5380]/20 absolute right-4">
-                        ESC
-                    </kbd>
+                    <kbd className="text-[11px] text-[#555] border border-[#2A2A2A] rounded px-1.5 py-0.5 bg-[#0A0A0A]">ESC</kbd>
                 </div>
-
-                <div className="max-h-[60vh] overflow-y-auto w-full">
-                    {query.length > 1 && results.length > 0 ? (
-                        <ul className="py-2">
-                            {results.map((result, i) => (
-                                <li key={i}>
-                                    <Link
-                                        href={result.url}
-                                        onClick={onClose}
-                                        className="block px-6 py-4 hover:bg-[#151525]/50 hover:bg-gradient-to-r hover:from-[#4F6EF7]/10 hover:to-transparent border-l-2 border-transparent hover:border-[#4F6EF7] transition-all group"
-                                    >
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <div className="text-[10px] font-bold uppercase tracking-widest text-[#5B5380] mb-1">{result.section}</div>
-                                                <div className="text-[#F0EEFF] font-semibold text-base flex items-center gap-2 group-hover:text-[#B794FF]">
-                                                    {result.title}
-                                                </div>
-                                                <div className="text-sm text-[#9B8EC4] mt-1 line-clamp-1">{result.snippet}</div>
-                                            </div>
-                                            <ChevronRight className="w-4 h-4 text-[#5B5380] opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
-                                        </div>
-                                    </Link>
-                                </li>
-                            ))}
-                        </ul>
-                    ) : query.length > 1 ? (
-                        <div className="px-6 py-12 text-center text-[#9B8EC4]">
-                            No results found for "{query}".
-                        </div>
-                    ) : (
-                        <div className="px-6 py-8 text-center text-[#5B5380] text-sm">
-                            Type to begin searching the documentation.
+                <div className="max-h-[400px] overflow-y-auto py-2">
+                    {query.length > 0 && results.length === 0 && (
+                        <div className="px-4 py-8 text-center text-[#555] text-[13px]">
+                            No results found for "{query}"
                         </div>
                     )}
+                    {query.length === 0 && (
+                        <div className="px-4 py-2 text-[#555] text-[11px] uppercase tracking-wider font-medium">
+                            Recent Searches
+                        </div>
+                    )}
+                    {results.map(r => (
+                        <Link
+                            key={r.href}
+                            href={r.href}
+                            onClick={onClose}
+                            className="flex flex-col gap-0.5 px-4 py-3 hover:bg-[#1A1A1A] cursor-pointer transition-colors"
+                        >
+                            <div className="flex items-center justify-between">
+                                <span className="text-[13px] text-[#EDEDED] font-medium">{r.title}</span>
+                                <span className="text-[11px] text-[#555] px-1.5 py-0.5 rounded border border-[#2A2A2A] bg-[#0A0A0A]">{r.section}</span>
+                            </div>
+                            <span className="text-[12px] text-[#555] line-clamp-1">{r.snippet}</span>
+                        </Link>
+                    ))}
+                </div>
+                <div className="px-4 py-2 border-t border-[#2A2A2A] bg-[#0A0A0A] flex items-center gap-4 text-[11px] text-[#555]">
+                    <div className="flex items-center gap-1">
+                        <kbd className="border border-[#2A2A2A] rounded px-1">↑↓</kbd> <span>Navigate</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                        <kbd className="border border-[#2A2A2A] rounded px-1">↵</kbd> <span>Select</span>
+                    </div>
                 </div>
             </div>
+            <div className="fixed inset-0 -z-10" onClick={onClose} />
         </div>
     );
 }

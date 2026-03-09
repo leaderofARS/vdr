@@ -1,42 +1,21 @@
-import { Info, AlertTriangle, XOctagon, CheckCircle2 } from 'lucide-react';
+import { Info, AlertTriangle, AlertCircle, Lightbulb } from 'lucide-react';
+
+const variants = {
+    info: { border: '#3B82F6', bg: 'rgba(59,130,246,0.05)', icon: Info, text: '#60A5FA' },
+    warning: { border: '#F59E0B', bg: 'rgba(245,158,11,0.05)', icon: AlertTriangle, text: '#FCD34D' },
+    danger: { border: '#EF4444', bg: 'rgba(239,68,68,0.05)', icon: AlertCircle, text: '#FCA5A5' },
+    tip: { border: '#10B981', bg: 'rgba(16,185,129,0.05)', icon: Lightbulb, text: '#6EE7B7' },
+};
 
 export default function Callout({ type = 'info', children }) {
-    const config = {
-        info: {
-            border: 'border-[#4F6EF7]',
-            bg: 'bg-[#4F6EF7]/5',
-            icon: <Info className="w-5 h-5 text-[#4F6EF7]" />,
-            title: 'Note'
-        },
-        warning: {
-            border: 'border-[#F59E0B]',
-            bg: 'bg-[#F59E0B]/5',
-            icon: <AlertTriangle className="w-5 h-5 text-[#F59E0B]" />,
-            title: 'Warning'
-        },
-        danger: {
-            border: 'border-[#EF4444]',
-            bg: 'bg-[#EF4444]/5',
-            icon: <XOctagon className="w-5 h-5 text-[#EF4444]" />,
-            title: 'Danger'
-        },
-        tip: {
-            border: 'border-[#10B981]',
-            bg: 'bg-[#10B981]/5',
-            icon: <CheckCircle2 className="w-5 h-5 text-[#10B981]" />,
-            title: 'Tip'
-        }
-    };
-
-    const style = config[type] || config.info;
+    const v = variants[type] || variants.info;
+    const Icon = v.icon;
 
     return (
-        <div className={`my-6 flex gap-4 p-5 rounded-r-xl border-l-[3px] border-y border-r border-y-[#151525] border-r-[#151525] ${style.border} ${style.bg} shadow-lg`}>
-            <div className="shrink-0 mt-0.5">{style.icon}</div>
-            <div className="text-[#9B8EC4] text-sm leading-relaxed w-full">
-                <span className="block font-bold mb-1 uppercase tracking-widest text-[10px] opacity-70">
-                    {style.title}
-                </span>
+        <div className={`my-6 pl-4 border-l-2 py-3 pr-4 rounded-r-md text-[13px] leading-relaxed flex gap-3`}
+            style={{ borderColor: v.border, background: v.bg }}>
+            <Icon className="w-4 h-4 mt-0.5 shrink-0" style={{ color: v.border }} />
+            <div className="text-[#888]">
                 {children}
             </div>
         </div>

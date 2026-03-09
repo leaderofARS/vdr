@@ -3,32 +3,30 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function DocsPrevNext({ prev, next }) {
     return (
-        <div className="mt-20 pt-10 border-t border-[#151525] grid sm:grid-cols-2 gap-4">
+        <div className="mt-16 pt-6 border-t border-[#1F1F1F] grid grid-cols-2 gap-4">
             {prev ? (
                 <Link
                     href={prev.href}
-                    className="flex flex-col gap-2 p-6 rounded-2xl border border-[#151525] bg-[#0F0F1A] hover:border-[#9B6EFF]/50 hover:bg-[#151525] transition-all group"
+                    className="flex flex-col gap-1 p-4 rounded-lg border border-[#2A2A2A] hover:border-[#444] transition-colors group"
                 >
-                    <span className="text-[10px] font-bold text-[#5B5380] uppercase tracking-widest flex items-center gap-1 group-hover:text-[#9B8EC4] transition-colors">
-                        <ChevronLeft className="w-3.5 h-3.5" /> PREVIOUS
+                    <span className="text-[12px] text-[#555] flex items-center gap-1">
+                        <ChevronLeft className="w-3 h-3 transition-transform group-hover:-translate-x-0.5" />
+                        Previous
                     </span>
-                    <span className="text-lg font-bold text-[#F0EEFF] group-hover:text-[#B794FF] transition-colors">
-                        {prev.title}
-                    </span>
+                    <span className="text-[14px] text-[#EDEDED] font-medium">{prev.label}</span>
                 </Link>
             ) : <div />}
 
             {next ? (
                 <Link
                     href={next.href}
-                    className="flex flex-col items-end text-right gap-2 p-6 rounded-2xl border border-[#151525] bg-[#0F0F1A] hover:border-[#9B6EFF]/50 hover:bg-[#151525] transition-all group"
+                    className="flex flex-col gap-1 p-4 rounded-lg border border-[#2A2A2A] hover:border-[#444] transition-colors group text-right items-end"
                 >
-                    <span className="text-[10px] font-bold text-[#5B5380] uppercase tracking-widest flex items-center justify-end gap-1 group-hover:text-[#9B8EC4] transition-colors">
-                        NEXT <ChevronRight className="w-3.5 h-3.5" />
+                    <span className="text-[12px] text-[#555] flex items-center gap-1">
+                        Next
+                        <ChevronRight className="w-3 h-3 transition-transform group-hover:translate-x-0.5" />
                     </span>
-                    <span className="text-lg font-bold text-[#F0EEFF] group-hover:text-[#B794FF] transition-colors">
-                        {next.title}
-                    </span>
+                    <span className="text-[14px] text-[#EDEDED] font-medium">{next.label}</span>
                 </Link>
             ) : <div />}
         </div>

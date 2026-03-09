@@ -1,24 +1,22 @@
-export default function Endpoint({ method, path, children }) {
-    const colors = {
-        GET: 'text-[#4F6EF7] bg-[#4F6EF7]/10 border-[#4F6EF7]/20',
-        POST: 'text-[#10B981] bg-[#10B981]/10 border-[#10B981]/20',
-        PUT: 'text-[#F59E0B] bg-[#F59E0B]/10 border-[#F59E0B]/20',
-        DELETE: 'text-[#EF4444] bg-[#EF4444]/10 border-[#EF4444]/20'
-    };
+const methodColors = {
+    GET: { bg: '#0D2B1A', text: '#4ADE80', border: '#166534' },
+    POST: { bg: '#0D1B2B', text: '#60A5FA', border: '#1E40AF' },
+    PUT: { bg: '#2B1A0D', text: '#FB923C', border: '#92400E' },
+    DELETE: { bg: '#2B0D0D', text: '#F87171', border: '#991B1B' },
+};
 
-    const methodColor = colors[method] || colors.GET;
-
+export default function Endpoint({ method, path, description }) {
+    const c = methodColors[method] || methodColors.GET;
     return (
-        <div className="my-8 rounded-2xl border border-[#151525] bg-[#0F0F1A] overflow-hidden shadow-2xl">
-            <div className="flex items-center gap-4 px-6 py-4 border-b border-[#151525] bg-[#08080F]">
-                <span className={`px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-widest border ${methodColor}`}>
+        <div className="my-6 rounded-lg border border-[#2A2A2A] overflow-hidden">
+            <div className="flex items-center gap-3 px-4 py-3 bg-[#111] border-b border-[#2A2A2A]">
+                <span className="text-[11px] font-bold font-mono px-2 py-0.5 rounded border"
+                    style={{ color: c.text, background: c.bg, borderColor: c.border }}>
                     {method}
                 </span>
-                <span className="font-mono text-sm text-[#F0EEFF] tracking-tight">{path}</span>
+                <code className="text-[13px] text-[#EDEDED] font-mono">{path}</code>
             </div>
-            <div className="px-6 py-5 text-sm text-[#9B8EC4] leading-relaxed">
-                {children}
-            </div>
+            {description && <p className="px-4 py-3 text-[13px] text-[#888] leading-relaxed">{description}</p>}
         </div>
     );
 }

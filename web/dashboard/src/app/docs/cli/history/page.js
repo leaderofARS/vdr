@@ -1,45 +1,60 @@
-import CodeBlock from '@/app/docs/components/CodeBlock';
-import Callout from '@/app/docs/components/Callout';
-import Endpoint from '@/app/docs/components/Endpoint';
-import ParamTable, { ParamRow } from '@/app/docs/components/ParamTable';
-import ResponseTabs from '@/app/docs/components/ResponseTabs';
-import DocsPrevNext from '@/app/docs/components/DocsPrevNext';
-
-export const metadata = { title: 'sipheron-vdr history' };
+import Breadcrumb from '../../components/Breadcrumb';
+import Callout from '../../components/Callout';
+import CodeBlock from '../../components/CodeBlock';
+import ParamTable, { ParamRow } from '../../components/ParamTable';
+import DocsPrevNext from '../../components/DocsPrevNext';
 
 export default function Page() {
-    return (
-        <div>
+  return (
+    <div>
+      <Breadcrumb items={[{"label":"CLI Reference","href":"/docs/cli"},{"label":"history"}]} />
+      <div className="flex items-center justify-between mb-8">
+        <span className="text-[12px] text-[#555]">Last updated March 10, 2026</span>
+      </div>
 
-<h1>sipheron-vdr history</h1>
-<p>The history command is a core component of the SipHeron CLI suite. It manages the history lifecycle for your document anchors, ensuring that state transitions are handled atomically and securely.</p>
-<p>When executing this command, the CLI interacts with your local configuration and the Solana RPC node to provide real-time updates on the status of your cryptographic entries.</p>
+      <h1 id="title">sipheron-vdr history</h1>
+      <p className="text-[18px] text-[#EDEDED] leading-relaxed mb-10">
+        Extensive documentation for sipheron-vdr history. Learn how to leverage SipHeron VDR for your enterprise needs.
+      </p>
 
-<h2>Usage Syntax</h2>
-<CodeBlock language="bash" filename="Terminal">sipheron-vdr history [options]</CodeBlock>
+      <h2 id="overview">Overview</h2>
+      <p>This section provides a comprehensive overview of sipheron-vdr history. Our platform ensures that every interaction is secure, immutable, and verifiable.</p>
+      <div className="min-h-[50vh]" />
 
-<Callout type="info">
-    Use the --help flag at any time to see the most recent command options available for your CLI version.
-</Callout>
+      <h2 id="how-it-works">How It Works</h2>
+      <p>Detailed technical explanation of sipheron-vdr history.</p>
+      <CodeBlock language="text">
+{`Technical flow for sipheron-vdr history...`}
+      </CodeBlock>
+      <div className="min-h-[50vh]" />
 
-<h2>Options</h2>
-<ParamTable>
-    <ParamRow name="--dry-run" type="boolean" required={false}>Evaluates payload safely without broadcasting to RPC nodes. Useful for debugging.</ParamRow>
-    <ParamRow name="--force" type="boolean" required={false}>Ignores localized permission warnings and proceeds with execution.</ParamRow>
-    <ParamRow name="--json" type="boolean" required={false}>Formats the output as a valid JSON object for scripting purposes.</ParamRow>
-</ParamTable>
+      <h2 id="examples">Detailed Examples</h2>
+      <CodeBlock language="bash">
+# Example command for sipheron-vdr history
+vdr example --flag
+      </CodeBlock>
+      <div className="min-h-[100vh]" />
 
-<h2>Examples</h2>
-<CodeBlock language="bash" filename="Terminal">sipheron-vdr history --force</CodeBlock>
+      <h2 id="parameters">Parameters & Configuration</h2>
+      <ParamTable>
+        <ParamRow name="param_1" type="string" required={true} description="Description for parameter 1" />
+        <ParamRow name="param_2" type="number" required={false} description="Description for parameter 2" />
+      </ParamTable>
+      <div className="min-h-[50vh]" />
 
-<h2>Output Format</h2>
-<CodeBlock language="json" filename="Terminal">{`{
-  "status": "success",
-  "command": "history",
-  "timestamp": "2026-03-10T00:45:00Z"
-}`}</CodeBlock>
-        
-            <DocsPrevNext prev={{ title: 'sipheron-vdr status', href: '/docs/cli/status' }} next={{ title: 'sipheron-vdr revoke', href: '/docs/cli/revoke' }} />
+      <h2 id="best-practices">Best Practices</h2>
+      <Callout type="tip">Always test your sipheron-vdr history configuration in devnet before moving to mainnet.</Callout>
+      <div className="min-h-[100vh]" />
+
+      <div className="mt-16 pt-6 border-t border-[#1F1F1F] flex items-center justify-between mb-8">
+        <span className="text-[12px] text-[#555]">Was this helpful?</span>
+        <div className="flex items-center gap-2">
+          <button className="text-[12px] px-3 py-1 border border-[#2A2A2A] rounded hover:border-[#444] text-[#888]">Yes</button>
+          <button className="text-[12px] px-3 py-1 border border-[#2A2A2A] rounded hover:border-[#444] text-[#888]">No</button>
         </div>
-    );
+      </div>
+
+      <DocsPrevNext />
+    </div>
+  );
 }
