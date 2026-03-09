@@ -16,10 +16,10 @@ export const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-    if (typeof document !== 'undefined') {
-        const csrfMatch = document.cookie.match(/(^|;)\s*csrf_token\s*=\s*([^;]+)/);
-        if (csrfMatch) {
-            config.headers['X-CSRF-Token'] = csrfMatch[2];
+    if (typeof window !== 'undefined') {
+        const token = localStorage.getItem('sipheron_csrf_token');
+        if (token) {
+            config.headers['X-CSRF-Token'] = token;
         }
     }
     return config;
@@ -78,6 +78,9 @@ api.interceptors.response.use(
 export const login = async (email, password) => {
     // Fix 1.16: JWT is now set in HttpOnly cookie by server
     const { data } = await api.post('/auth/login', { email, password });
+    if (data.csrfToken && typeof window !== 'undefined') {
+        localStorage.setItem('sipheron_csrf_token', data.csrfToken);
+    }
     return data;
 };
 
@@ -108,8 +111,9 @@ export const logout = async () => {
         console.error('Logout error:', error);
     }
 
-    // Redirect to login page
     if (typeof window !== 'undefined') {
+        localStorage.removeItem('sipheron_csrf_token');
+        // Redirect to login page
         window.location.href = '/auth/login';
     }
 };
