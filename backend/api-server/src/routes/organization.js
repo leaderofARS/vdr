@@ -65,10 +65,7 @@ router.get('/my', authenticate, async (req, res, next) => {
         const orgs = await prisma.organization.findMany({
             where: { ownerId: req.user.id },
             include: {
-                apiKeys: true,
-                _count: {
-                    select: { records: true }
-                }
+                apiKeys: true
             }
         });
         res.json(orgs);

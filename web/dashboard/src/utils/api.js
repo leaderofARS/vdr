@@ -89,17 +89,18 @@ export const registerAdmin = async (email, password) => {
     return data;
 };
 
-/**
- * Verify the current session is authenticated by calling a protected endpoint.
- * Returns true if the HttpOnly cookie contains a valid JWT, false otherwise.
- */
 export const isAuthenticated = async () => {
     try {
         // Hit the health-like endpoint that requires auth; any 2xx means valid session
         await api.get('/organizations/my');
         return true;
-    } catch {
-        return false;
+    } catch (error) {
+        // Only invalidate session strictly on 401/403
+        if (error.response?.status === 401 || error.response?.status === 403) {
+            return false;
+        }
+        // On 500/Timeout we assume backend is struggling but session is legally stored 
+        return true;
     }
 };
 
