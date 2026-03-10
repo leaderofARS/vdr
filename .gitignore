@@ -23,7 +23,7 @@ yarn-error.log*
 .env.production
 *.pem
 *.key
-keys/
+/keys/
 secrets/
 secret.txt
 id.json
