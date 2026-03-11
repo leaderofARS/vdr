@@ -8,6 +8,11 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.sipheron.com';
 
 export default function VerifyPage() {
     const { hash } = useParams();
+    if (!hash) return (
+        <div className="min-h-screen bg-black flex items-center justify-center">
+            <p className="text-white">Invalid verification link.</p>
+        </div>
+    );
     const [result, setResult] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -156,7 +161,7 @@ export default function VerifyPage() {
             <div className="w-full max-w-2xl bg-white/5 border border-white/10 rounded-2xl p-6 mb-8 flex flex-col items-center">
                 <p className="text-[10px] text-gray-500 uppercase tracking-widest mb-4">Verification QR Code</p>
                 <img
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}&bgcolor=000000&color=a855f7&qzone=2`}
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(`https://app.sipheron.com/verify/${hash}`)}&bgcolor=000000&color=a855f7&qzone=2`}
                     alt="QR Code"
                     className="rounded-xl"
                     width={180}
