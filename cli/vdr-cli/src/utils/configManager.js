@@ -88,27 +88,29 @@ function loadConfig() {
     }
 
     // Validate permissions before loading
-    const validator = new PermissionValidator();
+    if (process.platform !== 'win32') {
+        const validator = new PermissionValidator();
 
-    // Validate directory permissions
-    const dirValidation = validator.validateDirectoryPermissions(CONFIG_DIR, { strict: true });
-    if (!dirValidation.isValid) {
-        console.warn(`Warning: ${dirValidation.message}`);
-        // Attempt to fix permissions
-        const dirEnforcement = validator.enforceSecureAccess(CONFIG_DIR, { isDirectory: true, strict: true });
-        if (!dirEnforcement.success) {
-            throw new Error(`Failed to secure config directory: ${dirEnforcement.message}`);
+        // Validate directory permissions
+        const dirValidation = validator.validateDirectoryPermissions(CONFIG_DIR, { strict: true });
+        if (!dirValidation.isValid) {
+            console.warn(`Warning: ${dirValidation.message}`);
+            // Attempt to fix permissions
+            const dirEnforcement = validator.enforceSecureAccess(CONFIG_DIR, { isDirectory: true, strict: true });
+            if (!dirEnforcement.success) {
+                throw new Error(`Failed to secure config directory: ${dirEnforcement.message}`);
+            }
         }
-    }
 
-    // Validate file permissions
-    const fileValidation = validator.validateFilePermissions(CONFIG_FILE, { strict: true });
-    if (!fileValidation.isValid) {
-        console.warn(`Warning: ${fileValidation.message}`);
-        // Attempt to fix permissions
-        const fileEnforcement = validator.enforceSecureAccess(CONFIG_FILE, { isDirectory: false, strict: true });
-        if (!fileEnforcement.success) {
-            throw new Error(`Failed to secure config file: ${fileEnforcement.message}`);
+        // Validate file permissions
+        const fileValidation = validator.validateFilePermissions(CONFIG_FILE, { strict: true });
+        if (!fileValidation.isValid) {
+            console.warn(`Warning: ${fileValidation.message}`);
+            // Attempt to fix permissions
+            const fileEnforcement = validator.enforceSecureAccess(CONFIG_FILE, { isDirectory: false, strict: true });
+            if (!fileEnforcement.success) {
+                throw new Error(`Failed to secure config file: ${fileEnforcement.message}`);
+            }
         }
     }
 
@@ -143,16 +145,18 @@ function saveConfig(config) {
     }
 
     // Validate permissions before saving
-    const validator = new PermissionValidator();
+    if (process.platform !== 'win32') {
+        const validator = new PermissionValidator();
 
-    // Validate directory permissions
-    const dirValidation = validator.validateDirectoryPermissions(CONFIG_DIR, { strict: true });
-    if (!dirValidation.isValid) {
-        console.warn(`Warning: ${dirValidation.message}`);
-        // Attempt to fix permissions
-        const dirEnforcement = validator.enforceSecureAccess(CONFIG_DIR, { isDirectory: true, strict: true });
-        if (!dirEnforcement.success) {
-            throw new Error(`Failed to secure config directory: ${dirEnforcement.message}`);
+        // Validate directory permissions
+        const dirValidation = validator.validateDirectoryPermissions(CONFIG_DIR, { strict: true });
+        if (!dirValidation.isValid) {
+            console.warn(`Warning: ${dirValidation.message}`);
+            // Attempt to fix permissions
+            const dirEnforcement = validator.enforceSecureAccess(CONFIG_DIR, { isDirectory: true, strict: true });
+            if (!dirEnforcement.success) {
+                throw new Error(`Failed to secure config directory: ${dirEnforcement.message}`);
+            }
         }
     }
 
@@ -165,13 +169,16 @@ function saveConfig(config) {
     fs.writeFileSync(CONFIG_FILE, JSON.stringify(configToWrite, null, 2), { mode: 0o600 });
 
     // Validate file permissions after saving
-    const fileValidation = validator.validateFilePermissions(CONFIG_FILE, { strict: true });
-    if (!fileValidation.isValid) {
-        console.warn(`Warning: ${fileValidation.message}`);
-        // Attempt to fix permissions
-        const fileEnforcement = validator.enforceSecureAccess(CONFIG_FILE, { isDirectory: false, strict: true });
-        if (!fileEnforcement.success) {
-            throw new Error(`Failed to secure config file: ${fileEnforcement.message}`);
+    if (process.platform !== 'win32') {
+        const validator = new PermissionValidator();
+        const fileValidation = validator.validateFilePermissions(CONFIG_FILE, { strict: true });
+        if (!fileValidation.isValid) {
+            console.warn(`Warning: ${fileValidation.message}`);
+            // Attempt to fix permissions
+            const fileEnforcement = validator.enforceSecureAccess(CONFIG_FILE, { isDirectory: false, strict: true });
+            if (!fileEnforcement.success) {
+                throw new Error(`Failed to secure config file: ${fileEnforcement.message}`);
+            }
         }
     }
 }

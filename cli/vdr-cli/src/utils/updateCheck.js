@@ -26,10 +26,10 @@ async function checkForUpdate() {
             const line2 = ` Run: npm install -g sipheron-vdr`;
 
             console.log(
-                '\n' + chalk.yellow('┌─────────────────────────────────────────────┐') +
+                '\n' + chalk.yellow('┌──────────────────────────────────────┐') +
                 '\n' + chalk.yellow('│') + line1.padEnd(45 + (chalk.green(latest).length - latest.length)) + chalk.yellow('│') +
                 '\n' + chalk.yellow('│') + line2.padEnd(45) + chalk.yellow('│') +
-                '\n' + chalk.yellow('└─────────────────────────────────────────────┘') + '\n'
+                '\n' + chalk.yellow('└──────────────────────────────────────┘') + '\n'
             )
         }
     } catch {

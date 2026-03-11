@@ -53,6 +53,7 @@ router.get('/', authenticate, async (req, res, next) => {
                     status: true,
                     createdAt: true,
                     lastUsedAt: true,
+                    scope: true,
                     // key is NOT returned in list for security
                 }
             }, page, limit))

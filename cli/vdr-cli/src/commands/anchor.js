@@ -26,28 +26,29 @@ function createAnchorCommand() {
             }
 
             const config = loadConfig();
-            console.log(chalk.bold(`Preparing to push ${items.length} hashes to SipHeron Registry...\n`));
+            const apiKey = config.apiKey || process.env.SIPHERON_API_KEY;
+            const apiUrl = config.apiUrl || 'https://api.sipheron.com';
 
-            // If we have less than 5, we can do them sequentially via standard register.
-            // If more, we should use the batch API. For simplicity and robustness, 
-            // we will use the batch API by default arrays.
+            if (!apiKey) {
+                console.error(chalk.red('No API key found. Run: sipheron-vdr link <apiKey>'));
+                process.exit(1);
+            }
+
+            console.log(chalk.bold(`Preparing to push ${items.length} hashes to SipHeron Registry...\n`));
 
             const spinner = ora("Submitting batch to backend queue...").start();
 
             try {
                 // Formatting payload for batch endpoint
                 const hashesOnly = items.map(i => i.hash);
-
-                // Use the first item's metadata/expiry for the batch (in a mature version, batch API would accept arrays of objects)
-                // We'll pass a generic metadata string to the batch queue representing this push
                 const metadata = `Push Commit: ${items.length} files`;
 
-                const response = await axios.post(`${config.apiUrl}/api/batch-register`, {
+                const response = await axios.post(`${apiUrl}/api/batch-register`, {
                     hashes: hashesOnly,
                     metadata: metadata,
-                    expiry: 0 // Default batch expiry
+                    expiry: 0
                 }, {
-                    headers: { 'x-api-key': config.apiKey || '' }
+                    headers: { 'x-api-key': apiKey }
                 });
 
                 spinner.succeed(chalk.green(`Successfully dispatched ${items.length} hashes to the blockchain!`));
@@ -60,7 +61,18 @@ function createAnchorCommand() {
 
             } catch (error) {
                 spinner.fail(chalk.red("Failed to push hashes to registry"));
-                console.error(chalk.red(error.response?.data?.error || error.message));
+
+                if (error.response) {
+                    console.error(chalk.red(`Status: ${error.response.status}`));
+                    console.error(chalk.red(`Error:  ${JSON.stringify(error.response.data)}`));
+
+                    if (error.response.status === 401 || error.response.status === 403) {
+                        console.log(chalk.yellow('\nTip: Authentication failed. Re-link your CLI with: sipheron-vdr link <apiKey>'));
+                    }
+                } else {
+                    console.error(chalk.red(`Error:  ${error.message}`));
+                }
+                process.exit(1);
             }
         });
 
