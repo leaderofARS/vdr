@@ -213,7 +213,7 @@ export default function BillingPage() {
                     </PurpleCard>
 
                     {/* Pro Tier (Featured) */}
-                    <PurpleCard className="border-purple-vivid/40 bg-[#0C0C14] shadow-[0_20px_60px_rgba(155,110,255,0.15)] relative transform md:-translate-y-4 flex flex-col z-10">
+                    <PurpleCard className="border-purple-vivid/40 bg-[#0C0C14] shadow-[0_20px_60px_rgba(155,110,255,0.15)] relative flex flex-col z-10">
                         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-blue-accent via-purple-vivid to-blue-accent" />
                         <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
                             <PurpleBadge variant="purple" pulse className="px-5 py-1 flex items-center gap-2 shadow-lg">

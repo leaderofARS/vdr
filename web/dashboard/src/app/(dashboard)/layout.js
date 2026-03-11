@@ -352,7 +352,10 @@ export default function DashboardLayout({ children }) {
                                             <p className="text-xs text-text-muted mb-1 uppercase tracking-widest font-bold">Authenticated as</p>
                                             <p className="text-sm font-bold text-text-primary truncate">{contextData?.user?.email || 'Administrator'}</p>
                                         </div>
-                                        <button className="w-full px-4 py-3 text-sm text-text-secondary hover:bg-purple-dim/20 hover:text-purple-glow flex items-center gap-3 transition-colors">
+                                        <button
+                                            onClick={() => { setShowProfileMenu(false); router.push('/dashboard/settings'); }}
+                                            className="w-full px-4 py-3 text-sm text-text-secondary hover:bg-purple-dim/20 hover:text-purple-glow flex items-center gap-3 transition-colors"
+                                        >
                                             <Settings className="w-4 h-4" /> Account Settings
                                         </button>
                                         <button
