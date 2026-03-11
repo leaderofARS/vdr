@@ -2,25 +2,29 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import Image from 'next/image';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.sipheron.com';
 
 export default function VerifyPage() {
-    const { hash } = useParams();
-    if (!hash) return (
-        <div className="min-h-screen bg-black flex items-center justify-center">
-            <p className="text-white">Invalid verification link.</p>
-        </div>
-    );
+    const params = useParams();
+    const hash = params?.hash || null;
+
+    // ALL hooks must be called before any conditional return
     const [result, setResult] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        if (!hash) return;
+        if (!hash) {
+            setLoading(false);
+            setError('Invalid verification link');
+            return;
+        }
         fetch(`${API_BASE}/api/hashes/public/${hash}`)
-            .then(r => r.json())
+            .then(r => {
+                if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                return r.json();
+            })
             .then(data => {
                 setResult(data);
                 setLoading(false);
@@ -34,17 +38,34 @@ export default function VerifyPage() {
     const isRevoked = result?.record?.status === 'revoked';
     const isVerified = result?.verified && !isRevoked;
 
+    // Loading state
     if (loading) return (
         <div className="min-h-screen bg-black flex items-center justify-center">
             <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
         </div>
     );
 
+    // Error state
+    if (error && !result) return (
+        <div className="min-h-screen bg-black flex flex-col items-center justify-center gap-4">
+            <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center">
+                <svg className="w-8 h-8 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </div>
+            <p className="text-white font-bold text-xl">Verification Failed</p>
+            <p className="text-gray-400 text-sm">{error}</p>
+            <a href="https://sipheron.com" className="text-purple-400 text-sm hover:text-purple-300 mt-4">
+                ← Back to SipHeron
+            </a>
+        </div>
+    );
+
     return (
         <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center px-4 py-16">
-            {/* Logo */}
+            {/* Logo — no Next/Image to avoid config issues */}
             <div className="mb-12 flex items-center gap-3">
-                <Image src="/sipheron_vdap_logo.png" alt="SipHeron" width={40} height={40} />
+                <img src="/sipheron_vdap_logo.png" alt="SipHeron" width={40} height={40} className="rounded-lg" />
                 <span className="text-xl font-bold text-white">SipHeron VDR</span>
             </div>
 
@@ -52,11 +73,8 @@ export default function VerifyPage() {
             <div className={`w-full max-w-2xl rounded-2xl border p-8 mb-8 ${
                 isVerified
                     ? 'border-green-500/30 bg-green-500/5'
-                    : isRevoked
-                    ? 'border-red-500/30 bg-red-500/5'
                     : 'border-red-500/30 bg-red-500/5'
             }`}>
-                {/* Big status icon */}
                 <div className="flex flex-col items-center text-center mb-8">
                     <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-4 ${
                         isVerified ? 'bg-green-500/20' : 'bg-red-500/20'
@@ -72,7 +90,11 @@ export default function VerifyPage() {
                         )}
                     </div>
                     <h1 className={`text-3xl font-bold mb-2 ${isVerified ? 'text-green-400' : 'text-red-400'}`}>
-                        {isVerified ? 'Document Authentic' : isRevoked ? 'Document Revoked' : 'Not Found in Registry'}
+                        {isVerified
+                            ? 'Document Authentic'
+                            : isRevoked
+                            ? 'Document Revoked'
+                            : 'Not Found in Registry'}
                     </h1>
                     <p className="text-gray-400 text-sm max-w-md">
                         {isVerified
@@ -83,7 +105,7 @@ export default function VerifyPage() {
                     </p>
                 </div>
 
-                {/* Hash */}
+                {/* Hash display */}
                 <div className="bg-black/40 border border-white/10 rounded-xl p-4 mb-4">
                     <p className="text-[10px] text-gray-500 uppercase tracking-widest mb-2">SHA-256 Hash</p>
                     <p className="font-mono text-xs text-purple-300 break-all">{hash}</p>
@@ -132,7 +154,6 @@ export default function VerifyPage() {
                     </div>
                 )}
 
-                {/* Explorer Links */}
                 {result?.record?.explorerUrl && (
                     <div className="mt-6 flex flex-col sm:flex-row gap-3">
                         <a
@@ -157,7 +178,7 @@ export default function VerifyPage() {
                 )}
             </div>
 
-            {/* QR Code section — hash page renders its own QR */}
+            {/* QR Code */}
             <div className="w-full max-w-2xl bg-white/5 border border-white/10 rounded-2xl p-6 mb-8 flex flex-col items-center">
                 <p className="text-[10px] text-gray-500 uppercase tracking-widest mb-4">Verification QR Code</p>
                 <img
@@ -170,7 +191,6 @@ export default function VerifyPage() {
                 <p className="text-xs text-gray-500 mt-3">Scan to verify this document</p>
             </div>
 
-            {/* Footer */}
             <div className="text-center">
                 <p className="text-gray-600 text-xs">
                     Powered by{' '}
