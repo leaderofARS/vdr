@@ -161,6 +161,63 @@ router.get('/export', authenticate, async (req, res, next) => {
 });
 
 /**
+ * @route GET /api/hashes/public/:hash
+ * @description Public hash verification — no authentication required
+ */
+router.get('/public/:hash', async (req, res, next) => {
+    try {
+        const { hash } = req.params;
+
+        if (!/^[a-fA-F0-9]{64}$/.test(hash)) {
+            return res.status(400).json({ error: 'Invalid SHA-256 hash format' });
+        }
+
+        // Try DB first
+        const record = await prisma.hashRecord.findUnique({
+            where: { hash },
+            include: { organization: { select: { name: true, id: true } } }
+        });
+
+        if (!record) {
+            // Try Solana directly
+            const solanaData = await solanaService.verifyHash(hash);
+            if (solanaData.exists && solanaData.record) {
+                return res.json({
+                    verified: true,
+                    record: formatHashRecord(solanaData.record),
+                    organization: null
+                });
+            }
+            return res.status(404).json({ verified: false, error: 'Hash not found in registry' });
+        }
+
+        const network = process.env.SOLANA_NETWORK || 'devnet';
+        res.json({
+            verified: true,
+            record: {
+                hash: record.hash,
+                metadata: record.metadata || '',
+                status: record.status || (record.isRevoked ? 'revoked' : 'active'),
+                registeredAt: record.timestamp
+                    ? new Date(record.timestamp * 1000).toISOString()
+                    : record.createdAt.toISOString(),
+                revokedAt: record.revokedAt ? record.revokedAt.toISOString() : null,
+                expiry: record.expiry > 0 ? new Date(record.expiry * 1000).toISOString() : null,
+                txSignature: record.txSignature,
+                pdaAddress: record.pdaAddress,
+                explorerUrl: `https://explorer.solana.com/tx/${record.txSignature}?cluster=${network}`,
+                pdaExplorerUrl: `https://explorer.solana.com/address/${record.pdaAddress}?cluster=${network}`
+            },
+            organization: record.organization
+                ? { name: record.organization.name, id: record.organization.id }
+                : null
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
  * @route GET /api/hashes/:hash
  * @description Get detail for a specific hash.
  */
@@ -264,61 +321,5 @@ router.post('/revoke', authenticate, async (req, res, next) => {
     }
 });
 
-/**
- * @route GET /api/hashes/public/:hash
- * @description Public hash verification — no authentication required
- */
-router.get('/public/:hash', async (req, res, next) => {
-    try {
-        const { hash } = req.params;
-
-        if (!/^[a-fA-F0-9]{64}$/.test(hash)) {
-            return res.status(400).json({ error: 'Invalid SHA-256 hash format' });
-        }
-
-        // Try DB first
-        const record = await prisma.hashRecord.findUnique({
-            where: { hash },
-            include: { organization: { select: { name: true, id: true } } }
-        });
-
-        if (!record) {
-            // Try Solana directly
-            const solanaData = await solanaService.verifyHash(hash);
-            if (solanaData.exists && solanaData.record) {
-                return res.json({
-                    verified: true,
-                    record: formatHashRecord(solanaData.record),
-                    organization: null
-                });
-            }
-            return res.status(404).json({ verified: false, error: 'Hash not found in registry' });
-        }
-
-        const network = process.env.SOLANA_NETWORK || 'devnet';
-        res.json({
-            verified: true,
-            record: {
-                hash: record.hash,
-                metadata: record.metadata || '',
-                status: record.status || (record.isRevoked ? 'revoked' : 'active'),
-                registeredAt: record.timestamp
-                    ? new Date(record.timestamp * 1000).toISOString()
-                    : record.createdAt.toISOString(),
-                revokedAt: record.revokedAt ? record.revokedAt.toISOString() : null,
-                expiry: record.expiry > 0 ? new Date(record.expiry * 1000).toISOString() : null,
-                txSignature: record.txSignature,
-                pdaAddress: record.pdaAddress,
-                explorerUrl: `https://explorer.solana.com/tx/${record.txSignature}?cluster=${network}`,
-                pdaExplorerUrl: `https://explorer.solana.com/address/${record.pdaAddress}?cluster=${network}`
-            },
-            organization: record.organization
-                ? { name: record.organization.name, id: record.organization.id }
-                : null
-        });
-    } catch (error) {
-        next(error);
-    }
-});
 
 module.exports = router;
