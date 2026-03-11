@@ -8,8 +8,6 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.sipheron.com';
 export default function VerifyPage() {
     const params = useParams();
     const hash = params?.hash || null;
-
-    // ALL hooks must be called before any conditional return
     const [result, setResult] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
