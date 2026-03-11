@@ -44,6 +44,10 @@ export default function UsageDashboard() {
     const [filterStatus, setFilterStatus] = useState('all');
     const [lastSync, setLastSync] = useState(new Date());
 
+    const [reportMonth, setReportMonth] = useState(new Date().getMonth() + 1);
+    const [reportYear, setReportYear] = useState(new Date().getFullYear());
+    const [reportLoading, setReportLoading] = useState(false);
+
     const fetchUsageData = useCallback(async () => {
         setLoading(true);
         try {
@@ -110,6 +114,134 @@ export default function UsageDashboard() {
         document.body.removeChild(link);
     };
 
+    const handleDownloadReport = async () => {
+        setReportLoading(true);
+        try {
+            const { data } = await api.get(
+                `/api/usage/report?month=${reportMonth}&year=${reportYear}`
+            );
+            const r = data.report;
+
+            // Build HTML report
+            const monthNames = ['January','February','March','April','May','June',
+                'July','August','September','October','November','December'];
+
+            const html = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <title>SipHeron VDR — ${r.monthName} ${r.year} Anchor Report</title>
+                <style>
+                    * { margin: 0; padding: 0; box-sizing: border-box; }
+                    body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #fff; color: #111; padding: 48px; }
+                    .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #7c3aed; padding-bottom: 24px; margin-bottom: 32px; }
+                    .logo { font-size: 22px; font-weight: 800; color: #7c3aed; letter-spacing: -0.5px; }
+                    .logo span { color: #111; }
+                    .report-title { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+                    .report-sub { font-size: 13px; color: #666; }
+                    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px; }
+                    .stat-box { border: 1px solid #e5e7eb; border-radius: 10px; padding: 16px; }
+                    .stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #888; margin-bottom: 6px; }
+                    .stat-value { font-size: 28px; font-weight: 800; color: #7c3aed; }
+                    .section-title { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #444; margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+                    table { width: 100%; border-collapse: collapse; font-size: 11px; }
+                    th { background: #f9fafb; padding: 8px 12px; text-align: left; font-weight: 600; color: #555; border-bottom: 1px solid #e5e7eb; }
+                    td { padding: 8px 12px; border-bottom: 1px solid #f3f4f6; color: #333; word-break: break-all; }
+                    tr:last-child td { border-bottom: none; }
+                    .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; }
+                    .badge-active { background: #d1fae5; color: #065f46; }
+                    .badge-revoked { background: #fee2e2; color: #991b1b; }
+                    .footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid #eee; font-size: 11px; color: #999; text-align: center; }
+                    .org-info { margin-bottom: 32px; padding: 16px; background: #f9fafb; border-radius: 10px; font-size: 13px; }
+                    .org-info strong { color: #7c3aed; }
+                    @media print { body { padding: 24px; } }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <div>
+                        <div class="logo">Sip<span>Heron</span> VDR</div>
+                        <div style="font-size:11px;color:#888;margin-top:2px;">Verifiable Document Registry</div>
+                    </div>
+                    <div style="text-align:right">
+                        <div class="report-title">${r.monthName} ${r.year}</div>
+                        <div class="report-sub">Monthly Anchor Report</div>
+                        <div class="report-sub">Generated ${new Date(r.generatedAt).toLocaleDateString()}</div>
+                    </div>
+                </div>
+
+                <div class="org-info">
+                    <strong>Organization:</strong> ${r.organization.name} &nbsp;|&nbsp;
+                    <strong>ID:</strong> ${r.organization.id}
+                </div>
+
+                <div class="stats">
+                    <div class="stat-box">
+                        <div class="stat-label">Anchors This Month</div>
+                        <div class="stat-value">${r.summary.totalAnchors}</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Active</div>
+                        <div class="stat-value" style="color:#059669">${r.summary.activeAnchors}</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Revoked</div>
+                        <div class="stat-value" style="color:#dc2626">${r.summary.revokedAnchors}</div>
+                    </div>
+                </div>
+
+                <div class="section-title">Anchor Records — ${r.monthName} ${r.year}</div>
+                ${r.records.length === 0
+                    ? '<p style="color:#888;font-size:13px;padding:16px 0">No anchors registered this month.</p>'
+                    : `<table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Hash (SHA-256)</th>
+                                <th>Document Name</th>
+                                <th>Status</th>
+                                <th>Registered</th>
+                                <th>Transaction</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${r.records.map((rec, i) => `
+                            <tr>
+                                <td>${i + 1}</td>
+                                <td style="font-family:monospace;font-size:10px">${rec.hash.slice(0, 20)}...</td>
+                                <td>${rec.metadata || '—'}</td>
+                                <td><span class="badge badge-${rec.status}">${rec.status}</span></td>
+                                <td>${new Date(rec.registeredAt).toLocaleDateString()}</td>
+                                <td style="font-family:monospace;font-size:9px">${rec.txSignature ? rec.txSignature.slice(0, 16) + '...' : '—'}</td>
+                            </tr>`).join('')}
+                        </tbody>
+                    </table>`
+                }
+
+                <div class="footer">
+                    SipHeron VDR — Powered by Solana Blockchain &nbsp;|&nbsp; api.sipheron.com &nbsp;|&nbsp;
+                    All records verified on-chain. Total all-time anchors: ${r.summary.totalAllTime}
+                </div>
+            </body>
+            </html>`;
+
+            // Open in new window and trigger print/save as PDF
+            const win = window.open('', '_blank');
+            win.document.write(html);
+            win.document.close();
+            win.focus();
+            setTimeout(() => {
+                win.print();
+            }, 500);
+
+        } catch (err) {
+            console.error('Report error:', err);
+        } finally {
+            setReportLoading(false);
+        }
+    };
+
     if (!mounted) return null;
 
     return (
@@ -144,6 +276,46 @@ export default function UsageDashboard() {
                     <GlowButton variant="ghost" onClick={handleExportCSV} icon={Download} className="px-6 py-3">EXPORT LEDGER</GlowButton>
                 </motion.div>
             </div>
+
+            {/* Monthly Report Section */}
+            <PurpleCard className="p-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h3 className="text-lg font-bold text-text-primary mb-1">Monthly Anchor Report</h3>
+                        <p className="text-text-muted text-sm">Download a branded PDF report of all anchors for any month.</p>
+                    </div>
+                    <div className="flex items-center gap-3 flex-wrap">
+                        <select
+                            value={reportMonth}
+                            onChange={e => setReportMonth(parseInt(e.target.value))}
+                            className="bg-bg-surface border border-bg-border rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-purple-vivid"
+                        >
+                            {['January','February','March','April','May','June',
+                              'July','August','September','October','November','December']
+                              .map((m, i) => (
+                                <option key={i} value={i + 1}>{m}</option>
+                            ))}
+                        </select>
+                        <select
+                            value={reportYear}
+                            onChange={e => setReportYear(parseInt(e.target.value))}
+                            className="bg-bg-surface border border-bg-border rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-purple-vivid"
+                        >
+                            {[2024, 2025, 2026, 2027].map(y => (
+                                <option key={y} value={y}>{y}</option>
+                            ))}
+                        </select>
+                        <GlowButton
+                            onClick={handleDownloadReport}
+                            loading={reportLoading}
+                            disabled={reportLoading}
+                        >
+                            <Download className="w-4 h-4 mr-2" />
+                            Download PDF
+                        </GlowButton>
+                    </div>
+                </div>
+            </PurpleCard>
 
             {/* Metrics Row */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

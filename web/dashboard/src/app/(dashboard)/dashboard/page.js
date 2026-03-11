@@ -12,12 +12,12 @@ import {
     Search, SlidersHorizontal, Calendar, Copy, ChevronLeft,
     Clock, AlertTriangle, Info, ArrowUpRight, ChevronRight as ChevronRightIcon,
     Ban, ShieldAlert, X, TerminalSquare, Rocket, Check, RefreshCw, BarChart2,
-    TrendingUp, TrendingDown, Wallet, Activity, Globe, Zap
+    TrendingUp, TrendingDown, Wallet, Activity, Globe, Zap, Download, QrCode
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import {
     PurpleCard, GlowButton, PurpleBadge, MonoHash, PurpleSkeleton,
-    CountUp, PurpleTable, PurpleTableRow, PurpleInput
+    CountUp, PurpleTable, PurpleTableRow, PurpleInput, PurpleModal
 } from '@/components/ui/PurpleUI';
 
 const AreaChart = dynamic(() => import('recharts').then(m => m.AreaChart), { ssr: false });
@@ -50,6 +50,14 @@ export default function AnalyticsDashboard() {
     const [checklistDismissed, setChecklistDismissed] = useState(false);
     const [revokeModalRecord, setRevokeModalRecord] = useState(null);
     const [toast, setToast] = useState(null);
+    const [qrHash, setQrHash] = useState(null);
+    const [qrCopied, setQrCopied] = useState(false);
+
+    const verifyUrl = (hash) =>
+        `https://app.sipheron.com/verify/${hash}`;
+
+    const qrUrl = (hash) =>
+        `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(verifyUrl(hash))}&bgcolor=000000&color=a855f7&qzone=2`;
 
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
@@ -161,6 +169,31 @@ export default function AnalyticsDashboard() {
         if (currentPage !== 1) handlePageChange(1);
     }, [searchTerm, statusFilter]);
 
+    const handleExport = async (format = 'csv') => {
+        try {
+            // Use raw fetch with credentials to trigger file download
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL || 'https://api.sipheron.com'}/api/hashes/export?format=${format}`,
+                { credentials: 'include' }
+            );
+
+            if (!response.ok) throw new Error('Export failed');
+
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `sipheron-hashes-${Date.now()}.${format === 'json' ? 'json' : 'csv'}`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error('Export error:', err);
+            showToast('Failed to export data', 'error');
+        }
+    };
+
     if (!mounted) return null;
 
     if (showWizard) {
@@ -195,6 +228,26 @@ export default function AnalyticsDashboard() {
                     <div className="flex flex-col items-end mr-4 hidden lg:flex">
                         <span className="text-[10px] text-text-muted uppercase font-bold tracking-widest leading-none mb-1">Last Data Sync</span>
                         <span className="text-xs font-mono text-purple-glow">{lastSync.toLocaleTimeString()}</span>
+                    </div>
+                    <div className="flex gap-2 mr-2">
+                        <GlowButton
+                            variant="ghost"
+                            onClick={() => handleExport('csv')}
+                            className="text-xs"
+                            title="Export as CSV"
+                        >
+                            <Download className="w-4 h-4 mr-2" />
+                            Export CSV
+                        </GlowButton>
+                        <GlowButton
+                            variant="ghost"
+                            onClick={() => handleExport('json')}
+                            className="text-xs"
+                            title="Export as JSON"
+                        >
+                            <Download className="w-4 h-4 mr-2" />
+                            Export JSON
+                        </GlowButton>
                     </div>
                     <GlowButton onClick={() => { fetchData(); fetchHashes(); fetchUsage(); }} className="px-4 py-2" variant="ghost">
                         <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -494,11 +547,21 @@ export default function AnalyticsDashboard() {
                                             </PurpleBadge>
                                         </td>
                                         <td className="px-5 py-4 text-right">
-                                            <Link href={`/dashboard/hashes/${record.hash}`}>
-                                                <motion.button whileHover={{ x: 3 }} className="text-purple-glow hover:text-purple-bright transition-colors">
-                                                    <ChevronRight className="w-5 h-5" />
-                                                </motion.button>
-                                            </Link>
+                                            <div className="flex items-center justify-end gap-3">
+                                                <GlowButton
+                                                    variant="ghost"
+                                                    onClick={() => setQrHash(record.hash)}
+                                                    className="!px-3 !py-1.5 min-h-0 text-xs"
+                                                    title="Generate QR Code"
+                                                >
+                                                    <QrCode className="w-3.5 h-3.5" />
+                                                </GlowButton>
+                                                <Link href={`/dashboard/hashes/${record.hash}`}>
+                                                    <motion.button whileHover={{ x: 3 }} className="text-purple-glow hover:text-purple-bright transition-colors">
+                                                        <ChevronRight className="w-5 h-5" />
+                                                    </motion.button>
+                                                </Link>
+                                            </div>
                                         </td>
                                     </PurpleTableRow>
                                 ))
@@ -591,6 +654,78 @@ export default function AnalyticsDashboard() {
                     />
                 )}
             </AnimatePresence>
+
+            <PurpleModal
+                isOpen={!!qrHash}
+                onClose={() => { setQrHash(null); setQrCopied(false); }}
+                title="Verification QR Code"
+            >
+                {qrHash && (
+                    <div className="space-y-6 flex flex-col items-center">
+                        <p className="text-[12px] text-text-muted text-center">
+                            Share this QR code to let anyone verify this document's authenticity without logging in.
+                        </p>
+
+                        {/* QR Code image */}
+                        <div className="p-4 bg-black rounded-2xl border border-bg-border">
+                            <img
+                                src={qrUrl(qrHash)}
+                                alt="Verification QR Code"
+                                width={220}
+                                height={220}
+                                className="rounded-xl"
+                            />
+                        </div>
+
+                        {/* Verification URL */}
+                        <div className="w-full space-y-2">
+                            <label className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] ml-1">
+                                Verification Link
+                            </label>
+                            <div className="flex gap-2">
+                                <div className="flex-1 bg-black border border-bg-border rounded-lg px-3 py-2.5 font-mono text-[11px] text-purple-300 truncate">
+                                    {verifyUrl(qrHash)}
+                                </div>
+                                <GlowButton
+                                    variant="ghost"
+                                    className="!px-3 shrink-0"
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(verifyUrl(qrHash));
+                                        setQrCopied(true);
+                                        setTimeout(() => setQrCopied(false), 2000);
+                                    }}
+                                >
+                                    {qrCopied
+                                        ? <Check className="w-4 h-4 text-success" />
+                                        : <Copy className="w-4 h-4" />
+                                    }
+                                </GlowButton>
+                            </div>
+                        </div>
+
+                        {/* Download QR */}
+                        <a
+                            href={qrUrl(qrHash)}
+                            download={`sipheron-qr-${qrHash.slice(0, 12)}.png`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full"
+                        >
+                            <GlowButton variant="ghost" className="w-full">
+                                <Download className="w-4 h-4 mr-2" />
+                                Download QR PNG
+                            </GlowButton>
+                        </a>
+
+                        {/* Hash preview */}
+                        <div className="w-full bg-black/40 border border-bg-border rounded-xl p-3">
+                            <p className="text-[10px] text-gray-500 uppercase tracking-widest mb-1">Hash</p>
+                            <p className="font-mono text-[11px] text-text-muted break-all">{qrHash}</p>
+                        </div>
+                    </div>
+                )}
+            </PurpleModal>
+
         </div>
     );
 }

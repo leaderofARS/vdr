@@ -130,9 +130,11 @@ app.use((req, res, next) => {
         // Wait, if login is a POST, it won't have the CSRF token yet before login!
         // So if the path contains auth/login or auth/register we bypass.
         if (
+            req.path.startsWith('/api/hashes/public') ||
             req.path.includes('/auth/login') ||
             req.path.includes('/auth/register') ||
             req.path.includes('/auth/forgot-password') ||
+            req.path.includes('/auth/reset-password') ||
             req.path === '/register' ||
             req.path === '/api/webhooks' ||
             req.path.startsWith('/api/keys') ||
