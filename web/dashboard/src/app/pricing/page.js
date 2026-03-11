@@ -30,7 +30,7 @@ import {
     ChevronRight,
     Plus
 } from 'lucide-react';
-import LandingNavbar from '@/components/LandingNavbar';
+
 
 // --- Components ---
 
@@ -337,7 +337,7 @@ export default function PricingPage() {
 
     return (
         <div className="min-h-screen bg-[#0A0A0F] text-[#F8F8FF] font-sans selection:bg-[#4F6EF7]/30 selection:text-white">
-            <LandingNavbar />
+
 
             <main className="pt-32 pb-24">
                 {/* Section 1: Hero */}

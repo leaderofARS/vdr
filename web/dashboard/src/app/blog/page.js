@@ -20,7 +20,7 @@ import {
     CheckCircle2,
     ExternalLink
 } from 'lucide-react';
-import LandingNavbar from '@/components/LandingNavbar';
+
 
 // --- Shared Components ---
 
@@ -291,7 +291,7 @@ export default function BlogPage() {
 
     return (
         <div className="min-h-screen bg-[#0A0A0F] text-[#F8F8FF] font-sans selection:bg-[#4F6EF7]/30 selection:text-white overflow-x-hidden">
-            <LandingNavbar />
+
 
             <main className="pt-32 pb-24">
                 {/* Hero Section */}

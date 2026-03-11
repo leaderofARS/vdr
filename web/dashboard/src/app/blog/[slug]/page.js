@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { notFound, useParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Clock, Share2, Twitter, Linkedin, Link as LinkIcon, CheckCircle2 } from 'lucide-react';
-import LandingNavbar from '@/components/LandingNavbar';
+
 
 // --- Stub Data ---
 const blogPosts = {
@@ -289,7 +289,7 @@ export default function BlogPost() {
 
     return (
         <div className="min-h-screen bg-[#0A0A0F] text-[#F8F8FF] font-sans selection:bg-[#4F6EF7]/30 selection:text-white">
-            <LandingNavbar />
+
 
             <main className="pt-32 pb-24">
                 <article className="max-w-4xl mx-auto px-6">
