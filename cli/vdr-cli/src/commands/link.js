@@ -27,22 +27,29 @@ function createLinkCommand() {
                     headers: { 'x-api-key': apiKey }
                 });
 
-                const { organization, user } = response.data;
+                // FIX: Support different response formats and provide fallbacks
+                const org = response.data.organization || response.data.org || {};
+                const user = response.data.user || {};
+
+                const orgName = org.name || "N/A";
+                const orgId = org.id || "N/A";
+                const solanaPDA = org.solanaPubkey || "N/A";
+                const userEmail = user.email || "N/A";
 
                 // Update local config
                 config.apiKey = apiKey;
-                config.organizationId = organization.id;
-                config.organizationName = organization.name;
+                config.organizationId = org.id || null;
+                config.organizationName = org.name || null;
 
                 saveConfig(config);
 
                 spinner.succeed(chalk.green("CLI Linked Successfully!"));
 
                 console.log("\n" + chalk.bold("--- Institutional Context ---"));
-                console.log(`${chalk.cyan("Organization:")} ${organization.name}`);
-                console.log(`${chalk.cyan("ID:")}           ${organization.id}`);
-                console.log(`${chalk.cyan("Admin:")}        ${user.email}`);
-                console.log(`${chalk.cyan("Solana PDA:")}   ${organization.solanaPubkey}`);
+                console.log(`${chalk.cyan("Organization:")} ${orgName}`);
+                console.log(`${chalk.cyan("ID:")}           ${orgId}`);
+                console.log(`${chalk.cyan("Admin:")}        ${userEmail}`);
+                console.log(`${chalk.cyan("Solana PDA:")}   ${solanaPDA}`);
                 console.log("\n" + chalk.gray("Your CLI is now authorized to anchor proofs to this institution's registry."));
 
             } catch (error) {
