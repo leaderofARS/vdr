@@ -93,7 +93,7 @@ export default function UsageDashboard() {
         const csvContent = "data:text/csv;charset=utf-8,"
             + headers.join(",") + "\n"
             + logs.map(log => [
-                log.timestamp,
+                log.timestamp || log.createdAt || '',
                 log.keyName,
                 log.endpoint,
                 log.method,
@@ -312,7 +312,13 @@ export default function UsageDashboard() {
                         {logsLoading ? <UsageTableSkeleton cols={5} rows={10} /> : logs.length > 0 ? logs.map((log, i) => (
                             <PurpleTableRow key={i}>
                                 <td className="px-8 py-4 text-[11px] font-mono text-text-muted">
-                                    {new Date(log.timestamp).toLocaleString().toUpperCase()}
+                                    {(() => {
+                                        const raw = log.timestamp || log.createdAt;
+                                        if (!raw) return '—';
+                                        const d = new Date(raw);
+                                        if (isNaN(d.getTime())) return '—';
+                                        return d.toLocaleString('en-US', { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'UTC' }).toUpperCase();
+                                    })()}
                                 </td>
                                 <td className="px-8 py-4">
                                     <div className="flex items-center gap-2">

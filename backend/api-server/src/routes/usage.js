@@ -177,7 +177,8 @@ router.get('/logs', authenticate, async (req, res, next) => {
         res.json(buildPaginationResponse(
             records.map(r => ({
                 ...r,
-                keyName: r.apiKey?.name
+                keyName: r.apiKey?.name,
+                timestamp: r.createdAt
             })),
             total,
             page,
