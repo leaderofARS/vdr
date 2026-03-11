@@ -25,6 +25,10 @@ export default function ApiKeysPage() {
     const [newKeyData, setNewKeyData] = useState(null);
     const [copied, setCopied] = useState(false);
     const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+    const [revealModalOpen, setRevealModalOpen] = useState(false);
+    const [revealKeyInput, setRevealKeyInput] = useState('');
+    const [revealCopied, setRevealCopied] = useState(false);
+    const [sessionKeys, setSessionKeys] = useState({}); // id -> rawKey, lost on page refresh
 
     const showToast = (message, type = 'success') => {
         setToast({ message, type });
@@ -85,6 +89,9 @@ export default function ApiKeysPage() {
             // data = { success, apiKey, id, message }
             setNewKeyData(data);
 
+            // Add to session keys for persistence in this view
+            setSessionKeys(prev => ({ ...prev, [data.id]: data.apiKey }));
+
             // Add to list — backend doesn't return the raw key in list view
             // so we store it temporarily for display only
             setKeys(prev => [{
@@ -106,6 +113,14 @@ export default function ApiKeysPage() {
         } finally {
             setCreateLoading(false);
         }
+    };
+
+    const handleRevealCopy = () => {
+        if (!revealKeyInput.trim()) return;
+        navigator.clipboard.writeText(revealKeyInput.trim());
+        setRevealCopied(true);
+        showToast('Key copied to clipboard');
+        setTimeout(() => setRevealCopied(false), 2000);
     };
 
     // FIX 3: Delete — confirm before deleting, handle errors properly
@@ -217,8 +232,8 @@ export default function ApiKeysPage() {
                                 <td className="px-5 py-4">
                                     <code className="text-[12px] text-text-muted font-mono bg-black/40 px-2 py-1 rounded border border-bg-border">
                                         {/* Backend only returns raw key at creation time */}
-                                        {row._newKey
-                                            ? `${row._newKey.slice(0, 12)}••••`
+                                        {row._newKey || sessionKeys[row.id]
+                                            ? `${(row._newKey || sessionKeys[row.id]).slice(0, 12)}••••`
                                             : '••••••••••••'}
                                     </code>
                                 </td>
@@ -239,14 +254,25 @@ export default function ApiKeysPage() {
                                 </td>
                                 <td className="px-5 py-4 text-right">
                                     <div className="flex gap-2 justify-end">
-                                        {row._newKey && (
+                                        {/* Copy button — opens paste-your-key modal */}
+                                        <GlowButton
+                                            variant="ghost"
+                                            onClick={() => { setRevealKeyInput(''); setRevealCopied(false); setRevealModalOpen(true); }}
+                                            className="!px-3 !py-1.5 min-h-0 text-xs"
+                                            title="Copy key"
+                                        >
+                                            <Copy className="w-3.5 h-3.5" />
+                                        </GlowButton>
+
+                                        {/* If key was just created this session, show direct copy */}
+                                        {(row._newKey || sessionKeys[row.id]) && (
                                             <GlowButton
                                                 variant="ghost"
-                                                onClick={() => handleCopy(row._newKey)}
-                                                className="!px-3 !py-1.5 min-h-0 text-xs"
-                                                title="Copy key"
+                                                onClick={() => handleCopy(row._newKey || sessionKeys[row.id])}
+                                                className="!px-3 !py-1.5 min-h-0 text-xs text-success"
+                                                title="Copy new key"
                                             >
-                                                <Copy className="w-3.5 h-3.5" />
+                                                <Check className="w-3.5 h-3.5" />
                                             </GlowButton>
                                         )}
                                         <GlowButton
@@ -390,6 +416,68 @@ export default function ApiKeysPage() {
                         </GlowButton>
                     </div>
                 )}
+            </PurpleModal>
+
+            {/* Reveal / Paste Key Modal */}
+            <PurpleModal
+                isOpen={revealModalOpen}
+                onClose={() => { setRevealModalOpen(false); setRevealKeyInput(''); setRevealCopied(false); }}
+                title="Copy API Key"
+            >
+                <div className="space-y-6">
+                    <div className="p-4 bg-purple-vivid/10 border border-purple-vivid/20 rounded-lg flex gap-3">
+                        <div className="mt-0.5">
+                            <Info className="w-5 h-5 text-purple-vivid shrink-0" />
+                        </div>
+                        <p className="text-[12px] text-text-secondary leading-relaxed">
+                            API keys are not stored in plain text for security. Paste your key below to copy it to clipboard, or retrieve it from where you saved it originally.
+                        </p>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] ml-1">
+                            Paste Your Key
+                        </label>
+                        <div className="flex gap-2">
+                            <PurpleInput
+                                value={revealKeyInput}
+                                onChange={(e) => setRevealKeyInput(e.target.value)}
+                                placeholder="svdr_••••••••••••••••"
+                                type="password"
+                            />
+                            <GlowButton
+                                variant="ghost"
+                                className="!px-4 shrink-0"
+                                onClick={handleRevealCopy}
+                                disabled={!revealKeyInput.trim()}
+                            >
+                                {revealCopied
+                                    ? <Check className="w-5 h-5 text-success" />
+                                    : <Copy className="w-5 h-5" />
+                                }
+                            </GlowButton>
+                        </div>
+                    </div>
+
+                    <div className="p-4 bg-warning/10 border border-warning/20 rounded-lg flex gap-3">
+                        <div className="mt-0.5">
+                            <AlertTriangle className="w-5 h-5 text-warning shrink-0" />
+                        </div>
+                        <div>
+                            <p className="text-[13px] font-bold text-warning">Lost your key?</p>
+                            <p className="text-[12px] text-text-secondary mt-1">
+                                If you no longer have access to your key, revoke it and create a new one. Rate limits reset every 15 minutes.
+                            </p>
+                        </div>
+                    </div>
+
+                    <GlowButton
+                        className="w-full"
+                        onClick={() => { setRevealModalOpen(false); setRevealKeyInput(''); }}
+                    >
+                        Done
+                    </GlowButton>
+                </div>
             </PurpleModal>
         </div>
     );
