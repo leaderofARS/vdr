@@ -60,10 +60,10 @@ export default function BillingPage() {
                 <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
                     <h1 className="text-3xl font-bold bg-gradient-to-r from-text-primary to-text-secondary bg-clip-text text-transparent mb-2 flex items-center gap-4">
                         <Wallet className="w-8 h-8 text-purple-vivid" />
-                        Treasury & Subscriptions
+                        Subscriptions & Billing
                     </h1>
                     <div className="flex items-center gap-3">
-                        <PurpleBadge variant="purple">FINANCE ENGINE</PurpleBadge>
+                        <PurpleBadge variant="purple">PLAN MANAGEMENT</PurpleBadge>
                         <span className="text-text-muted text-xs font-mono uppercase tracking-widest">
                             March 2026 Billing Cycle
                         </span>
@@ -77,14 +77,14 @@ export default function BillingPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Active Plan Intelligence */}
-                <PurpleCard className="relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 p-6 opacity-[0.03] group-hover:opacity-[0.06] transition-opacity pointer-events-none">
+                <PurpleCard className="relative overflow-hidden group border-purple-vivid/20">
+                    <div className="absolute top-0 right-0 p-6 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity pointer-events-none">
                         <Gem className="w-48 h-48 text-purple-glow" />
                     </div>
 
                     <div className="relative z-10 space-y-8">
                         <div>
-                            <PurpleBadge variant="ghost" className="mb-4">ACTIVE AUTHORITY</PurpleBadge>
+                            <PurpleBadge variant="ghost" className="mb-4">ACTIVE PLAN</PurpleBadge>
                             <h2 className="text-4xl font-bold text-white tracking-tight mb-2">Standard</h2>
                             <p className="text-sm text-text-muted leading-relaxed">
                                 Fundamental on-chain anchoring for institutional research and testing.
@@ -109,7 +109,7 @@ export default function BillingPage() {
                 <PurpleCard className="lg:col-span-2 space-y-10">
                     <div className="flex items-center justify-between">
                         <h3 className="text-xs font-bold text-text-primary uppercase tracking-[0.2em] flex items-center gap-3">
-                            <FileBarChart className="w-4 h-4 text-purple-glow" />
+                            <Activity className="w-4 h-4 text-purple-glow" />
                             Quota Utilization
                         </h3>
                         <div className="text-right">
@@ -182,106 +182,116 @@ export default function BillingPage() {
                 </PurpleCard>
             </div>
 
-            {/* Matrix Comparison */}
+            {/* Plans */}
             <div className="space-y-8">
                 <div>
-                    <h3 className="text-2xl font-bold text-white tracking-tight uppercase">Plan Matrix</h3>
+                    <h3 className="text-2xl font-bold text-white tracking-tight uppercase">Available Plans</h3>
                     <p className="text-sm text-text-muted mt-1 uppercase tracking-widest font-bold opacity-60">Architect the right scale for your cryptographic operations</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     {/* Standard Tier */}
-                    <PurpleCard className="opacity-60 grayscale-[0.5] border-bg-border">
-                        <div className="mb-10">
-                            <h4 className="text-sm font-bold text-text-muted uppercase tracking-[0.2em] mb-2">Fundamental</h4>
-                            <div className="flex items-baseline gap-2">
-                                <span className="text-4xl font-mono font-bold text-white">$0</span>
+                    <PurpleCard className="opacity-70 border-bg-border hover:opacity-100 transition-opacity flex flex-col">
+                        <div className="mb-8">
+                            <h4 className="text-sm font-bold text-text-muted uppercase tracking-[0.2em] mb-4">Fundamental</h4>
+                            <div className="flex items-baseline gap-2 mb-2">
+                                <span className="text-5xl font-black text-white">$0</span>
                                 <span className="text-xs text-text-muted font-bold uppercase tracking-widest">/ Month</span>
                             </div>
+                            <p className="text-xs text-text-muted">Perfect for exploring the API and testing integrations</p>
                         </div>
-                        <div className="space-y-6 flex-1">
-                            <MatrixFeature icon={Check} label="10 Anchors / mo" active />
-                            <MatrixFeature icon={Check} label="1 Security Key" active />
-                            <MatrixFeature icon={Check} label="Devnet Registry" active />
-                            <MatrixFeature icon={X} label="Mainnet Ledger" />
-                            <MatrixFeature icon={X} label="Live Webhooks" />
+                        <div className="space-y-5 flex-1 mb-8">
+                            <PlanCheck icon={Check} label="10 Anchors / mo" />
+                            <PlanCheck icon={Check} label="1 Security Key" />
+                            <PlanCheck icon={Check} label="Devnet Registry" />
+                            <PlanCheck icon={X} label="Mainnet Ledger" disabled />
+                            <PlanCheck icon={X} label="Live Webhooks" disabled />
                         </div>
-                        <GlowButton variant="ghost" disabled className="w-full mt-10 py-4 opacity-50">CURRENT AUTHORITY</GlowButton>
+                        <div className="mt-auto px-6 py-4 rounded-xl bg-bg-surface/50 border border-bg-border text-center text-[10px] font-bold text-text-muted uppercase tracking-[0.2em]">
+                            CURRENT PLAN
+                        </div>
                     </PurpleCard>
 
-                    {/* Pro Tier */}
-                    <PurpleCard className="border-purple-vivid/40 bg-purple-vivid/[0.02] shadow-[0_0_40px_rgba(155,110,255,0.1)] relative">
-                        <div className="absolute top-0 right-8 -translate-y-1/2">
-                            <PurpleBadge variant="purple" pulse className="px-4 py-1 flex items-center gap-2">
+                    {/* Pro Tier (Featured) */}
+                    <PurpleCard className="border-purple-vivid/40 bg-[#0C0C14] shadow-[0_20px_60px_rgba(155,110,255,0.15)] relative transform md:-translate-y-4 flex flex-col z-10">
+                        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-blue-accent via-purple-vivid to-blue-accent" />
+                        <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
+                            <PurpleBadge variant="purple" pulse className="px-5 py-1 flex items-center gap-2 shadow-lg">
                                 <Sparkles className="w-3 h-3" /> PRODUCTION READY
                             </PurpleBadge>
                         </div>
-                        <div className="mb-10">
-                            <h4 className="text-sm font-bold text-purple-glow uppercase tracking-[0.2em] mb-2">Institutional</h4>
-                            <div className="flex items-baseline gap-2">
-                                <span className="text-4xl font-mono font-bold text-white">$29</span>
+                        <div className="mb-8 mt-2">
+                            <h4 className="text-sm font-bold text-purple-glow uppercase tracking-[0.2em] mb-4">Institutional</h4>
+                            <div className="flex items-baseline gap-2 mb-2">
+                                <span className="text-5xl font-black text-white">$29</span>
                                 <span className="text-xs text-text-muted font-bold uppercase tracking-widest">/ Month</span>
                             </div>
+                            <p className="text-xs text-text-muted">For production apps requiring immutable permanent storage</p>
                         </div>
-                        <div className="space-y-6 flex-1">
-                            <MatrixFeature icon={Check} label="Unlimited Anchoring" active emphasis />
-                            <MatrixFeature icon={Check} label="30 Security Keys" active emphasis />
-                            <MatrixFeature icon={Check} label="Mainnet-Beta Cluster" active emphasis />
-                            <MatrixFeature icon={Check} label="Instant Webhooks" active emphasis />
-                            <MatrixFeature icon={Check} label="Custom Metadata" active emphasis />
+                        <div className="space-y-5 flex-1 mb-8 bg-purple-dim/5 p-6 rounded-2xl border border-purple-vivid/10">
+                            <PlanCheck icon={Check} label="Unlimited Anchoring" emphasis />
+                            <PlanCheck icon={Check} label="30 Security Keys" emphasis />
+                            <PlanCheck icon={Check} label="Mainnet-Beta Cluster" emphasis />
+                            <PlanCheck icon={Check} label="Instant Webhooks" emphasis />
+                            <PlanCheck icon={Check} label="Custom Metadata" emphasis />
                         </div>
-                        <GlowButton onClick={() => setShowUpgradeModal(true)} className="w-full mt-10 py-4" icon={Gem}>DEPLOY PRO STACK</GlowButton>
+                        <GlowButton onClick={() => setShowUpgradeModal(true)} className="w-full py-4 mt-auto text-sm font-bold" icon={Gem}>
+                            UPGRADE TO PRO
+                        </GlowButton>
                     </PurpleCard>
 
                     {/* Enterprise Tier */}
-                    <PurpleCard className="border-blue-accent/30 bg-blue-accent/[0.02]">
-                        <div className="mb-10">
-                            <h4 className="text-sm font-bold text-blue-accent uppercase tracking-[0.2em] mb-2">Hyper-Scale</h4>
-                            <div className="text-3xl font-bold text-white uppercase tracking-tight">Custom</div>
+                    <PurpleCard className="border-blue-accent/20 hover:border-blue-accent/40 transition-colors flex flex-col bg-gradient-to-b from-blue-accent/[0.02] to-transparent">
+                        <div className="mb-8">
+                            <h4 className="text-sm font-bold text-blue-accent uppercase tracking-[0.2em] mb-4">Hyper-Scale</h4>
+                            <div className="text-4xl font-black text-white tracking-tight mb-2 mt-2">Custom</div>
+                            <p className="text-xs text-text-muted">For high-throughput enterprise security environments</p>
                         </div>
-                        <div className="space-y-6 flex-1">
-                            <MatrixFeature icon={Check} label="Dedicated RPC Nodes" active emphasis="blue" />
-                            <MatrixFeature icon={Check} label="Siph-Shield Support" active emphasis="blue" />
-                            <MatrixFeature icon={Check} label="Protocol Governance" active emphasis="blue" />
-                            <MatrixFeature icon={Check} label="SLA 99.9% Finality" active emphasis="blue" />
-                            <MatrixFeature icon={Check} label="SAML Enforcement" active emphasis="blue" />
+                        <div className="space-y-5 flex-1 mb-8">
+                            <PlanCheck icon={Check} label="Dedicated RPC Nodes" emphasis="blue" />
+                            <PlanCheck icon={Check} label="Siph-Shield Support" emphasis="blue" />
+                            <PlanCheck icon={Check} label="Protocol Governance" emphasis="blue" />
+                            <PlanCheck icon={Check} label="SLA 99.9% Finality" emphasis="blue" />
+                            <PlanCheck icon={Check} label="SAML Enforcement" emphasis="blue" />
                         </div>
-                        <GlowButton onClick={() => window.open('mailto:sales@sipheron.io')} variant="ghost" className="w-full mt-10 py-4 border-blue-accent/30 text-blue-accent" icon={ExternalLink}>CONTACT TREASURY</GlowButton>
+                        <GlowButton onClick={() => window.open('mailto:sales@sipheron.io')} variant="ghost" className="w-full mt-auto py-4 border-blue-accent/30 text-blue-accent hover:bg-blue-accent/10 hover:text-white" icon={ExternalLink}>
+                            CONTACT SALES
+                        </GlowButton>
                     </PurpleCard>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 my-10">
                 {/* Billing History */}
                 <PurpleCard className="p-0 overflow-hidden border-bg-border/50">
-                    <div className="px-8 py-6 border-b border-bg-border/50 bg-purple-dim/5 flex items-center justify-between">
+                    <div className="px-8 py-6 border-b border-bg-border/50 bg-black/20 flex items-center justify-between">
                         <h3 className="text-xs font-bold text-text-primary uppercase tracking-widest flex items-center gap-2">
-                            <Clock className="w-4 h-4 text-purple-glow" /> Treasury Signals
+                            <FileBarChart className="w-4 h-4 text-purple-glow" /> Billing History
                         </h3>
                     </div>
-                    <div className="p-12 text-center">
-                        <div className="w-16 h-16 bg-purple-dim/10 rounded-2xl flex items-center justify-center mx-auto mb-6 opacity-30">
+                    <div className="p-12 text-center bg-bg-surface/30">
+                        <div className="w-16 h-16 bg-purple-dim/10 rounded-2xl flex items-center justify-center mx-auto mb-6 opacity-40 border border-purple-vivid/20">
                             <Activity className="w-8 h-8 text-purple-glow" />
                         </div>
-                        <h4 className="text-sm font-bold text-white uppercase tracking-widest mb-2">No historical events</h4>
-                        <p className="text-xs text-text-muted max-w-xs mx-auto">Standard Tier organizations do not generate subscription invoices.</p>
+                        <h4 className="text-base font-bold text-white tracking-tight mb-2">No invoices yet</h4>
+                        <p className="text-sm text-text-muted max-w-xs mx-auto">You are currently on the free Fundamental plan which does not generate invoices.</p>
                     </div>
                 </PurpleCard>
 
                 {/* Secure Payment */}
                 <PurpleCard className="p-0 overflow-hidden border-bg-border/50">
-                    <div className="px-8 py-6 border-b border-bg-border/50 bg-purple-dim/5 flex items-center justify-between">
+                    <div className="px-8 py-6 border-b border-bg-border/50 bg-black/20 flex items-center justify-between">
                         <h3 className="text-xs font-bold text-text-primary uppercase tracking-widest flex items-center gap-2">
-                            <Plus className="w-4 h-4 text-purple-glow" /> Settlement Methods
+                            <CreditCard className="w-4 h-4 text-purple-glow" /> Payment Methods
                         </h3>
                     </div>
-                    <div className="p-12 text-center">
-                        <div className="w-16 h-16 bg-purple-dim/10 rounded-2xl flex items-center justify-center mx-auto mb-6 opacity-30">
-                            <CreditCard className="w-8 h-8 text-purple-glow" />
+                    <div className="p-12 text-center bg-bg-surface/30">
+                        <div className="w-16 h-16 bg-purple-dim/10 rounded-2xl flex items-center justify-center mx-auto mb-6 opacity-40 border border-purple-vivid/20">
+                            <Lock className="w-8 h-8 text-purple-glow" />
                         </div>
-                        <h4 className="text-sm font-bold text-white uppercase tracking-widest mb-2">Locked Ecosystem</h4>
-                        <p className="text-xs text-text-muted max-w-xs mx-auto mb-8">Add a settlement method to provision production-grade Mainnet access.</p>
-                        <GlowButton variant="ghost" className="text-[10px]" onClick={() => showComingSoonToast()}>ADD PAYMENT INTERFACE</GlowButton>
+                        <h4 className="text-base font-bold text-white tracking-tight mb-2">Secure Billing</h4>
+                        <p className="text-sm text-text-muted max-w-sm mx-auto mb-8">Add a payment method to seamlessly upgrade to production-grade access.</p>
+                        <GlowButton variant="ghost" className="text-xs uppercase font-bold tracking-widest" onClick={() => showComingSoonToast()}>ADD PAYMENT METHOD</GlowButton>
                     </div>
                 </PurpleCard>
             </div>
@@ -295,13 +305,13 @@ export default function BillingPage() {
                         initial={{ opacity: 0, y: 50, x: '-50%' }}
                         animate={{ opacity: 1, y: 0, x: '-50%' }}
                         exit={{ opacity: 0, scale: 0.95, x: '-50%' }}
-                        className="fixed bottom-12 left-1/2 z-[150] px-6 py-4 rounded-2xl bg-bg-surface border border-purple-vivid/20 shadow-2xl flex items-center gap-4 min-w-[320px]"
+                        className="fixed bottom-12 left-1/2 z-[150] px-6 py-4 rounded-2xl bg-[#08080C] border border-purple-vivid/30 shadow-[0_20px_60px_rgba(155,110,255,0.3)] flex items-center gap-4 min-w-[320px]"
                     >
                         <div className="p-2 rounded-full bg-purple-vivid/10 text-purple-vivid">
                             <Info className="w-5 h-5" />
                         </div>
                         <span className="text-sm font-bold text-text-primary">{toast}</span>
-                        <button onClick={() => setToast(null)} className="ml-auto text-text-muted hover:text-white">
+                        <button onClick={() => setToast(null)} className="ml-auto text-text-muted hover:text-white transition-colors">
                             <X className="w-4 h-4" />
                         </button>
                     </motion.div>
@@ -322,15 +332,20 @@ function PlanFeature({ label, active }) {
     );
 }
 
-function MatrixFeature({ icon: Icon, label, active, emphasis }) {
-    const colorClass = emphasis === 'blue' ? 'text-blue-accent' : emphasis ? 'text-purple-glow' : 'text-text-muted';
+function PlanCheck({ icon: Icon, label, disabled, emphasis }) {
+    const textColor = emphasis === 'blue' ? 'text-blue-accent' : emphasis ? 'text-purple-glow' : 'text-text-primary';
+    const iconColor = emphasis === 'blue' ? 'text-blue-accent bg-blue-accent/10' : emphasis ? 'text-purple-vivid bg-purple-vivid/10' : disabled ? 'text-text-muted opacity-30' : 'text-success bg-success/10';
+    
     return (
-        <div className={`flex items-center gap-4 text-xs ${active ? 'text-text-secondary' : 'text-text-muted opacity-30'}`}>
-            <Icon className={`w-4 h-4 shrink-0 ${active ? (emphasis === 'blue' ? 'text-blue-accent' : 'text-purple-glow') : ''}`} />
-            <span className={active ? 'font-bold tracking-tight' : ''}>{label}</span>
+        <div className={`flex items-center gap-4 text-sm ${disabled ? 'opacity-40' : ''}`}>
+            <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${iconColor}`}>
+                <Icon className="w-3.5 h-3.5" />
+            </div>
+            <span className={`font-medium ${disabled ? 'text-text-muted line-through' : textColor}`}>{label}</span>
         </div>
     );
 }
+
 
 function UpgradeModal({ onClose, onAction }) {
     return (
