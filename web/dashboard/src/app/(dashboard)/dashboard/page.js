@@ -20,13 +20,17 @@ import {
     CountUp, PurpleTable, PurpleTableRow, PurpleInput
 } from '@/components/ui/PurpleUI';
 
+const AreaChart = dynamic(() => import('recharts').then(m => m.AreaChart), { ssr: false });
+const Area = dynamic(() => import('recharts').then(m => m.Area), { ssr: false });
 const BarChart = dynamic(() => import('recharts').then(m => m.BarChart), { ssr: false });
 const Bar = dynamic(() => import('recharts').then(m => m.Bar), { ssr: false });
+const ComposedChart = dynamic(() => import('recharts').then(m => m.ComposedChart), { ssr: false });
 const ResponsiveContainer = dynamic(() => import('recharts').then(m => m.ResponsiveContainer), { ssr: false });
 const YAxis = dynamic(() => import('recharts').then(m => m.YAxis), { ssr: false });
 const XAxis = dynamic(() => import('recharts').then(m => m.XAxis), { ssr: false });
 const Tooltip = dynamic(() => import('recharts').then(m => m.Tooltip), { ssr: false });
 const Cell = dynamic(() => import('recharts').then(m => m.Cell), { ssr: false });
+const CartesianGrid = dynamic(() => import('recharts').then(m => m.CartesianGrid), { ssr: false });
 
 export default function AnalyticsDashboard() {
     const [mounted, setMounted] = useState(false);
@@ -235,63 +239,203 @@ export default function AnalyticsDashboard() {
                 />
             </div>
 
-            {/* Registry Throughput Chart */}
-            <PurpleCard className="overflow-hidden">
-                <div className="flex items-center justify-between mb-8">
-                    <div>
-                        <h3 className="text-lg font-bold text-text-primary flex items-center gap-2">
-                            <Activity className="w-5 h-5 text-purple-vivid" />
-                            Registry Throughput
-                        </h3>
-                        <p className="text-sm text-text-muted">On-chain transaction volume (last 7 days)</p>
-                    </div>
-                    {!usageLoading && (
-                        <div className="flex gap-8">
-                            <div className="text-right">
-                                <p className="text-[10px] text-text-muted uppercase font-bold tracking-wider">Success Rate</p>
-                                <p className="text-xl font-bold text-success font-mono">{usageData.summary?.successRate || '99.9%'}</p>
-                            </div>
-                            <div className="text-right">
-                                <p className="text-[10px] text-text-muted uppercase font-bold tracking-wider">Daily Avg</p>
-                                <p className="text-xl font-bold text-purple-glow font-mono">{(usageData.summary?.requestsThisWeek / 7).toFixed(0) || 0}</p>
-                            </div>
+            {/* Registry Throughput Chart — Premium */}
+            <PurpleCard className="overflow-hidden p-0">
+                {/* Chart Header */}
+                <div className="px-6 pt-6 pb-2">
+                    <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                        <div>
+                            <h3 className="text-lg font-bold text-text-primary flex items-center gap-2.5 mb-1">
+                                <div className="p-1.5 rounded-lg bg-purple-dim/30">
+                                    <Activity className="w-4 h-4 text-purple-vivid" />
+                                </div>
+                                Registry Throughput
+                            </h3>
+                            <p className="text-xs text-text-muted">On-chain transaction volume &middot; Last 7 days</p>
                         </div>
-                    )}
+
+                        {/* Stat Pills Row */}
+                        {!usageLoading && (
+                            <div className="flex flex-wrap gap-3">
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.1 }}
+                                    className="flex items-center gap-3 bg-success/[0.06] border border-success/20 rounded-xl px-4 py-2.5"
+                                >
+                                    <div className="flex flex-col">
+                                        <span className="text-[9px] text-success/60 uppercase font-bold tracking-[0.15em] leading-none mb-1">Success Rate</span>
+                                        <span className="text-xl font-black text-success font-mono leading-none">{usageData.summary?.successRate || '99.9%'}</span>
+                                    </div>
+                                    <div className="w-px h-8 bg-success/20" />
+                                    <CheckCircle2 className="w-5 h-5 text-success/60" />
+                                </motion.div>
+
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.2 }}
+                                    className="flex items-center gap-3 bg-purple-vivid/[0.06] border border-purple-vivid/20 rounded-xl px-4 py-2.5"
+                                >
+                                    <div className="flex flex-col">
+                                        <span className="text-[9px] text-purple-glow/60 uppercase font-bold tracking-[0.15em] leading-none mb-1">Daily Avg</span>
+                                        <span className="text-xl font-black text-purple-glow font-mono leading-none">{(usageData.summary?.requestsThisWeek / 7).toFixed(0) || 0}</span>
+                                    </div>
+                                    <div className="w-px h-8 bg-purple-vivid/20" />
+                                    <BarChart2 className="w-5 h-5 text-purple-glow/60" />
+                                </motion.div>
+
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.3 }}
+                                    className="flex items-center gap-3 bg-blue-accent/[0.06] border border-blue-accent/20 rounded-xl px-4 py-2.5"
+                                >
+                                    <div className="flex flex-col">
+                                        <span className="text-[9px] text-blue-accent/60 uppercase font-bold tracking-[0.15em] leading-none mb-1">Total (7d)</span>
+                                        <span className="text-xl font-black text-blue-accent font-mono leading-none">{usageData.summary?.requestsThisWeek ?? 0}</span>
+                                    </div>
+                                    <div className="w-px h-8 bg-blue-accent/20" />
+                                    <Zap className="w-5 h-5 text-blue-accent/60" />
+                                </motion.div>
+                            </div>
+                        )}
+                    </div>
                 </div>
-                <div className="h-[200px] w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={usageData.analytics || []}>
-                            <XAxis dataKey="date" hide />
-                            <Tooltip
-                                cursor={{ fill: 'rgba(155, 110, 255, 0.05)' }}
-                                content={({ active, payload }) => {
-                                    if (active && payload && payload.length) {
-                                        return (
-                                            <div className="bg-bg-surface/90 backdrop-blur-md border border-bg-border p-3 rounded-xl shadow-2xl">
-                                                <p className="text-xs font-bold text-text-muted mb-1 uppercase tracking-widest">{payload[0].payload.date}</p>
-                                                <p className="text-lg font-bold text-purple-glow">{payload[0].value} Requests</p>
-                                            </div>
-                                        );
-                                    }
-                                    return null;
-                                }}
-                            />
-                            <Bar dataKey="count" radius={[6, 6, 0, 0]}>
-                                {(usageData.analytics || []).map((entry, index) => (
-                                    <Cell
-                                        key={`cell-${index}`}
-                                        fill={index === (usageData.analytics?.length || 0) - 1 ? 'url(#purple-gradient)' : 'var(--bg-border)'}
+
+                {/* Chart Body */}
+                <div className="px-2 pb-4">
+                    <div className="h-[280px] w-full">
+                        {usageLoading ? (
+                            <div className="h-full flex items-center justify-center">
+                                <div className="flex flex-col items-center gap-3">
+                                    <div className="w-8 h-8 border-2 border-purple-vivid/30 border-t-purple-vivid rounded-full animate-spin" />
+                                    <span className="text-xs text-text-muted">Loading chart data...</span>
+                                </div>
+                            </div>
+                        ) : (usageData.analytics || []).length === 0 ? (
+                            <div className="h-full flex items-center justify-center">
+                                <div className="flex flex-col items-center gap-3 text-center">
+                                    <div className="w-14 h-14 rounded-2xl bg-purple-dim/10 border border-purple-vivid/10 flex items-center justify-center">
+                                        <BarChart2 className="w-7 h-7 text-purple-glow/30" />
+                                    </div>
+                                    <p className="text-sm text-text-muted">No throughput data yet</p>
+                                    <p className="text-xs text-text-muted/60">Anchor your first document to see activity</p>
+                                </div>
+                            </div>
+                        ) : (
+                            <ResponsiveContainer width="100%" height="100%">
+                                <ComposedChart data={usageData.analytics || []} margin={{ top: 10, right: 16, left: -10, bottom: 0 }}>
+                                    <defs>
+                                        <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="var(--purple-vivid)" stopOpacity={0.35} />
+                                            <stop offset="60%" stopColor="var(--purple-vivid)" stopOpacity={0.08} />
+                                            <stop offset="100%" stopColor="var(--purple-vivid)" stopOpacity={0} />
+                                        </linearGradient>
+                                        <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="var(--purple-vivid)" stopOpacity={0.9} />
+                                            <stop offset="100%" stopColor="var(--blue-accent)" stopOpacity={0.7} />
+                                        </linearGradient>
+                                        <linearGradient id="barGradientMuted" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="var(--purple-vivid)" stopOpacity={0.25} />
+                                            <stop offset="100%" stopColor="var(--blue-accent)" stopOpacity={0.12} />
+                                        </linearGradient>
+                                    </defs>
+                                    <CartesianGrid
+                                        strokeDasharray="3 6"
+                                        vertical={false}
+                                        stroke="rgba(255,255,255,0.04)"
                                     />
-                                ))}
-                            </Bar>
-                            <defs>
-                                <linearGradient id="purple-gradient" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stopColor="var(--purple-vivid)" />
-                                    <stop offset="100%" stopColor="var(--blue-accent)" />
-                                </linearGradient>
-                            </defs>
-                        </BarChart>
-                    </ResponsiveContainer>
+                                    <XAxis
+                                        dataKey="date"
+                                        axisLine={false}
+                                        tickLine={false}
+                                        tick={{ fill: 'rgba(255,255,255,0.25)', fontSize: 11, fontFamily: 'monospace' }}
+                                        dy={8}
+                                    />
+                                    <YAxis
+                                        axisLine={false}
+                                        tickLine={false}
+                                        tick={{ fill: 'rgba(255,255,255,0.2)', fontSize: 10, fontFamily: 'monospace' }}
+                                        width={40}
+                                        allowDecimals={false}
+                                    />
+                                    <Tooltip
+                                        cursor={{ stroke: 'rgba(155, 110, 255, 0.15)', strokeWidth: 1, strokeDasharray: '4 4' }}
+                                        content={({ active, payload, label }) => {
+                                            if (active && payload && payload.length) {
+                                                const val = payload[0].value;
+                                                return (
+                                                    <div className="bg-[#0C0C14]/95 backdrop-blur-xl border border-purple-vivid/20 p-4 rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.6)] min-w-[180px]">
+                                                        <div className="flex items-center gap-2 mb-3">
+                                                            <div className="w-2 h-2 rounded-full bg-purple-vivid shadow-[0_0_8px_var(--purple-vivid)]" />
+                                                            <span className="text-[10px] font-bold text-text-muted uppercase tracking-[0.15em]">{label}</span>
+                                                        </div>
+                                                        <div className="flex items-baseline gap-1.5">
+                                                            <span className="text-2xl font-black text-white font-mono">{val}</span>
+                                                            <span className="text-xs text-text-muted">transactions</span>
+                                                        </div>
+                                                        <div className="mt-2 pt-2 border-t border-white/5">
+                                                            <div className="flex items-center gap-1.5">
+                                                                <div className={`w-1.5 h-1.5 rounded-full ${val > 0 ? 'bg-success' : 'bg-text-muted'}`} />
+                                                                <span className={`text-[10px] font-bold uppercase tracking-widest ${val > 0 ? 'text-success' : 'text-text-muted'}`}>
+                                                                    {val > 0 ? 'Active' : 'Idle'}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            }
+                                            return null;
+                                        }}
+                                    />
+                                    <Area
+                                        type="monotone"
+                                        dataKey="count"
+                                        stroke="var(--purple-vivid)"
+                                        strokeWidth={2}
+                                        fill="url(#areaGradient)"
+                                        dot={false}
+                                        activeDot={{
+                                            r: 6,
+                                            fill: 'var(--purple-vivid)',
+                                            stroke: '#0A0A12',
+                                            strokeWidth: 3,
+                                            style: { filter: 'drop-shadow(0 0 8px var(--purple-vivid))' }
+                                        }}
+                                    />
+                                    <Bar dataKey="count" radius={[4, 4, 0, 0]} maxBarSize={32}>
+                                        {(usageData.analytics || []).map((entry, index) => (
+                                            <Cell
+                                                key={`cell-${index}`}
+                                                fill={index === (usageData.analytics?.length || 0) - 1 ? 'url(#barGradient)' : 'url(#barGradientMuted)'}
+                                            />
+                                        ))}
+                                    </Bar>
+                                </ComposedChart>
+                            </ResponsiveContainer>
+                        )}
+                    </div>
+                </div>
+
+                {/* Chart Footer — Legend */}
+                <div className="px-6 py-3 border-t border-bg-border/50 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 rounded-sm bg-gradient-to-b from-purple-vivid to-blue-accent opacity-80" />
+                            <span className="text-[10px] text-text-muted uppercase font-bold tracking-wider">Transactions</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <div className="w-3 h-[2px] bg-purple-vivid rounded-full" />
+                            <span className="text-[10px] text-text-muted uppercase font-bold tracking-wider">Trend</span>
+                        </div>
+                    </div>
+                    <span className="text-[10px] text-text-muted font-mono">
+                        {(usageData.analytics || []).length > 0
+                            ? `${usageData.analytics[0]?.date} — ${usageData.analytics[usageData.analytics.length - 1]?.date}`
+                            : 'No data range'
+                        }
+                    </span>
                 </div>
             </PurpleCard>
 
