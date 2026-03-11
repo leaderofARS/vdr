@@ -96,10 +96,6 @@ async function handleFailedLogin(email) {
         await redisClient.set(`lockout:${email}`, 'true', 'EX', 15 * 60); // lock for 15 mins
 
         try {
-            const { sendWelcomeEmail } = require('../services/emailService');
-            // Assuming sendAlertEmail isn't implemented, reusing logic or simulating alert
-            // sendWelcomeEmail could be substituted if there were an alert func
-            // but just keeping generic
             console.log(`[ALERT] Account lockout email would be sent to ${email}`);
         } catch (err) { }
 
@@ -174,14 +170,11 @@ router.post('/login', validateInput(loginSchema), checkBruteForce, async (req, r
         await redisClient.del(`login_attempts:${sanitizedEmail}`);
         await redisClient.del(`lockout:${sanitizedEmail}`);
 
-        // Regenerate session implicitly by granting new access and refresh tokens
         const accessToken = generateToken(user.id, user.email);
         const refreshToken = generateRefreshToken(user.id);
 
-        // Double submit cookie pattern handling
         const csrfToken = crypto.randomBytes(32).toString('hex');
 
-        // Note: sameSite must be strictly 'strict' or 'lax', unless 'none' in production but the prompt dictates 'strict'
         res.cookie('vdr_token', accessToken, ACCESS_COOKIE_OPTIONS);
         res.cookie('vdr_refresh', refreshToken, REFRESH_COOKIE_OPTIONS);
         res.cookie('csrf_token', csrfToken, { httpOnly: false, secure: true, sameSite: 'none', path: '/' });
@@ -203,9 +196,6 @@ router.post('/login', validateInput(loginSchema), checkBruteForce, async (req, r
 // Admin unlock endpoint
 router.post('/unlock', authenticate, async (req, res) => {
     try {
-        // Enforce admin permission loosely or checking role - using a placeholder validation
-        // In this implementation, if they authenticated, we'll allow standard users to only unlock their own,
-        // unless they are 'admin'. 
         const { targetEmail } = req.body;
         if (!targetEmail) return res.status(400).json({ error: 'targetEmail required' });
 
@@ -244,7 +234,6 @@ router.post('/refresh', async (req, res, next) => {
             return res.status(401).json({ error: 'User not found' });
         }
 
-        // Single use refresh token rotation - revoke old on use
         await revokeToken(decoded);
         const newAccessToken = generateToken(user.id, user.email);
         const newRefreshToken = generateRefreshToken(user.id);
@@ -274,31 +263,79 @@ router.post('/logout', async (req, res) => {
     res.json({ success: true, message: 'Logged out successfully' });
 });
 
-// Verify API Key — used by CLI link command
-router.get('/verify-key', authenticate, async (req, res, next) => {
+/**
+ * @route GET /auth/verify-key
+ * @description Verify an API key — used by CLI link command.
+ * FIX: Hash the incoming key before DB lookup, same as auth middleware does.
+ */
+router.get('/verify-key', async (req, res, next) => {
     try {
-        const apiKey = await prisma.apiKey.findUnique({
-            where: { key: req.headers['x-api-key'] },
+        const rawKey = req.headers['x-api-key'];
+
+        if (!rawKey) {
+            return res.status(401).json({ error: 'API key required' });
+        }
+
+        // FIX: Hash the raw key before lookup — DB stores SHA-256 hashed keys
+        const hashedKey = crypto.createHash('sha256').update(rawKey).digest('hex');
+
+        // Try hashed key first
+        let apiKeyRecord = await prisma.apiKey.findUnique({
+            where: { key: hashedKey },
             include: {
                 organization: true,
                 user: true
             }
         });
 
-        if (!apiKey) {
+        // Fallback: try raw key (legacy plain-text keys)
+        if (!apiKeyRecord) {
+            apiKeyRecord = await prisma.apiKey.findUnique({
+                where: { key: rawKey },
+                include: {
+                    organization: true,
+                    user: true
+                }
+            });
+
+            // Migrate legacy plain-text key to hashed
+            if (apiKeyRecord) {
+                await prisma.apiKey.update({
+                    where: { id: apiKeyRecord.id },
+                    data: { key: hashedKey }
+                });
+            }
+        }
+
+        if (!apiKeyRecord) {
             return res.status(401).json({ error: 'Invalid API Key' });
         }
 
+        if (apiKeyRecord.status === 'revoked') {
+            return res.status(401).json({ error: 'API Key has been revoked' });
+        }
+
+        // Update last used
+        await prisma.apiKey.update({
+            where: { id: apiKeyRecord.id },
+            data: { lastUsedAt: new Date() }
+        });
+
         // Never return the full key back
-        const safeOrg = { ...apiKey.organization };
-        if (safeOrg.apiKey) delete safeOrg.apiKey;
+        const safeOrg = {
+            id: apiKeyRecord.organization?.id,
+            name: apiKeyRecord.organization?.name,
+            solanaPubkey: apiKeyRecord.organization?.solanaPubkey,
+            walletAddress: apiKeyRecord.organization?.walletAddress,
+            createdAt: apiKeyRecord.organization?.createdAt,
+        };
 
         res.json({
             success: true,
             organization: safeOrg,
             user: {
-                id: apiKey.user.id,
-                email: apiKey.user.email
+                id: apiKeyRecord.user.id,
+                email: apiKeyRecord.user.email
             }
         });
     } catch (error) {
