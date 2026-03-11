@@ -14,21 +14,21 @@ const path = require('path');
  */
 class PermissionValidator {
   constructor() {
-      // Secure permission modes (octal)
-      this.SECURE_FILE_MODE = 0o600; // rw------- (owner read/write only)
-      this.SECURE_DIR_MODE = 0o700;  // rwx------ (owner read/write/execute only)
-      this.READABLE_FILE_MODE = 0o644; // rw-r--r-- (owner read/write, others read)
-      this.READABLE_DIR_MODE = 0o755;  // rwxr-xr-x (owner full, others read/execute)
+    // Secure permission modes (octal)
+    this.SECURE_FILE_MODE = 0o600; // rw------- (owner read/write only)
+    this.SECURE_DIR_MODE = 0o700;  // rwx------ (owner read/write/execute only)
+    this.READABLE_FILE_MODE = 0o644; // rw-r--r-- (owner read/write, others read)
+    this.READABLE_DIR_MODE = 0o755;  // rwxr-xr-x (owner full, others read/execute)
 
-      // Platform detection
-      const os = require('os');
-      this.isWindows = os.platform() === 'win32';
+    // Platform detection
+    const os = require('os');
+    this.isWindows = os.platform() === 'win32';
 
-      // Warn if running on Windows
-      if (this.isWindows) {
-        console.warn('[PermissionValidator] Warning: Running on Windows. File permission operations may not work as expected.');
-      }
+    // Warn if running on Windows
+    if (this.isWindows) {
+      console.warn('[PermissionValidator] Warning: Running on Windows. File permission operations may not work as expected.');
     }
+  }
 
 
   /**
@@ -66,10 +66,10 @@ class PermissionValidator {
 
       // Get current permissions (last 3 octal digits)
       const currentMode = stats.mode & 0o777;
-      
+
       // Determine expected mode based on options
-      const expectedMode = strict || !allowReadable 
-        ? this.SECURE_FILE_MODE 
+      const expectedMode = strict || !allowReadable
+        ? this.SECURE_FILE_MODE
         : this.READABLE_FILE_MODE;
 
       // Check if permissions match expected
@@ -82,7 +82,7 @@ class PermissionValidator {
         currentModeOctal: currentMode.toString(8),
         expectedModeOctal: expectedMode.toString(8),
         filePath,
-        message: isValid 
+        message: isValid
           ? `File permissions are secure: ${filePath}`
           : `Insecure file permissions detected. Current: ${this._formatMode(currentMode)}, Expected: ${this._formatMode(expectedMode)}`
       };
@@ -132,10 +132,10 @@ class PermissionValidator {
 
       // Get current permissions
       const currentMode = stats.mode & 0o777;
-      
+
       // Determine expected mode
-      const expectedMode = strict || !allowReadable 
-        ? this.SECURE_DIR_MODE 
+      const expectedMode = strict || !allowReadable
+        ? this.SECURE_DIR_MODE
         : this.READABLE_DIR_MODE;
 
       // Check if permissions match expected
@@ -148,7 +148,7 @@ class PermissionValidator {
         currentModeOctal: currentMode.toString(8),
         expectedModeOctal: expectedMode.toString(8),
         dirPath,
-        message: isValid 
+        message: isValid
           ? `Directory permissions are secure: ${dirPath}`
           : `Insecure directory permissions detected. Current: ${this._formatMode(currentMode)}, Expected: ${this._formatMode(expectedMode)}`
       };
@@ -159,12 +159,12 @@ class PermissionValidator {
           .map(item => path.join(dirPath, item))
           .filter(itemPath => fs.statSync(itemPath).isDirectory());
 
-        const subdirResults = subdirs.map(subdir => 
+        const subdirResults = subdirs.map(subdir =>
           this.validateDirectoryPermissions(subdir, options)
         );
 
         const allValid = subdirResults.every(r => r.isValid);
-        
+
         if (!allValid) {
           result.isValid = false;
           result.subdirectories = subdirResults;
@@ -226,12 +226,14 @@ class PermissionValidator {
       }
 
       // Determine target mode
-      const targetMode = actuallyDirectory 
-        ? this.SECURE_DIR_MODE 
+      const targetMode = actuallyDirectory
+        ? this.SECURE_DIR_MODE
         : this.SECURE_FILE_MODE;
 
       // Set permissions
-      fs.chmodSync(targetPath, targetMode);
+      if (process.platform !== 'win32') {
+        fs.chmodSync(targetPath, targetMode);
+      }
 
       const result = {
         success: true,
@@ -249,19 +251,19 @@ class PermissionValidator {
         for (const item of items) {
           const itemPath = path.join(targetPath, item);
           const itemStats = fs.statSync(itemPath);
-          
+
           const itemResult = this.enforceSecureAccess(itemPath, {
             isDirectory: itemStats.isDirectory(),
             strict,
             recursive: true
           });
-          
+
           enforcementResults.push(itemResult);
         }
 
         result.recursiveResults = enforcementResults;
         result.allSuccess = enforcementResults.every(r => r.success);
-        
+
         if (!result.allSuccess) {
           result.message += ' (some subdirectories/files failed)';
         }

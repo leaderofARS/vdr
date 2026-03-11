@@ -1,62 +1,83 @@
-/**
- * @file status.js
- * @module /home/ars0x01/Documents/Github/solana-vdr/cli/vdr-cli/src/commands/status.js
- * @description CLI command modules deployed via Commander.js.
- * Part of the SipHeron VDR platform.
- * @author SipHeron Platform
- */
-
-const { Command } = require("commander");
-const chalk = require("chalk");
-const { getStagedItems } = require("../utils/stagingManager");
+'use strict'
+const { Command } = require('commander')
+const axios = require('axios')
+const chalk = require('chalk')
+const ora = require('ora')
+const { loadConfig } = require('../utils/configManager')
+const { getStagedItems } = require('../utils/stagingManager')
 
 function createStatusCommand() {
-    const statusCmd = new Command("status")
-        .description("View files and hashes currently staged for SipHeron registry upload.")
-        .action(() => {
-            const config = require("../utils/configManager").loadConfig();
-            const items = getStagedItems();
+    return new Command('status')
+        .description('Show account info, wallet balance, staged files, and last anchor')
+        .option('--json', 'Output as JSON')
+        .action(async (options) => {
+            const config = loadConfig()
 
-            console.log(chalk.bold("\n--- SipHeron CLI Status ---"));
-
-            if (config.apiKey && config.organizationName) {
-                console.log(`${chalk.cyan("Linked Institution:")} ${chalk.white(config.organizationName)}`);
-                console.log(`${chalk.cyan("Organization ID:")}   ${chalk.gray(config.organizationId)}`);
-                console.log(`${chalk.cyan("API Server:")}        ${chalk.gray(config.apiUrl)}`);
-            } else {
-                console.log(chalk.yellow("Status: Unlinked (Personal/Local Mode)"));
-                console.log(chalk.gray("Use 'sipheron-vdr link <apiKey>' to bind to an institution."));
+            if (!config.apiKey && !process.env.SIPHERON_API_KEY) {
+                console.log(chalk.red('Not linked. Run: sipheron-vdr link <apiKey>'))
+                process.exit(1)
             }
 
-            if (items.length === 0) {
-                console.log(`\n${chalk.gray("No hashes are currently staged for commit.")}`);
-                console.log(`Use ${chalk.cyan('sipheron-vdr stage <file>')} to stage a file.`);
-                return;
+            const apiKey = config.apiKey || process.env.SIPHERON_API_KEY
+            const apiUrl = config.apiUrl || 'https://api.sipheron.com'
+            const staged = getStagedItems()
+
+            const spinner = ora('Fetching status...').start()
+
+            try {
+                const { data } = await axios.get(`${apiUrl}/api/org/stats`, {
+                    headers: { 'x-api-key': apiKey }
+                })
+
+                spinner.stop()
+
+                if (options.json) {
+                    console.log(JSON.stringify({ ...data, staged }, null, 2))
+                    return
+                }
+
+                console.log('\n' + chalk.bold('── SipHeron VDR Status ──────────────────'))
+                console.log(chalk.cyan('Organization:  ') + (data.org?.name || '—'))
+                console.log(chalk.cyan('Org ID:        ') + (data.org?.id || '—'))
+                console.log(chalk.cyan('Network:       ') + (data.wallet?.network || 'devnet'))
+                console.log(chalk.cyan('Wallet:        ') + (data.wallet?.address || '—'))
+                console.log(chalk.cyan('SOL Balance:   ') + chalk.yellow((data.wallet?.balanceSol ?? 0).toFixed(4) + ' SOL'))
+                console.log('')
+                console.log(chalk.bold('── Registry Stats ───────────────────────'))
+                console.log(chalk.cyan('Total Anchors: ') + (data.stats?.totalAnchors ?? '—'))
+                console.log(chalk.cyan('Active:        ') + (data.stats?.activeAnchors ?? '—'))
+                console.log(chalk.cyan('Revoked:       ') + (data.stats?.revokedAnchors ?? '—'))
+                console.log(chalk.cyan('Active Keys:   ') + (data.stats?.activeApiKeys ?? '—'))
+                console.log('')
+                console.log(chalk.bold('── Local Staging Queue ──────────────────'))
+                if (staged.length === 0) {
+                    console.log(chalk.gray('  No files staged. Run: sipheron-vdr stage <file>'))
+                } else {
+                    staged.forEach((item, i) => {
+                        console.log(chalk.green(`  [${i + 1}] `) + item.file + chalk.gray(` (${item.hash.slice(0, 12)}...)`))
+                    })
+                    console.log(chalk.yellow(`\n  Run 'sipheron-vdr anchor' to commit ${staged.length} staged file(s).`))
+                }
+
+                if (data.recentActivity?.length > 0) {
+                    console.log('')
+                    console.log(chalk.bold('── Last Anchor ──────────────────────────'))
+                    const last = data.recentActivity[0]
+                    console.log(chalk.cyan('Hash:    ') + last.hash?.slice(0, 20) + '...')
+                    console.log(chalk.cyan('Status:  ') + last.status)
+                    console.log(chalk.cyan('Date:    ') + new Date(last.registeredAt).toLocaleString())
+                    if (last.explorerUrl) {
+                        console.log(chalk.cyan('Explorer: ') + last.explorerUrl)
+                    }
+                }
+
+                console.log('')
+            } catch (err) {
+                spinner.fail(chalk.red('Failed to fetch status'))
+                console.error(chalk.red(err.response?.data?.error || err.message))
+                process.exit(1)
             }
-
-            console.log(chalk.bold(`\nStaged Files (${items.length}):`));
-            console.log(chalk.gray("These hashes will be submitted to the Solana network on the next push.\n"));
-
-            items.forEach((item, index) => {
-                const dateStaged = item.stagedAt ? new Date(item.stagedAt).toLocaleString() : 'Unknown';
-                const dateModified = item.lastModified ? new Date(item.lastModified).toLocaleString() : 'Unknown';
-                const sizeKb = item.fileSize ? (item.fileSize / 1024).toFixed(2) + ' KB' : 'Unknown';
-
-                console.log(`${chalk.green('+')} ${chalk.white(item.file)}`);
-                console.log(`  Hash:     ${chalk.cyan(item.hash)}`);
-                console.log(`  Metadata: ${item.metadata}`);
-                console.log(`  Size:     ${sizeKb}`);
-                console.log(`  Modified: ${dateModified}`);
-                console.log(`  Staged:   ${dateStaged}`);
-                console.log(`  Expiry:   ${item.expiry === 0 ? "Infinite" : item.expiry + "s"}`);
-                console.log("");
-            });
-
-            console.log(`Run ${chalk.yellow('sipheron-vdr anchor')} to commit these hashes.`);
-            console.log("");
-        });
-
-    return statusCmd;
+        })
 }
 
-module.exports = createStatusCommand;
+module.exports = createStatusCommand

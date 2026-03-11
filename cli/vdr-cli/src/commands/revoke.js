@@ -1,82 +1,89 @@
-/**
- * @file revoke.js
- * @module cli/vdr-cli/src/commands/revoke.js
- * @description CLI command to revoke a document's proof on Solana.
- */
+'use strict'
+const { Command } = require('commander')
+const axios = require('axios')
+const chalk = require('chalk')
+const ora = require('ora')
+const { computeFileHash } = require('../utils/hash')
+const { loadConfig } = require('../utils/configManager')
+const fs = require('fs')
+const path = require('path')
 
-const { Command } = require("commander");
-const axios = require("axios");
-const ora = require("ora");
-const chalk = require("chalk");
-const { computeFileHash } = require("../utils/hash");
-const fs = require("fs");
-const { loadConfig } = require("../utils/configManager");
-
-/**
- * Creates the 'revoke' command for the SipHeron VDR CLI.
- * Usage: sipheron-vdr revoke <file>
- */
 function createRevokeCommand() {
-    const revokeCmd = new Command("revoke")
-        .description("Revoke a document's cryptographic proof on the Solana blockchain.")
-        .argument("<file>", "Path to the local file to revoke")
-        .action(async (file) => {
-            if (!fs.existsSync(file)) {
-                console.error(chalk.red(`Error: File not found at path '${file}'`));
-                process.exit(1);
+    return new Command('revoke')
+        .description('Revoke a document proof on the Solana blockchain')
+        .argument('<file>', 'Path to the file to revoke — OR pass --hash directly')
+        .option('--hash <hash>', 'Revoke by raw SHA-256 hash instead of file path')
+        .option('--reason <reason>', 'Reason for revocation (stored in metadata)', '')
+        .option('-y, --yes', 'Skip confirmation prompt')
+        .action(async (file, options) => {
+            const config = loadConfig()
+            const apiKey = config.apiKey || process.env.SIPHERON_API_KEY
+            const apiUrl = config.apiUrl || 'https://api.sipheron.com'
+
+            if (!apiKey) {
+                console.log(chalk.red('Not linked. Run: sipheron-vdr link <apiKey>'))
+                process.exit(1)
             }
 
-            const config = loadConfig();
+            let hexHash = options.hash || null
 
-            // Onboarding check: ensure API key is present
-            if (!config.apiKey && !process.env.SIPHERON_API_KEY) {
-                console.error(chalk.red('Error: You must be logged in to revoke proofs. Run "sipheron-vdr login" first.'));
-                process.exit(1);
+            // If no --hash flag, compute from file
+            if (!hexHash) {
+                const absolutePath = path.resolve(process.cwd(), file)
+                if (!fs.existsSync(absolutePath)) {
+                    console.error(chalk.red(`Error: File not found at '${file}'`))
+                    process.exit(1)
+                }
+                const spinner = ora('Computing file hash...').start()
+                try {
+                    hexHash = await computeFileHash(absolutePath)
+                    spinner.succeed(`Hash: ${chalk.cyan(hexHash)}`)
+                } catch (err) {
+                    spinner.fail('Failed to hash file')
+                    process.exit(1)
+                }
             }
 
-            const spinner = ora("Computing local SHA-256 hash...").start();
+            // Confirm unless --yes
+            if (!options.yes) {
+                const { createInterface } = require('readline')
+                const rl = createInterface({ input: process.stdin, output: process.stdout })
+                await new Promise((resolve) => {
+                    rl.question(
+                        chalk.yellow(`\n⚠ Revocation is permanent and cannot be undone.\nRevoke hash ${hexHash.slice(0, 16)}...? (yes/no): `),
+                        (answer) => {
+                            rl.close()
+                            if (answer.toLowerCase() !== 'yes' && answer.toLowerCase() !== 'y') {
+                                console.log(chalk.gray('Revocation cancelled.'))
+                                process.exit(0)
+                            }
+                            resolve()
+                        }
+                    )
+                })
+            }
+
+            const spinner = ora('Revoking on Solana blockchain...').start()
 
             try {
-                // 1. Compute hash of the file locally
-                const hexHash = await computeFileHash(file);
-                spinner.succeed(`Local hash computed: ${chalk.cyan(hexHash)}`);
+                const { data } = await axios.post(
+                    `${apiUrl}/api/hashes/revoke`,
+                    { hash: hexHash },
+                    { headers: { 'x-api-key': apiKey } }
+                )
 
-                spinner.start("Submitting revocation request to SipHeron Registry...");
-
-                // 2. Call POST /api/hashes/revoke with { hash }
-                const response = await axios.post(`${config.apiUrl}/api/hashes/revoke`, {
-                    hash: hexHash
-                }, {
-                    headers: {
-                        'x-api-key': config.apiKey || process.env.SIPHERON_API_KEY || ''
-                    }
-                });
-
-                if (response.data.success) {
-                    spinner.succeed(chalk.green("PROOF SUCCESSFULLY REVOKED"));
-                    console.log("");
-                    console.log(chalk.bold("Event Details:"));
-                    console.log(`Transaction Signature: ${chalk.cyan(response.data.txSignature)}`);
-                    console.log(`Explorer Record:       ${chalk.underline.blue(`https://explorer.solana.com/tx/${response.data.txSignature}?cluster=devnet`)}`);
-                    console.log(chalk.gray(`\nVerification Status: This document is now marked as 'revoked' globally in the VDR Registry.`));
-                }
-            } catch (error) {
-                spinner.fail(chalk.red("Revocation Failed"));
-                const errMsg = error.response?.data?.error || error.message;
-                console.error(chalk.red(`\nError Context: ${errMsg}`));
-
-                if (errMsg.includes("already revoked")) {
-                    console.log(chalk.yellow("Note: This hash status is already set to 'revoked'. No state change occurred."));
-                } else if (errMsg.includes("not found")) {
-                    console.log(chalk.yellow("Note: No record of this file exists under your organization's registry."));
-                } else {
-                    console.log(chalk.gray("\nPlease check your internet connection or try again later."));
-                }
-                process.exit(1);
+                spinner.succeed(chalk.green('Hash proof revoked successfully'))
+                console.log('')
+                console.log(chalk.cyan('TX Signature: ') + data.txSignature)
+                console.log(chalk.cyan('Message:      ') + data.message)
+                console.log(chalk.gray('\nThis hash will now show as REVOKED on all verification checks.'))
+                console.log('')
+            } catch (err) {
+                spinner.fail(chalk.red('Revocation failed'))
+                console.error(chalk.red(err.response?.data?.error || err.message))
+                process.exit(1)
             }
-        });
-
-    return revokeCmd;
+        })
 }
 
-module.exports = createRevokeCommand;
+module.exports = createRevokeCommand

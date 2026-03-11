@@ -15,6 +15,7 @@ const createStageCommand = require("./commands/stage");
 const createAnchorCommand = require("./commands/anchor");
 const createRevokeCommand = require("./commands/revoke");
 const createStatusCommand = require("./commands/status");
+const createHistoryCommand = require("./commands/history");
 const { verifyCmd, verifyHashCmd } = require("./commands/verify");
 const { createWalletCommand } = require("./commands/wallet");
 const createConfigCommand = require("./commands/config");
@@ -22,6 +23,7 @@ const createBatchCommand = require("./commands/batch");
 const createLinkCommand = require("./commands/link");
 const { createLoginCommand } = require("./commands/login");
 const createDoctorCommand = require("./commands/doctor");
+const { checkForUpdate } = require('./utils/updateCheck');
 
 const program = new Command();
 
@@ -35,6 +37,7 @@ program.addCommand(createStageCommand());
 program.addCommand(createStatusCommand());
 program.addCommand(createAnchorCommand());
 program.addCommand(createRevokeCommand());
+program.addCommand(createHistoryCommand());
 
 // Verification
 program.addCommand(verifyCmd);
@@ -74,11 +77,12 @@ async function runOnboarding(config) {
 }
 
 async function start() {
+    checkForUpdate().catch(() => { }) // fire and forget
     const config = loadConfig();
     const commandName = process.argv[2];
 
     // List of commands that are allowed without a login
-    const setupCommands = ['login', 'config', 'wallet', 'link', '--version', '-V', '--help', '-h', 'help'];
+    const setupCommands = ['login', 'config', 'wallet', 'link', '--version', '-V', '--help', '-h', 'help', 'status', 'verify', 'verify-hash'];
 
     if (commandName && !setupCommands.includes(commandName) && !config.apiKey && !process.env.SIPHERON_API_KEY) {
         const success = await runOnboarding(config);
