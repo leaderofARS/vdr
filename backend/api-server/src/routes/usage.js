@@ -189,4 +189,71 @@ router.get('/logs', authenticate, async (req, res, next) => {
     }
 });
 
+/**
+ * @route GET /api/usage/report
+ * @description Generate monthly anchor report data
+ */
+router.get('/report', authenticate, async (req, res, next) => {
+    try {
+        if (!req.organization) {
+            return res.status(403).json({ error: 'Institutional Context Required' });
+        }
+
+        const month = parseInt(req.query.month) || new Date().getMonth() + 1;
+        const year = parseInt(req.query.year) || new Date().getFullYear();
+
+        const startDate = new Date(year, month - 1, 1);
+        const endDate = new Date(year, month, 0, 23, 59, 59);
+
+        const orgId = req.organization.id;
+        const network = process.env.SOLANA_NETWORK || 'devnet';
+
+        const [org, records, totalAllTime] = await Promise.all([
+            prisma.organization.findUnique({ where: { id: orgId } }),
+            prisma.hashRecord.findMany({
+                where: {
+                    organizationId: orgId,
+                    createdAt: { gte: startDate, lte: endDate }
+                },
+                orderBy: { timestamp: 'desc' }
+            }),
+            prisma.hashRecord.count({ where: { organizationId: orgId } })
+        ]);
+
+        const revokedCount = records.filter(r => r.status === 'revoked' || r.isRevoked).length;
+
+        res.json({
+            report: {
+                month,
+                year,
+                monthName: startDate.toLocaleString('en-US', { month: 'long' }),
+                generatedAt: new Date().toISOString(),
+                organization: {
+                    name: org.name,
+                    id: org.id,
+                    walletAddress: org.walletAddress || ''
+                },
+                summary: {
+                    totalAnchors: records.length,
+                    activeAnchors: records.length - revokedCount,
+                    revokedAnchors: revokedCount,
+                    totalAllTime
+                },
+                records: records.map(r => ({
+                    hash: r.hash,
+                    metadata: r.metadata || '',
+                    status: r.status || (r.isRevoked ? 'revoked' : 'active'),
+                    registeredAt: r.timestamp
+                        ? new Date(r.timestamp * 1000).toISOString()
+                        : r.createdAt.toISOString(),
+                    txSignature: r.txSignature,
+                    explorerUrl: `https://explorer.solana.com/tx/${r.txSignature}?cluster=${network}`
+                }))
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
 module.exports = router;

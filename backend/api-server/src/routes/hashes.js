@@ -111,6 +111,54 @@ router.get('/', authenticate, async (req, res, next) => {
         next(error);
     }
 });
+/**
+ * @route GET /api/hashes/export
+ * @description Export all hashes as CSV or JSON
+ */
+router.get('/export', authenticate, async (req, res, next) => {
+    try {
+        if (!req.organization) {
+            return res.status(403).json({ error: 'Institutional Context Required' });
+        }
+
+        const format = req.query.format || 'csv'; // csv or json
+        const network = process.env.SOLANA_NETWORK || 'devnet';
+
+        const records = await prisma.hashRecord.findMany({
+            where: { organizationId: req.organization.id },
+            orderBy: { timestamp: 'desc' },
+            take: 10000 // hard cap
+        });
+
+        if (format === 'json') {
+            res.setHeader('Content-Type', 'application/json');
+            res.setHeader('Content-Disposition', `attachment; filename="sipheron-hashes-${Date.now()}.json"`);
+            return res.json(records.map(formatHashRecord));
+        }
+
+        // Build CSV
+        const headers = ['Hash', 'Metadata', 'Status', 'Registered At', 'Expiry', 'Revoked At', 'TX Signature', 'Explorer URL', 'PDA Address'];
+        const rows = records.map(r => [
+            r.hash,
+            `"${(r.metadata || '').replace(/"/g, '""')}"`,
+            r.status || (r.isRevoked ? 'revoked' : 'active'),
+            r.timestamp ? new Date(r.timestamp * 1000).toISOString() : r.createdAt.toISOString(),
+            r.expiry > 0 ? new Date(r.expiry * 1000).toISOString() : 'Never',
+            r.revokedAt ? r.revokedAt.toISOString() : '',
+            r.txSignature || '',
+            r.txSignature ? `https://explorer.solana.com/tx/${r.txSignature}?cluster=${network}` : '',
+            r.pdaAddress || ''
+        ]);
+
+        const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', `attachment; filename="sipheron-hashes-${Date.now()}.csv"`);
+        res.send(csv);
+    } catch (error) {
+        next(error);
+    }
+});
 
 /**
  * @route GET /api/hashes/:hash
@@ -212,6 +260,63 @@ router.post('/revoke', authenticate, async (req, res, next) => {
         });
     } catch (error) {
         console.error('[Registry] Revocation failed:', error.message);
+        next(error);
+    }
+});
+
+/**
+ * @route GET /api/hashes/public/:hash
+ * @description Public hash verification — no authentication required
+ */
+router.get('/public/:hash', async (req, res, next) => {
+    try {
+        const { hash } = req.params;
+
+        if (!/^[a-fA-F0-9]{64}$/.test(hash)) {
+            return res.status(400).json({ error: 'Invalid SHA-256 hash format' });
+        }
+
+        // Try DB first
+        const record = await prisma.hashRecord.findUnique({
+            where: { hash },
+            include: { organization: { select: { name: true, id: true } } }
+        });
+
+        if (!record) {
+            // Try Solana directly
+            const solanaData = await solanaService.verifyHash(hash);
+            if (solanaData.exists && solanaData.record) {
+                return res.json({
+                    verified: true,
+                    record: formatHashRecord(solanaData.record),
+                    organization: null
+                });
+            }
+            return res.status(404).json({ verified: false, error: 'Hash not found in registry' });
+        }
+
+        const network = process.env.SOLANA_NETWORK || 'devnet';
+        res.json({
+            verified: true,
+            record: {
+                hash: record.hash,
+                metadata: record.metadata || '',
+                status: record.status || (record.isRevoked ? 'revoked' : 'active'),
+                registeredAt: record.timestamp
+                    ? new Date(record.timestamp * 1000).toISOString()
+                    : record.createdAt.toISOString(),
+                revokedAt: record.revokedAt ? record.revokedAt.toISOString() : null,
+                expiry: record.expiry > 0 ? new Date(record.expiry * 1000).toISOString() : null,
+                txSignature: record.txSignature,
+                pdaAddress: record.pdaAddress,
+                explorerUrl: `https://explorer.solana.com/tx/${record.txSignature}?cluster=${network}`,
+                pdaExplorerUrl: `https://explorer.solana.com/address/${record.pdaAddress}?cluster=${network}`
+            },
+            organization: record.organization
+                ? { name: record.organization.name, id: record.organization.id }
+                : null
+        });
+    } catch (error) {
         next(error);
     }
 });
