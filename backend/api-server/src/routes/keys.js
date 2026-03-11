@@ -112,6 +112,7 @@ router.post('/', authenticate, validateInput(createKeySchema), async (req, res, 
             return res.status(403).json({ error: 'Institutional Context Required' });
         }
 
+        const resolvedScope = scope || 'write';
         const rawKey = 'svdr_' + crypto.randomBytes(32).toString('hex');
         const hashedKey = crypto.createHash('sha256').update(rawKey).digest('hex');
 
@@ -119,7 +120,7 @@ router.post('/', authenticate, validateInput(createKeySchema), async (req, res, 
             data: {
                 name,
                 key: hashedKey,
-                scope,
+                scope: resolvedScope,
                 userId: req.user.id,
                 organizationId: req.organization.id
             }

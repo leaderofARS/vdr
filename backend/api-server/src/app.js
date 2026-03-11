@@ -164,8 +164,8 @@ app.use("/api", batchRoute);
 app.use("/api/hashes", hashesRoute);
 
 // API Keys — list and manage
+app.use("/api/keys", keyCreationLimiter);
 app.use("/api/keys", keysRoute);
-app.post("/api/keys", keyCreationLimiter); // This still needs a handler if used here, or handled inside keysRoute
 
 app.use("/analytics", analyticsRoute);
 app.use("/api/org", orgRoute); // Full org management & stats
