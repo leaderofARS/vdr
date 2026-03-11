@@ -22,7 +22,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  metadataBase: new URL('https://sipheron.com'),
+  metadataBase: new URL('https://app.sipheron.com'),
   title: {
     default: 'SipHeron VDR — Blockchain Document Verification on Solana',
     template: '%s | SipHeron VDR'
