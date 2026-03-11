@@ -129,7 +129,19 @@ app.use((req, res, next) => {
         // Actually, on login: set CSRF token in cookie + return in response. 
         // Wait, if login is a POST, it won't have the CSRF token yet before login!
         // So if the path contains auth/login or auth/register we bypass.
-        if (req.path.includes('/auth/login') || req.path.includes('/auth/register') || req.path.includes('/auth/forgot-password') || req.path === '/register' || req.path === '/api/webhooks') {
+        if (
+            req.path.includes('/auth/login') ||
+            req.path.includes('/auth/register') ||
+            req.path.includes('/auth/forgot-password') ||
+            req.path === '/register' ||
+            req.path === '/api/webhooks' ||
+            req.path.startsWith('/api/keys') ||
+            req.path.startsWith('/api/hashes') ||
+            req.path.startsWith('/api/org') ||
+            req.path.startsWith('/api/notifications') ||
+            req.path.startsWith('/api/usage') ||
+            req.path.startsWith('/api/batch')
+        ) {
             return next();
         }
 
@@ -164,7 +176,7 @@ app.use("/api", batchRoute);
 app.use("/api/hashes", hashesRoute);
 
 // API Keys — list and manage
-app.use("/api/keys", keyCreationLimiter);
+app.post("/api/keys", keyCreationLimiter);
 app.use("/api/keys", keysRoute);
 
 app.use("/analytics", analyticsRoute);

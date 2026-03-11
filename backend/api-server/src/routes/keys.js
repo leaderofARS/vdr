@@ -107,12 +107,10 @@ router.delete('/:id', authenticate, async (req, res, next) => {
  */
 router.post('/', authenticate, validateInput(createKeySchema), async (req, res, next) => {
     try {
-        const { name, scope } = req.body;
+        const { name, scope = 'write' } = req.body;
         if (!req.organization) {
             return res.status(403).json({ error: 'Institutional Context Required' });
         }
-
-        const resolvedScope = scope || 'write';
         const rawKey = 'svdr_' + crypto.randomBytes(32).toString('hex');
         const hashedKey = crypto.createHash('sha256').update(rawKey).digest('hex');
 
@@ -120,7 +118,7 @@ router.post('/', authenticate, validateInput(createKeySchema), async (req, res, 
             data: {
                 name,
                 key: hashedKey,
-                scope: resolvedScope,
+                scope,
                 userId: req.user.id,
                 organizationId: req.organization.id
             }
