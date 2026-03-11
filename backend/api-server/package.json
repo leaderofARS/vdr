@@ -7,7 +7,8 @@
     "dev": "nodemon src/server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "audit": "npm audit",
-    "audit:fix": "npm audit fix --force"
+    "audit:fix": "npm audit fix --force",
+    "postinstall": "prisma generate"
   },
   "keywords": [],
   "author": "",
