@@ -362,6 +362,78 @@ router.get('/badge/:hash', async (req, res) => {
 });
 
 /**
+ * @route POST /api/hashes/bulk-verify
+ * @description verify multiple hashes at once (max 500)
+ */
+router.post('/bulk-verify', authenticate, async (req, res) => {
+    try {
+        const { hashes } = req.body;
+        if (!Array.isArray(hashes) || hashes.length === 0) {
+            return res.status(400).json({ error: 'hashes must be a non-empty array' });
+        }
+        if (hashes.length > 500) {
+            return res.status(400).json({ error: 'Maximum 500 hashes per request' });
+        }
+
+        // Validate all are valid hex strings
+        const validHashes = hashes.filter(h => typeof h === 'string' && /^[a-f0-9]{64}$/i.test(h.trim()));
+
+        const records = await prisma.hashRecord.findMany({
+            where: { hash: { in: validHashes.map(h => h.trim().toLowerCase()) } },
+            select: {
+                hash: true,
+                status: true,
+                metadata: true,
+                createdAt: true,
+                txSignature: true,
+                isRevoked: true,
+                revokedAt: true,
+                organization: { select: { name: true } }
+            }
+        });
+
+        const recordMap = Object.fromEntries(records.map(r => [r.hash, r]));
+
+        const results = hashes.map(rawHash => {
+            const hash = (rawHash || '').trim().toLowerCase();
+            const record = recordMap[hash];
+
+            if (!hash || !/^[a-f0-9]{64}$/i.test(hash)) {
+                return { hash: rawHash, status: 'invalid', verified: false, error: 'Invalid hash format' };
+            }
+            if (!record) {
+                return { hash, status: 'not_found', verified: false };
+            }
+            if (record.status === 'revoked' || record.isRevoked) {
+                return { hash, status: 'revoked', verified: false, metadata: record.metadata, revokedAt: record.revokedAt };
+            }
+            return {
+                hash,
+                status: 'verified',
+                verified: true,
+                metadata: record.metadata,
+                registeredAt: record.createdAt,
+                organization: record.organization?.name,
+                txSignature: record.txSignature
+            };
+        });
+
+        const summary = {
+            total: results.length,
+            verified: results.filter(r => r.verified).length,
+            notFound: results.filter(r => r.status === 'not_found').length,
+            revoked: results.filter(r => r.status === 'revoked').length,
+            invalid: results.filter(r => r.status === 'invalid').length
+        };
+
+        res.json({ results, summary });
+    } catch (err) {
+        console.error('[HASHES] bulk-verify error:', err);
+        res.status(500).json({ error: 'Bulk verification failed' });
+    }
+});
+
+/**
  * @route GET /api/hashes/:hash
  * @description Get detail for a specific hash.
  */

@@ -9,7 +9,7 @@ import {
     Search, Bell, User, Binary, AlignLeft, Building2,
     CheckCircle2, AlertTriangle, Info, X, Clock, ExternalLink, RefreshCw,
     XCircle, KeyRound, Trash2, Zap, BarChart3, CreditCard, ChevronLeft, ChevronRight,
-    Sun, Moon, Wallet, Users, ClipboardList, Beaker, Code
+    Sun, Moon, Wallet, Users, ClipboardList, Beaker, Code, CheckSquare
 } from 'lucide-react';
 import { api, logout, isAuthenticated } from '@/utils/api';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -208,6 +208,7 @@ export default function DashboardLayout({ children }) {
         { name: 'Audit Log', href: '/dashboard/audit', icon: ClipboardList },
         { name: 'API Playground', href: '/dashboard/playground', icon: Beaker },
         { name: 'Embed & Share', href: '/dashboard/embed', icon: Code },
+        { name: 'Mass Verification', href: '/dashboard/bulk-verify', icon: CheckSquare },
     ];
 
     const breadcrumbName = navItems.find(item => item.href === pathname)?.name || 'Dashboard';
