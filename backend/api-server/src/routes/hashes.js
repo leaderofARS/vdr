@@ -250,6 +250,63 @@ router.get('/pending', authenticate, async (req, res) => {
 });
 
 /**
+ * @route POST /api/hashes
+ * @description Anchor a single document hash (Internal Dashboard use)
+ */
+router.post('/', authenticate, async (req, res, next) => {
+    try {
+        const { hash, metadata = "" } = req.body;
+        const organizationId = req.organization?.id;
+
+        if (!/^[a-fA-F0-9]{64}$/.test(hash)) {
+            return res.status(400).json({ error: 'Invalid SHA-256 hash format' });
+        }
+
+        if (!organizationId) {
+            return res.status(403).json({ error: 'Institutional Context Required' });
+        }
+
+        // 1. Check for duplicates in this organization
+        const existing = await prisma.hashRecord.findFirst({
+            where: { hash, organizationId }
+        });
+
+        if (existing) {
+            return res.status(409).json({ error: 'Hash already registered by your organization' });
+        }
+
+        // 2. Perform Solana transaction
+        const { tx, owner, pdaAddress } = await solanaService.registerHash(hash, metadata, 0);
+
+        // 3. Create PENDING record in DB so UI can show it immediately
+        const record = await prisma.hashRecord.create({
+            data: {
+                hash,
+                metadata,
+                organizationId,
+                status: 'PENDING',
+                txSignature: tx,
+                ownerWallet: owner,
+                pdaAddress: pdaAddress,
+                timestamp: Math.floor(Date.now() / 1000)
+            }
+        });
+
+        res.status(201).json({
+            success: true,
+            hash: record.hash,
+            txSignature: tx
+        });
+    } catch (err) {
+        console.error('[HASHES] anchor error:', err);
+        if (err.message?.includes('already in use')) {
+            return res.status(409).json({ error: 'Hash PDA already exists on-chain' });
+        }
+        res.status(500).json({ error: 'Failed to anchor hash to Solana' });
+    }
+});
+
+/**
  * @route GET /api/hashes/:hash
  * @description Get detail for a specific hash.
  */

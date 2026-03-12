@@ -21,6 +21,7 @@ import {
     PurpleCard, GlowButton, PurpleBadge, MonoHash, PurpleSkeleton,
     CountUp, PurpleTable, PurpleTableRow, PurpleInput, PurpleModal
 } from '@/components/ui/PurpleUI';
+import BulkAnchorModal from '@/components/ui/BulkAnchorModal';
 
 const AreaChart = dynamic(() => import('recharts').then(m => m.AreaChart), { ssr: false });
 const Area = dynamic(() => import('recharts').then(m => m.Area), { ssr: false });
@@ -54,6 +55,7 @@ export default function AnalyticsDashboard() {
     const [toast, setToast] = useState(null);
     const [qrHash, setQrHash] = useState(null);
     const [qrCopied, setQrCopied] = useState(false);
+    const [showBulkModal, setShowBulkModal] = useState(false);
 
     const verifyUrl = (hash) =>
         `https://app.sipheron.com/verify/${hash}`;
@@ -262,6 +264,14 @@ export default function AnalyticsDashboard() {
                         <span className="text-xs font-mono text-purple-glow">{lastSync.toLocaleTimeString()}</span>
                     </div>
                     <div className="flex gap-2 mr-2">
+                        <GlowButton
+                            variant="ghost"
+                            onClick={() => setShowBulkModal(true)}
+                            className="text-xs"
+                        >
+                            <ArrowUpRight className="w-4 h-4 mr-2" />
+                            Bulk Anchor
+                        </GlowButton>
                         <GlowButton
                             variant="ghost"
                             onClick={() => handleExport('csv')}
@@ -755,7 +765,16 @@ export default function AnalyticsDashboard() {
                     </div>
                 )}
             </PurpleModal>
-
+            {showBulkModal && (
+                <BulkAnchorModal
+                    onClose={() => setShowBulkModal(false)}
+                    onSuccess={() => {
+                        setShowBulkModal(false);
+                        fetchHashes();
+                        startPolling();
+                    }}
+                />
+            )}
         </div>
     );
 }
