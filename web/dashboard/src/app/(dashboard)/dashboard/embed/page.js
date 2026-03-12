@@ -12,8 +12,9 @@ import {
 } from '@/components/ui/PurpleUI';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://app.sipheron.com';
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.sipheron.com';
+// Fallback URLs for SSR or when env vars are missing
+const FALLBACK_BASE_URL = 'https://app.sipheron.com';
+const FALLBACK_API_URL = 'https://api.sipheron.com';
 
 // Custom Shield icon component
 const Shield = ({ className }) => (
@@ -29,6 +30,21 @@ export default function EmbedPage() {
     const [copied, setCopied] = useState('');
     const [loading, setLoading] = useState(true);
     const [codeTab, setCodeTab] = useState('html');
+    const [baseUrl, setBaseUrl] = useState(FALLBACK_BASE_URL);
+    const [apiUrl, setApiUrl] = useState(FALLBACK_API_URL);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            setBaseUrl(window.location.origin);
+            // Sync with the API utility base URL
+            const configuredApiUrl = api.defaults.baseURL;
+            if (configuredApiUrl && configuredApiUrl.startsWith('http')) {
+                setApiUrl(configuredApiUrl);
+            } else if (configuredApiUrl?.startsWith('/')) {
+                setApiUrl(window.location.origin + configuredApiUrl);
+            }
+        }
+    }, []);
 
     useEffect(() => {
         api.get('/api/hashes').then(res => {
@@ -45,8 +61,8 @@ export default function EmbedPage() {
         }).finally(() => setLoading(false));
     }, []);
 
-    const verifyUrl = `${BASE_URL}/verify/${selectedHash}`;
-    const badgeUrl = `${API_URL}/api/hashes/badge/${selectedHash}`;
+    const verifyUrl = `${baseUrl}/verify/${selectedHash}`;
+    const badgeUrl = `${apiUrl}/api/hashes/badge/${selectedHash}`;
 
     const EMBED_OPTIONS = {
         badge: {
@@ -55,7 +71,10 @@ export default function EmbedPage() {
             icon: Shield,
             description: 'A lightweight, live SVG badge that updates automatically based on blockchain status.',
             preview: selectedHash ? (
-                <img src={badgeUrl} alt="SipHeron VDR verified" height={20} className="shadow-lg shadow-purple-900/20" />
+                <div className="relative group">
+                    <img src={badgeUrl} alt="SipHeron VDR verified" height={24} className="h-6 w-auto shadow-lg shadow-purple-900/40 relative z-10" />
+                    <div className="absolute inset-0 bg-purple-vivid/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
             ) : <div className="text-text-muted text-sm italic">Select a cryptographic hash...</div>,
             codes: {
                 html: `<a href="${verifyUrl}" target="_blank" rel="noopener noreferrer">\n  <img src="${badgeUrl}" alt="SipHeron VDR verified" />\n</a>`,
@@ -90,11 +109,16 @@ export default function EmbedPage() {
             icon: Frame,
             description: 'Embed the entire verification transparency report directly into your portal or dApp.',
             preview: selectedHash ? (
-                <div className="flex flex-col items-center gap-3">
-                    <div className="w-48 h-24 bg-purple-vivid/5 border border-purple-vivid/20 rounded-2xl flex items-center justify-center">
-                        <Globe className="w-8 h-8 text-purple-vivid/40 animate-pulse" />
+                <div className="w-full max-w-[400px] aspect-video rounded-xl border border-purple-vivid/20 overflow-hidden bg-black shadow-2xl relative group">
+                    <iframe 
+                        src={verifyUrl} 
+                        className="w-full h-full border-none pointer-events-none" 
+                        title="Embed Preview"
+                        style={{ transform: 'scale(0.8)', transformOrigin: 'top left', width: '125%', height: '125%' }}
+                    />
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black to-transparent h-12 flex items-end justify-center pb-2">
+                        <span className="text-[9px] text-purple-glow font-bold uppercase tracking-widest">Live Integration Preview</span>
                     </div>
-                    <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest leading-none mt-1">Responsive Frame Active</p>
                 </div>
             ) : null,
             codes: {

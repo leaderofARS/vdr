@@ -27,12 +27,25 @@ export function proxy(request) {
 
     // Security headers
     response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
-    response.headers.set('X-Frame-Options', 'DENY');
+    
+    // Allow embedding for verification pages to enable the Embedded Viewer feature
+    if (request.nextUrl.pathname.startsWith('/verify')) {
+        // We use Content-Security-Policy instead of X-Frame-Options for better control
+        // For now, we just remove X-Frame-Options to allow embedding
+        response.headers.delete('X-Frame-Options');
+    } else {
+        response.headers.set('X-Frame-Options', 'DENY');
+    }
+
     response.headers.set('X-Content-Type-Options', 'nosniff');
     response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
     response.headers.set('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
 
     return response;
+}
+
+export function middleware(request) {
+    return proxy(request);
 }
 
 export const config = {

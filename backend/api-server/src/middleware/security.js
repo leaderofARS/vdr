@@ -85,21 +85,21 @@ const securityHeaders = helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            scriptSrc: ["'self'"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
             styleSrc: ["'self'", "'unsafe-inline'"],
-            imgSrc: ["'self'", "data:", "https:"],
-            connectSrc: ["'self'", "https://api.devnet.solana.com"],
-            fontSrc: ["'self'"],
+            imgSrc: ["'self'", "data:", "https:", "http:"],
+            connectSrc: ["'self'", "https:", "http:", "https://api.devnet.solana.com"],
+            fontSrc: ["'self'", "data:", "https:"],
             objectSrc: ["'none'"],
             mediaSrc: ["'self'"],
-            frameSrc: ["'none'"],
+            frameSrc: ["'self'", "https:", "http:"],
         }
     },
-    crossOriginEmbedderPolicy: true,
-    crossOriginOpenerPolicy: true,
-    crossOriginResourcePolicy: { policy: "same-origin" },
+    crossOriginEmbedderPolicy: false,
+    crossOriginOpenerPolicy: { policy: "unsafe-none" },
+    crossOriginResourcePolicy: { policy: "cross-origin" },
     dnsPrefetchControl: { allow: false },
-    frameguard: { action: "deny" },
+    frameguard: false, // Allow embedding for the viewer
     hidePoweredBy: true,
     hsts: {
         maxAge: 31536000,
