@@ -9,7 +9,7 @@ export default function TermsOfServicePage() {
             <div className="max-w-3xl mx-auto px-6 py-16">
                 {/* Header */}
                 <div className="mb-12">
-                    <a href="https://sipheron.com" className="text-purple-400 text-sm hover:text-purple-300 mb-8 inline-block">
+                    <a href="https://app.sipheron.com" className="text-purple-400 text-sm hover:text-purple-300 mb-8 inline-block">
                         ← Back to SipHeron
                     </a>
                     <h1 className="text-4xl font-bold text-white mt-4">Terms of Service</h1>
@@ -139,7 +139,7 @@ export default function TermsOfServicePage() {
                 <div className="mt-16 pt-8 border-t border-white/10 flex flex-col sm:flex-row gap-4 text-sm text-gray-500">
                     <a href="/legal/privacy" className="hover:text-purple-400 transition-colors">Privacy Policy</a>
                     <a href="/dashboard" className="hover:text-purple-400 transition-colors">Dashboard</a>
-                    <a href="https://sipheron.com" className="hover:text-purple-400 transition-colors">sipheron.com</a>
+                    <a href="https://app.sipheron.com" className="hover:text-purple-400 transition-colors">sipheron.com</a>
                 </div>
             </div>
         </div>
