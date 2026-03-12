@@ -203,6 +203,50 @@ async function sendWalletAlertEmail(type, balance) {
 }
 
 /**
+ * Send an organization invitation email.
+ */
+async function sendOrgInviteEmail({ toEmail, inviterName, orgName, role, inviteUrl, expiresAt }) {
+    try {
+        await resend.emails.send({
+            from: FROM_EMAIL,
+            to: [toEmail],
+            subject: `You've been invited to join ${orgName} on SipHeron VDR`,
+            html: `
+                <div style="background-color: #0A0A0F; color: #F8F8FF; font-family: sans-serif; padding: 40px; border-radius: 8px; max-width: 600px; margin: auto;">
+                    <div style="text-align: center; margin-bottom: 30px;">
+                        <h1 style="color: #4F6EF7; margin: 0;">SipHeron VDR</h1>
+                    </div>
+                    <div style="background-color: #111118; padding: 30px; border: 1px solid #1E1E2E; border-radius: 12px;">
+                        <h2 style="margin-top: 0;">Organization Invitation</h2>
+                        <p style="color: #6B7280; line-height: 1.6;">
+                            <strong style="color: #F8F8FF;">${inviterName}</strong> has invited you to join
+                            <strong style="color: #F8F8FF;">${orgName}</strong> as a
+                            <strong style="color: #4F6EF7;">${role}</strong> on SipHeron VDR.
+                        </p>
+                        <div style="text-align: center; margin: 40px 0;">
+                            <a href="${inviteUrl}" style="background-color: #4F6EF7; color: white; padding: 14px 28px; border-radius: 6px; text-decoration: none; font-weight: bold;">
+                                Accept Invitation
+                            </a>
+                        </div>
+                        <p style="color: #6B7280; font-size: 13px; line-height: 1.6;">
+                            This invitation expires on ${new Date(expiresAt).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}.
+                            If you didn't expect this invitation, you can safely ignore this email.
+                        </p>
+                    </div>
+                    <div style="text-align: center; margin-top: 30px; color: #6B7280; font-size: 12px;">
+                        <p>SipHeron VDR · Built on Solana · Immutable Registry</p>
+                    </div>
+                </div>
+            `
+        });
+        return { success: true };
+    } catch (err) {
+        console.error('[EMAIL] sendOrgInviteEmail failed:', err.message);
+        return { success: false, error: err.message };
+    }
+}
+
+/**
  * Send a test email (Resend onboarding example).
  */
 async function sendTestEmail(toEmail = 'noreply@sipheron.com') {
@@ -225,5 +269,6 @@ module.exports = {
     sendHashAnchoredEmail,
     sendWelcomeEmail,
     sendWalletAlertEmail,
+    sendOrgInviteEmail,
     sendTestEmail
 };
