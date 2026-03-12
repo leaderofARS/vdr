@@ -52,6 +52,7 @@ const webhooksRoute = require("./routes/webhooks");
 const usageRoute = require("./routes/usage");
 const keysRoute = require("./routes/keys");
 const membersRouter = require('./routes/members');
+const auditRouter = require('./routes/audit');
 const usageLogger = require("./middleware/usageLogger");
 
 const authenticate = require("./middleware/auth");
@@ -144,7 +145,8 @@ app.use((req, res, next) => {
             req.path.startsWith('/api/notifications') ||
             req.path.startsWith('/api/usage') ||
             req.path.startsWith('/api/batch') ||
-            req.path.startsWith('/api/members')
+            req.path.startsWith('/api/members') ||
+            req.path.startsWith('/api/audit')
         ) {
             return next();
         }
@@ -187,8 +189,9 @@ app.use("/analytics", analyticsRoute);
 app.use("/api/org", orgRoute); // Full org management & stats
 app.use("/api/notifications", notificationsRoute);
 app.use("/api/webhooks", webhooksRoute);
-app.use("/api/usage", usageRoute);
+app.use('/api/usage', usageRoute);
 app.use('/api/members', membersRouter);
+app.use('/api/audit', auditRouter);
 // app.use("/api", usageLogger); // Removed from here and moved before routes
 
 app.use("/organizations", organizationRoute);

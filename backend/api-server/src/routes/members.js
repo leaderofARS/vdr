@@ -19,6 +19,7 @@ const authenticate = require('../middleware/auth');
 const { sendOrgInviteEmail } = require('../services/emailService');
 const { validateInput } = require('../middleware/security');
 const { requireRole, requireOwner } = require('../middleware/rbac');
+const { logAudit, AUDIT_ACTIONS } = require('../utils/auditLogger');
 
 // ─── GET /api/members/me/role ────────────────────────────────────────────────
 router.get('/me/role', authenticate, async (req, res) => {
@@ -161,8 +162,16 @@ router.post('/invite', authenticate, requireRole('admin'), async (req, res) => {
             console.log('[MEMBERS] Invite email sent successfully to:', email);
         } catch (emailErr) {
             console.error('[MEMBERS] Invite email failed:', emailErr.message, emailErr.stack);
-            // Continue — invite was created in DB, email failure is non-fatal
         }
+
+        await logAudit({
+            organizationId,
+            userId,
+            action: AUDIT_ACTIONS.MEMBER_INVITED,
+            category: 'member',
+            metadata: { email, role: inviteRole },
+            req
+        });
 
         res.status(201).json({
             message: `Invitation sent to ${email}`,
@@ -311,6 +320,15 @@ router.post('/accept/:token', authenticate, async (req, res) => {
             orgName: invite.organization.name,
             role: invite.role
         });
+
+        await logAudit({
+            organizationId: invite.organizationId,
+            userId,
+            action: AUDIT_ACTIONS.MEMBER_JOINED,
+            category: 'member',
+            metadata: { email: userEmail, role: invite.role },
+            req
+        });
     } catch (err) {
         console.error('[MEMBERS] accept invite error:', err);
         res.status(500).json({ error: 'Failed to accept invitation' });
@@ -340,6 +358,16 @@ router.delete('/:memberId', authenticate, requireRole('admin'), async (req, res)
         }
 
         await prisma.orgMember.delete({ where: { id: memberId } });
+
+        await logAudit({
+            organizationId,
+            userId: req.user?.id,
+            action: AUDIT_ACTIONS.MEMBER_REMOVED,
+            category: 'member',
+            metadata: { memberId, removedUserId: member.userId },
+            req
+        });
+
         res.json({ message: 'Member removed successfully' });
     } catch (err) {
         console.error('[MEMBERS] remove member error:', err);
@@ -366,6 +394,15 @@ router.patch('/:memberId/role', authenticate, requireOwner, async (req, res) => 
         const updated = await prisma.orgMember.update({
             where: { id: memberId },
             data: { role: newRole }
+        });
+
+        await logAudit({
+            organizationId,
+            userId: req.user?.id,
+            action: AUDIT_ACTIONS.MEMBER_ROLE_CHANGED,
+            category: 'member',
+            metadata: { memberId, previousRole: member.role, newRole },
+            req
         });
 
         res.json({ message: 'Role updated', member: updated });

@@ -9,7 +9,7 @@ const prisma = require('../config/database');
 const solanaService = require('../services/solana');
 const authenticate = require('../middleware/auth');
 const webhookService = require('../services/webhookService');
-const { requireRole } = require('../middleware/rbac');
+const { logAudit, AUDIT_ACTIONS } = require('../utils/auditLogger');
 
 const router = express.Router();
 
@@ -292,6 +292,15 @@ router.post('/', authenticate, async (req, res, next) => {
             }
         });
 
+        await logAudit({
+            organizationId,
+            userId: req.user?.id,
+            action: AUDIT_ACTIONS.HASH_ANCHORED,
+            category: 'hash',
+            metadata: { hash: hash.slice(0, 16) + '...', metadata },
+            req
+        });
+
         res.status(201).json({
             success: true,
             hash: record.hash,
@@ -390,6 +399,15 @@ router.post('/revoke', authenticate, requireRole('admin'), async (req, res, next
                 revokedAt: new Date(),
                 isRevoked: true
             }
+        });
+
+        await logAudit({
+            organizationId: req.organization.id,
+            userId: req.user?.id,
+            action: AUDIT_ACTIONS.HASH_REVOKED,
+            category: 'hash',
+            metadata: { hash: hash.slice(0, 16) + '...' },
+            req
         });
 
         // 4. Trigger Webhook

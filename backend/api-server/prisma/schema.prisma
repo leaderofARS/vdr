@@ -38,6 +38,7 @@ model Organization {
   webhooks      Webhook[]
   members       OrgMember[]
   invites       OrgInvite[]
+  auditLogs     AuditLog[]
 
   createdAt DateTime @default(now())
 }
@@ -189,4 +190,21 @@ model OrgInvite {
   @@index([organizationId])
   @@index([email])
   @@index([token])
+}
+
+model AuditLog {
+  id             String       @id @default(uuid())
+  organizationId String
+  userId         String?
+  action         String       // e.g. HASH_ANCHORED, API_KEY_CREATED, MEMBER_INVITED
+  category       String       // hash, key, member, org, webhook
+  metadata       Json?        // flexible extra data
+  ipAddress      String?
+  userAgent      String?
+  createdAt      DateTime     @default(now())
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([createdAt])
+  @@index([action])
 }

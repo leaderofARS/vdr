@@ -13,6 +13,7 @@ const crypto = require('crypto');
 const { z } = require('zod');
 const { validateInput } = require('../middleware/security');
 const { requireRole } = require('../middleware/rbac');
+const { logAudit, AUDIT_ACTIONS } = require('../utils/auditLogger');
 
 const router = express.Router();
 
@@ -96,6 +97,15 @@ router.delete('/:id', authenticate, requireRole('admin'), async (req, res, next)
             data: { status: 'revoked' }
         });
 
+        await logAudit({
+            organizationId: req.organization.id,
+            userId: req.user?.id,
+            action: AUDIT_ACTIONS.KEY_DELETED,
+            category: 'key',
+            metadata: { keyId: id, name: key.name },
+            req
+        });
+
         res.json({ success: true, message: 'API Key revoked successfully' });
     } catch (error) {
         next(error);
@@ -136,6 +146,15 @@ router.post('/', authenticate, requireRole('admin'), validateInput(createKeySche
             `New API key "${name}" was created`,
             { keyName: name }
         ).catch(err => console.error('[Keys] Notification failed:', err.message));
+
+        await logAudit({
+            organizationId: req.organization.id,
+            userId: req.user.id,
+            action: AUDIT_ACTIONS.KEY_CREATED,
+            category: 'key',
+            metadata: { name, scope },
+            req
+        });
 
         res.status(201).json({
             success: true,
