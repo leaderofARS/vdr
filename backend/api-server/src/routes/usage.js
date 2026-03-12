@@ -47,8 +47,15 @@ router.get('/', authenticate, async (req, res, next) => {
             orderBy: { createdAt: 'asc' }
         });
 
-        const totalRequests = logs.length;
-        const successCount = logs.filter(l => l.statusCode >= 200 && l.statusCode < 300).length;
+        // Calculate Business-Centric Success Metrics
+        // 1. Success = 2xx (OK) OR 409 (Conflict - Data already secured in VDR is a business success)
+        const successCount = logs.filter(l => (l.statusCode >= 200 && l.statusCode < 300) || l.statusCode === 304 || l.statusCode === 409).length;
+
+        // 2. Filter out Noise: Poll-based 404s shouldn't count as failures OR as total requests
+        // This prevents aggressive polling from diluting the "real" success rate.
+        const filteredLogs = logs.filter(l => !(l.statusCode === 404 && l.method === 'GET' && l.endpoint.includes('/api/hashes/')));
+        const totalRequests = filteredLogs.length;
+
         const totalDuration = logs.reduce((sum, l) => sum + l.durationMs, 0);
         const successRate = totalRequests > 0 ? (successCount / totalRequests * 100).toFixed(1) + "%" : "0%";
         const avgResponseTime = totalRequests > 0 ? Math.round(totalDuration / totalRequests) : 0;
@@ -61,7 +68,7 @@ router.get('/', authenticate, async (req, res, next) => {
             }
             endpointStats[log.endpoint].total++;
             endpointStats[log.endpoint].totalDuration += log.durationMs;
-            if (log.statusCode >= 200 && log.statusCode < 300) endpointStats[log.endpoint].successCount++;
+            if ((log.statusCode >= 200 && log.statusCode < 300) || log.statusCode === 304 || log.statusCode === 409) endpointStats[log.endpoint].successCount++;
         });
 
         const endpoints = Object.values(endpointStats).map(ep => ({
@@ -86,7 +93,7 @@ router.get('/', authenticate, async (req, res, next) => {
                 };
             }
             keyStats[kid].total++;
-            if (log.statusCode >= 200 && log.statusCode < 300) keyStats[kid].successCount++;
+            if ((log.statusCode >= 200 && log.statusCode < 300) || log.statusCode === 304 || log.statusCode === 409) keyStats[kid].successCount++;
             if (new Date(log.createdAt) > new Date(keyStats[kid].lastUsed)) keyStats[kid].lastUsed = log.createdAt;
         });
 
@@ -102,8 +109,10 @@ router.get('/', authenticate, async (req, res, next) => {
             if (!dayStats[date]) {
                 dayStats[date] = { date, success: 0, error: 0 };
             }
-            if (log.statusCode >= 200 && log.statusCode < 300) {
+            if ((log.statusCode >= 200 && log.statusCode < 300) || log.statusCode === 304 || log.statusCode === 409) {
                 dayStats[date].success++;
+            } else if (log.statusCode === 404 && log.method === 'GET' && log.endpoint.includes('/api/hashes/')) {
+                // Ignore noise in chart aggregation
             } else {
                 dayStats[date].error++;
             }
