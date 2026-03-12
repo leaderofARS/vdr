@@ -16,13 +16,13 @@ function usageLogger(req, res, next) {
     // Listen to the 'finish' event to log after response is sent
     res.on('finish', () => {
         // We only care about API key usage or authenticated org usage for metrics
-        if (req.apiKey && req.organization) {
+        if (req.organization) {
             const durationMs = Date.now() - startTime;
 
             // Fire and forget — we don't await this to avoid slowing down the response
             prisma.apiUsageLog.create({
                 data: {
-                    apiKeyId: req.apiKey.id,
+                    apiKeyId: req.apiKey?.id || null, // Optional now
                     orgId: req.organization.id,
                     endpoint: req.path,
                     method: req.method,

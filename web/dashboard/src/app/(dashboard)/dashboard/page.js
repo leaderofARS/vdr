@@ -76,6 +76,8 @@ export default function AnalyticsDashboard() {
         },
         onRefresh: () => {
             fetchHashes();
+            fetchData();
+            fetchUsage();
         }
     });
 
@@ -771,6 +773,8 @@ export default function AnalyticsDashboard() {
                     onSuccess={() => {
                         setShowBulkModal(false);
                         fetchHashes();
+                        fetchData();
+                        fetchUsage();
                         startPolling();
                     }}
                 />

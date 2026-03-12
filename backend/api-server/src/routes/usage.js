@@ -77,7 +77,13 @@ router.get('/', authenticate, async (req, res, next) => {
         logs.forEach(log => {
             const kid = log.apiKeyId;
             if (!keyStats[kid]) {
-                keyStats[kid] = { id: kid, name: log.apiKey?.name || 'Unknown', total: 0, successCount: 0, lastUsed: log.createdAt };
+                keyStats[kid] = { 
+                    id: kid || 'console', 
+                    name: kid ? (log.apiKey?.name || 'Key-' + kid.slice(0,4)) : 'Institutional Console', 
+                    total: 0, 
+                    successCount: 0, 
+                    lastUsed: log.createdAt 
+                };
             }
             keyStats[kid].total++;
             if (log.statusCode >= 200 && log.statusCode < 300) keyStats[kid].successCount++;
