@@ -17,8 +17,17 @@ const router = express.Router();
 const prisma = require('../config/database');
 const authenticate = require('../middleware/auth');
 const { sendOrgInviteEmail } = require('../services/emailService');
-const { validateInput } = require('../middleware/security');
 const { requireRole, requireOwner } = require('../middleware/rbac');
+const { z } = require('zod');
+
+const inviteSchema = z.object({
+    email: z.string().email().toLowerCase(),
+    role: z.enum(['admin', 'member']).optional().default('member')
+});
+
+const updateRoleSchema = z.object({
+    role: z.enum(['admin', 'member'])
+});
 
 // ─── GET /api/members/me/role ────────────────────────────────────────────────
 // returns current user's role in org
@@ -90,7 +99,7 @@ router.get('/', authenticate, async (req, res) => {
 
 // ─── POST /api/members/invite ─────────────────────────────────────────────────
 // Invite a user by email to join the org
-router.post('/invite', authenticate, requireRole('admin'), validateInput, async (req, res) => {
+router.post('/invite', authenticate, requireRole('admin'), validateInput(inviteSchema), async (req, res) => {
     try {
         const organizationId = req.organization?.id;
         const userId = req.user?.id;
@@ -353,7 +362,7 @@ router.delete('/:memberId', authenticate, requireRole('admin'), async (req, res)
 
 // ─── PATCH /api/members/:memberId/role ───────────────────────────────────────
 // Change a member's role (owner only)
-router.patch('/:memberId/role', authenticate, requireOwner, async (req, res) => {
+router.patch('/:memberId/role', authenticate, requireOwner, validateInput(updateRoleSchema), async (req, res) => {
     try {
         const organizationId = req.organization?.id;
         const { memberId } = req.params;
