@@ -15,6 +15,8 @@ import {
     TrendingUp, TrendingDown, Wallet, Activity, Globe, Zap, Download, QrCode
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
+import { usePendingHashes } from '@/hooks/usePendingHashes';
+import PendingBadge from '@/components/ui/PendingBadge';
 import {
     PurpleCard, GlowButton, PurpleBadge, MonoHash, PurpleSkeleton,
     CountUp, PurpleTable, PurpleTableRow, PurpleInput, PurpleModal
@@ -62,6 +64,24 @@ export default function AnalyticsDashboard() {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [dateFilter, setDateFilter] = useState('all');
+
+    const [confirmedToast, setConfirmedToast] = useState(null);
+
+    const { pendingIds, isPolling, startPolling } = usePendingHashes({
+        onConfirmed: (id) => {
+            setConfirmedToast(`Hash confirmed on Solana ✓`);
+            setTimeout(() => setConfirmedToast(null), 4000);
+        },
+        onRefresh: () => {
+            fetchHashes();
+        }
+    });
+
+    // Start polling whenever hashes load and any are pending
+    useEffect(() => {
+        const hasPending = hashes.some(h => h.status === 'PENDING');
+        if (hasPending) startPolling();
+    }, [hashes, startPolling]);
 
     const searchParams = useSearchParams();
     const pageFromUrl = parseInt(searchParams.get('page')) || 1;
@@ -204,6 +224,12 @@ export default function AnalyticsDashboard() {
 
     return (
         <div className="space-y-8 pb-20 relative">
+            {confirmedToast && (
+                <div className="fixed top-6 right-6 z-50 px-5 py-3 rounded-xl text-sm font-medium shadow-xl bg-green-500/20 border border-green-500/30 text-green-300 flex items-center gap-2 animate-in fade-in slide-in-from-top-4 duration-300">
+                    <span className="w-2 h-2 rounded-full bg-green-400" />
+                    {confirmedToast}
+                </div>
+            )}
             <div className="absolute inset-x-0 -top-20 h-64 bg-purple-glow/5 blur-[120px] pointer-events-none" />
 
             {/* Header Section */}
@@ -217,6 +243,12 @@ export default function AnalyticsDashboard() {
                         <span className="text-text-muted font-mono text-xs truncate max-w-[200px]">
                             ID: {stats?.org?.id || 'PROVISIONING'}
                         </span>
+                        {isPolling && (
+                            <div className="flex items-center gap-2 text-xs text-yellow-500/80 font-bold uppercase tracking-widest ml-4">
+                                <span className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse shadow-[0_0_8px_var(--yellow-400)]" />
+                                Synchronizing Registry...
+                            </div>
+                        )}
                     </div>
                 </motion.div>
 
@@ -542,9 +574,7 @@ export default function AnalyticsDashboard() {
                                             </div>
                                         </td>
                                         <td className="px-5 py-4">
-                                            <PurpleBadge variant={record.status === 'revoked' ? 'danger' : 'success'} pulse={record.status === 'active'}>
-                                                {record.status}
-                                            </PurpleBadge>
+                                            <PendingBadge status={record.status} />
                                         </td>
                                         <td className="px-5 py-4 text-right">
                                             <div className="flex items-center justify-end gap-3">

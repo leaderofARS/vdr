@@ -219,6 +219,37 @@ router.get('/public/:hash', async (req, res, next) => {
 });
 
 /**
+ * @route GET /api/hashes/pending
+ * @description returns only PENDING hashes for org used by frontend polling to detect status changes
+ */
+router.get('/pending', authenticate, async (req, res) => {
+    try {
+        const organizationId = req.organization?.id;
+        if (!organizationId) return res.status(400).json({ error: 'No organization linked' });
+
+        const pending = await prisma.hashRecord.findMany({
+            where: {
+                organizationId,
+                status: 'PENDING'
+            },
+            select: {
+                id: true,
+                hash: true,
+                status: true,
+                metadata: true,
+                createdAt: true
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+
+        res.json({ pending, count: pending.length });
+    } catch (err) {
+        console.error('[HASHES] pending error:', err);
+        res.status(500).json({ error: 'Failed to fetch pending hashes' });
+    }
+});
+
+/**
  * @route GET /api/hashes/:hash
  * @description Get detail for a specific hash.
  */
