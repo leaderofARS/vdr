@@ -1,60 +1,131 @@
-import Breadcrumb from '../../components/Breadcrumb';
-import Callout from '../../components/Callout';
-import CodeBlock from '../../components/CodeBlock';
-import ParamTable, { ParamRow } from '../../components/ParamTable';
-import DocsPrevNext from '../../components/DocsPrevNext';
+import DocLayout from '../../components/DocLayout';
+import { Search, ShieldCheck, FileText, Globe, AlertCircle, CheckCircle2, XCircle } from 'lucide-react';
 
-export default function Page() {
-  return (
-    <div>
-      <Breadcrumb items={[{"label":"CLI Reference","href":"/docs/cli"},{"label":"verify"}]} />
-      <div className="flex items-center justify-between mb-8">
-        <span className="text-[12px] text-[#555]">Last updated March 10, 2026</span>
-      </div>
+const HEADINGS = [
+    { id: 'overview', title: 'Overview', level: 2 },
+    { id: 'synopsis', title: 'Synopsis', level: 2 },
+    { id: 'options', title: 'Options', level: 2 },
+    { id: 'how-it-works', title: 'How it works', level: 2 },
+    { id: 'examples', title: 'Examples', level: 2 },
+    { id: 'outcomes', title: 'Verification Outcomes', level: 2 },
+    { id: 'errors', title: 'Common Errors', level: 2 },
+];
 
-      <h1 id="title">sipheron-vdr verify</h1>
-      <p className="text-[18px] text-[#EDEDED] leading-relaxed mb-10">
-        Extensive documentation for sipheron-vdr verify. Learn how to leverage SipHeron VDR for your enterprise needs.
-      </p>
+export default function CliVerifyPage() {
+    return (
+        <DocLayout headings={HEADINGS}>
+            <div className="max-w-4xl">
+                <h1 className="text-4xl font-bold text-white mb-4">vdr verify</h1>
+                <p className="text-xl text-gray-300 mb-12 leading-relaxed">
+                    Check a local file against the SipHeron VDR blockchain registry to prove its authenticity and integrity.
+                </p>
 
-      <h2 id="overview">Overview</h2>
-      <p>This section provides a comprehensive overview of sipheron-vdr verify. Our platform ensures that every interaction is secure, immutable, and verifiable.</p>
-      <div className="min-h-[50vh]" />
+                <h2 id="overview" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Overview
+                </h2>
+                <p className="text-gray-300 mb-4">
+                    The <code className="text-purple-300">verify</code> command is the primary way to consume document proofs. It performs a "Zero-Trust" check by re-hashing your local file and asking the blockchain "Does this hash exist in your records?"
+                </p>
 
-      <h2 id="how-it-works">How It Works</h2>
-      <p>Detailed technical explanation of sipheron-vdr verify.</p>
-      <CodeBlock language="text">
-{`Technical flow for sipheron-vdr verify...`}
-      </CodeBlock>
-      <div className="min-h-[50vh]" />
+                <h2 id="synopsis" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Synopsis
+                </h2>
+                <pre className="bg-black/60 border border-white/10 rounded-xl p-4 overflow-x-auto mb-6">
+                    <code className="text-sm text-purple-200 font-mono">
+                        sipheron-vdr verify &lt;path&gt; [options]
+                    </code>
+                </pre>
 
-      <h2 id="examples">Detailed Examples</h2>
-      <CodeBlock language="bash">
-# Example command for sipheron-vdr verify
-vdr example --flag
-      </CodeBlock>
-      <div className="min-h-[100vh]" />
+                <h2 id="options" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Options
+                </h2>
+                <div className="overflow-x-auto mb-6">
+                    <table className="w-full text-sm">
+                        <thead>
+                            <tr className="border-b border-white/10">
+                                <th className="text-left py-3 pr-4 text-gray-400 font-medium">Flag</th>
+                                <th className="text-left py-3 pr-4 text-gray-400 font-medium">Default</th>
+                                <th className="text-left py-3 pr-4 text-gray-400 font-medium">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-white/5">
+                            <tr>
+                                <td className="py-3 pr-4 text-purple-300 font-mono">--mainnet</td>
+                                <td className="py-3 pr-4 text-gray-400">false</td>
+                                <td className="py-3 pr-4 text-gray-300">Search for the record on Solana Mainnet-Beta.</td>
+                            </tr>
+                            <tr>
+                                <td className="py-3 pr-4 text-purple-300 font-mono">--json</td>
+                                <td className="py-3 pr-4 text-gray-400">false</td>
+                                <td className="py-3 pr-4 text-gray-300">Output the result as a machine-readable JSON object.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
 
-      <h2 id="parameters">Parameters & Configuration</h2>
-      <ParamTable>
-        <ParamRow name="param_1" type="string" required={true} description="Description for parameter 1" />
-        <ParamRow name="param_2" type="number" required={false} description="Description for parameter 2" />
-      </ParamTable>
-      <div className="min-h-[50vh]" />
+                <h2 id="how-it-works" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    How it works
+                </h2>
+                <ol className="list-decimal list-inside text-gray-300 space-y-3 mb-8 ml-4">
+                    <li>The CLI reads the file at <code className="text-purple-300">&lt;path&gt;</code>.</li>
+                    <li>It calculates the SHA-256 hash locally.</li>
+                    <li>It sends a search query to the SipHeron API using the hash.</li>
+                    <li>The API checks the Solana blockchain for a matching PDA.</li>
+                    <li>The CLI compares the blockchain timestamp and owner with the expected values.</li>
+                </ol>
 
-      <h2 id="best-practices">Best Practices</h2>
-      <Callout type="tip">Always test your sipheron-vdr verify configuration in devnet before moving to mainnet.</Callout>
-      <div className="min-h-[100vh]" />
+                <h2 id="examples" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Examples
+                </h2>
+                
+                <h3 className="text-white font-bold mb-3 mt-8">Verify a local PDF</h3>
+                <pre className="bg-black/60 border border-white/10 rounded-xl p-4 overflow-x-auto mb-6">
+                    <code className="text-sm text-purple-200 font-mono">
+                        sipheron-vdr verify ./contracts/signed_nda.pdf
+                    </code>
+                </pre>
 
-      <div className="mt-16 pt-6 border-t border-[#1F1F1F] flex items-center justify-between mb-8">
-        <span className="text-[12px] text-[#555]">Was this helpful?</span>
-        <div className="flex items-center gap-2">
-          <button className="text-[12px] px-3 py-1 border border-[#2A2A2A] rounded hover:border-[#444] text-[#888]">Yes</button>
-          <button className="text-[12px] px-3 py-1 border border-[#2A2A2A] rounded hover:border-[#444] text-[#888]">No</button>
-        </div>
-      </div>
+                <h3 className="text-white font-bold mb-3 mt-8">Output JSON (for scripts)</h3>
+                <pre className="bg-black/60 border border-white/10 rounded-xl p-4 overflow-x-auto mb-6 text-xs text-purple-200">
+                    <code className="font-mono">
+                        sipheron-vdr verify ./dist/binary.tar.gz --json
+                    </code>
+                </pre>
 
-      <DocsPrevNext />
-    </div>
-  );
+                <h2 id="outcomes" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Verification Outcomes
+                </h2>
+                <div className="space-y-4 mb-12">
+                    <div className="p-4 rounded-xl border border-green-500/20 bg-green-500/5 flex gap-4">
+                        <CheckCircle2 className="w-6 h-6 text-green-500 shrink-0" />
+                        <div>
+                            <h4 className="font-bold text-white">AUTHENTIC</h4>
+                            <p className="text-sm text-gray-400">The file is correct, the on-chain record exists, and it has not been revoked.</p>
+                        </div>
+                    </div>
+                    <div className="p-4 rounded-xl border border-red-500/20 bg-red-500/5 flex gap-4">
+                        <XCircle className="w-6 h-6 text-red-500 shrink-0" />
+                        <div>
+                            <h4 className="font-bold text-white">NOT FOUND / TAMPERED</h4>
+                            <p className="text-sm text-gray-400">The file has been modified, or it was never anchored to the specified network.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h2 id="errors" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Common Errors
+                </h2>
+                <div className="space-y-4 mb-16">
+                    <div className="p-4 rounded-xl border border-red-500/20 bg-red-500/5">
+                        <h4 className="font-bold text-white text-sm">Path is a directory</h4>
+                        <p className="text-xs text-gray-400 mt-1">Verification only works on individual files. You cannot verify a folder directly.</p>
+                    </div>
+                    <div className="p-4 rounded-xl border border-yellow-500/20 bg-yellow-500/5">
+                        <h4 className="font-bold text-white text-sm">Wrong Network</h4>
+                        <p className="text-xs text-gray-400 mt-1">If you anchored to Mainnet, you must use the <code className="text-purple-300">--mainnet</code> flag to verify, otherwise it will search Devnet by default.</p>
+                    </div>
+                </div>
+            </div>
+        </DocLayout>
+    );
 }

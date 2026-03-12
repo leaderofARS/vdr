@@ -1,60 +1,93 @@
-import Breadcrumb from '../../components/Breadcrumb';
-import Callout from '../../components/Callout';
-import CodeBlock from '../../components/CodeBlock';
-import ParamTable, { ParamRow } from '../../components/ParamTable';
-import DocsPrevNext from '../../components/DocsPrevNext';
+import DocLayout from '../../components/DocLayout';
+import { Building2, Shield, Key, Users, Globe, Zap, Info } from 'lucide-react';
 
-export default function Page() {
-  return (
-    <div>
-      <Breadcrumb items={[{"label":"Guides","href":"/docs/guides"},{"label":"Enterprise"}]} />
-      <div className="flex items-center justify-between mb-8">
-        <span className="text-[12px] text-[#555]">Last updated March 10, 2026</span>
-      </div>
+const HEADINGS = [
+    { id: 'org-structure', title: 'Organization Structure', level: 2 },
+    { id: 'custom-rpc', title: 'Custom RPC Nodes', level: 2 },
+    { id: 'key-management', title: 'Key Management Strategies', level: 2 },
+    { id: 'iam-integration', title: 'SSO & IAM Integration', level: 2 },
+    { id: 'high-availability', title: 'High Availability (HA)', level: 2 },
+    { id: 'onboarding-checklist', title: 'Onboarding Checklist', level: 2 },
+];
 
-      <h1 id="title">Enterprise Setup</h1>
-      <p className="text-[18px] text-[#EDEDED] leading-relaxed mb-10">
-        Extensive documentation for Enterprise Setup. Learn how to leverage SipHeron VDR for your enterprise needs.
-      </p>
+export default function GuideEnterprisePage() {
+    return (
+        <DocLayout headings={HEADINGS}>
+            <div className="max-w-4xl">
+                <h1 className="text-4xl font-bold text-white mb-4">Guide: Enterprise Setup & Governance</h1>
+                <p className="text-xl text-gray-300 mb-12 leading-relaxed">
+                    A comprehensive blueprint for deploying SipHeron VDR at scale within large organizations.
+                </p>
 
-      <h2 id="overview">Overview</h2>
-      <p>This section provides a comprehensive overview of Enterprise Setup. Our platform ensures that every interaction is secure, immutable, and verifiable.</p>
-      <div className="min-h-[50vh]" />
+                <h2 id="org-structure" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Organization Structure
+                </h2>
+                <p className="text-gray-300 mb-6 font-light">
+                    SipHeron supports multi-tenant organization structures. For larger firms, we recommend creating separate SipHeron Organizations for different departments (e.g., Legal, Finance, R&D) to ensure clear budget tracking and access control.
+                </p>
 
-      <h2 id="how-it-works">How It Works</h2>
-      <p>Detailed technical explanation of Enterprise Setup.</p>
-      <CodeBlock language="text">
-{`Technical flow for Enterprise Setup...`}
-      </CodeBlock>
-      <div className="min-h-[50vh]" />
+                <h2 id="custom-rpc" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Custom RPC Nodes
+                </h2>
+                <p className="text-gray-300 mb-6 leading-relaxed">
+                    Enterprise customers can bypass SipHeron's shared Solana infrastructure and use their own private RPC nodes (e.g., from Triton, Helius, or QuickNode). This ensures maximum uptime and eliminates rate-limiting during high-volume anchoring events.
+                </p>
 
-      <h2 id="examples">Detailed Examples</h2>
-      <CodeBlock language="bash">
-# Example command for Enterprise Setup
-vdr example --flag
-      </CodeBlock>
-      <div className="min-h-[100vh]" />
+                <h2 id="key-management" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Key Management Strategies
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div className="p-6 rounded-2xl border border-white/10 bg-white/5">
+                        <Users className="text-blue-400 mb-4" size={24} />
+                        <h4 className="text-white font-bold mb-2">Team-Based Keys</h4>
+                        <p className="text-xs text-gray-400">Issue separate API keys for each automated service. If one server is compromised, you only need to revoke one key.</p>
+                    </div>
+                    <div className="p-6 rounded-2xl border border-white/10 bg-white/5">
+                        <Shield className="text-green-400 mb-4" size={24} />
+                        <h4 className="text-white font-bold mb-2">Scoped Permissions</h4>
+                        <p className="text-xs text-gray-400">Use "Anchor-Only" keys for CI/CD workers and "Read-Only" keys for dashboards.</p>
+                    </div>
+                </div>
 
-      <h2 id="parameters">Parameters & Configuration</h2>
-      <ParamTable>
-        <ParamRow name="param_1" type="string" required={true} description="Description for parameter 1" />
-        <ParamRow name="param_2" type="number" required={false} description="Description for parameter 2" />
-      </ParamTable>
-      <div className="min-h-[50vh]" />
+                <h2 id="iam-integration" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    SSO & IAM Integration
+                </h2>
+                <p className="text-gray-300 mb-6 font-light">
+                    SipHeron Enterprise supports SAML 2.0 and OIDC (Okta, Azure AD, Google Workspace). Contact your account manager to enable SSO for your organization to ensure user lifecycle management is centralized.
+                </p>
 
-      <h2 id="best-practices">Best Practices</h2>
-      <Callout type="tip">Always test your Enterprise Setup configuration in devnet before moving to mainnet.</Callout>
-      <div className="min-h-[100vh]" />
+                <h2 id="high-availability" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    High Availability (HA)
+                </h2>
+                <div className="bg-purple-500/10 border border-purple-500/20 rounded-xl p-4 mb-12 flex gap-4">
+                    <Zap className="text-purple-400 shrink-0 mt-1" />
+                    <div>
+                        <p className="text-white font-bold text-sm mb-1 uppercase tracking-wider">Batch Queues</p>
+                        <p className="text-xs text-purple-200/80 leading-5">
+                            For systems generating 1,000+ documents per hour, integrate our <strong>Batch Queue API</strong>. This handles retries and transaction coalescing, ensuring your application doesn't block while waiting for blockchain confirmation.
+                        </p>
+                    </div>
+                </div>
 
-      <div className="mt-16 pt-6 border-t border-[#1F1F1F] flex items-center justify-between mb-8">
-        <span className="text-[12px] text-[#555]">Was this helpful?</span>
-        <div className="flex items-center gap-2">
-          <button className="text-[12px] px-3 py-1 border border-[#2A2A2A] rounded hover:border-[#444] text-[#888]">Yes</button>
-          <button className="text-[12px] px-3 py-1 border border-[#2A2A2A] rounded hover:border-[#444] text-[#888]">No</button>
-        </div>
-      </div>
-
-      <DocsPrevNext />
-    </div>
-  );
+                <h2 id="onboarding-checklist" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Onboarding Checklist
+                </h2>
+                <div className="space-y-3 mb-24">
+                    {[
+                        "Create Department-specific Organizations",
+                        "Assign Admin roles to Security and IT Leads",
+                        "Set up scoped API keys for CI/CD pipelines",
+                        "Configure Webhook endpoints for internal audit logs",
+                        "Integrate Verification URLs into Client Portals",
+                        "Perform an initial vulnerability scan of local CLI environments"
+                    ].map((item, i) => (
+                        <div key={i} className="flex gap-3 items-center p-3 rounded-lg hover:bg-white/5 transition-colors border border-transparent hover:border-white/10">
+                            <div className="w-5 h-5 rounded-full border border-purple-500/30 flex items-center justify-center text-[10px] font-bold text-purple-400">{i + 1}</div>
+                            <span className="text-sm text-gray-300">{item}</span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </DocLayout>
+    );
 }

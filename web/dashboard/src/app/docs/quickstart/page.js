@@ -1,126 +1,93 @@
-import Breadcrumb from '../components/Breadcrumb';
-import Callout from '../components/Callout';
-import CodeBlock from '../components/CodeBlock';
-import DocsPrevNext from '../components/DocsPrevNext';
+import DocLayout from '../components/DocLayout';
+import { Rocket, Terminal, Key, Hash, Send, CheckCircle2, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 
-export default function QuickStart() {
+const HEADINGS = [
+    { id: 'prerequisites', title: 'Prerequisites', level: 2 },
+    { id: 'installation', title: '1. Installation', level: 2 },
+    { id: 'get-api-key', title: '2. Get API Key', level: 2 },
+    { id: 'link-account', title: '3. Link Account', level: 2 },
+    { id: 'stage-files', title: '4. Stage Files', level: 2 },
+    { id: 'anchor-onchain', title: '5. Anchor On-Chain', level: 2 },
+    { id: 'verify-proof', title: '6. Verify Proof', level: 2 },
+];
+
+export default function QuickStartPage() {
     return (
-        <div>
-            <Breadcrumb items={[{ label: 'Quick Start', href: '/docs/quickstart' }]} />
-            <div className="flex items-center justify-between mb-8">
-                <span className="text-[12px] text-[#555]">Last updated March 10, 2026</span>
-            </div>
+        <DocLayout headings={HEADINGS}>
+            <div className="max-w-4xl">
+                <h1 className="text-4xl font-bold text-white mb-4">Quick Start</h1>
+                <p className="text-xl text-gray-300 mb-12 leading-relaxed">
+                    Get up and running with SipHeron VDR in less than 5 minutes. We'll guide you from installation to your first blockchain-verified document.
+                </p>
 
-            <h1 id="quick-start">Quick Start</h1>
-            <p className="text-[18px] text-[#EDEDED] leading-relaxed mb-10">
-                Learn how to get up and running with SipHeron VDR in minutes. This guide covers installation, authentication, and your first anchored proof.
-            </p>
+                <h2 id="prerequisites" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Prerequisites
+                </h2>
+                <ul className="list-disc list-inside text-gray-400 space-y-2 mb-8 ml-4">
+                    <li><code className="text-purple-400">Node.js</code> version 16 or higher</li>
+                    <li>A SipHeron account (sign up at <a href="https://app.sipheron.com" className="text-purple-400 underline">app.sipheron.com</a>)</li>
+                    <li>A terminal (Bash, Zsh, or PowerShell)</li>
+                </ul>
 
-            <h2 id="prerequisites">Prerequisites</h2>
-            <p>Before you begin, ensure you have the following installed on your machine:</p>
-            <ul className="list-disc pl-5 mb-8 text-[#888]">
-                <li>Node.js 18.x or higher</li>
-                <li>npm or yarn package manager</li>
-                <li>A free SipHeron VDR account</li>
-                <li>Optional: A Solana wallet (Phantom, Solflare) for advanced features</li>
-            </ul>
-
-            <h2 id="installation">1. Install the CLI</h2>
-            <p>The SipHeron VDR CLI is the primary way to interact with our platform. Install it globally via npm:</p>
-            <CodeBlock language="bash">
-                npm install -g @sipheron/vdr-cli
-            </CodeBlock>
-            <p>Verify the installation by checking the version:</p>
-            <CodeBlock language="bash">
-                vdr --version
-                # Output: SipHeron VDR CLI v0.9.4
-            </CodeBlock>
-
-            <h2 id="auth">2. Authenticate</h2>
-            <p>Login to your account to authorize your machine. This will open a browser window for secure authentication.</p>
-            <CodeBlock language="bash">
-                vdr login
-            </CodeBlock>
-            <Callout type="info">
-                If you are on a headless server, use <code>vdr login --headless</code> to authenticate via an API key manually.
-            </Callout>
-
-            <h2 id="link">3. Initialize Project</h2>
-            <p>Navigate to the directory containing your documents and initialize it for VDR tracking.</p>
-            <CodeBlock language="bash">
-                cd ~/documents/reports
-                vdr link .
-            </CodeBlock>
-            <p>This creates a hidden <code>.vdr</code> directory that stores your local hash state and configuration.</p>
-
-            <h2 id="stage">4. Stage Your Files</h2>
-            <p>Staging computes the SHA-256 hash of your files locally. Your file content is never sent to our servers.</p>
-            <CodeBlock language="bash">
-                vdr stage q1-financials.pdf
-            </CodeBlock>
-            <p>Expected output:</p>
-            <CodeBlock language="text">
-                {`✔ Hash computed for q1-financials.pdf
-✔ Staged for anchoring [1/1 files]
-SHA-256: 7f83b1...3a9c42`}
-            </CodeBlock>
-
-            <h2 id="anchor">5. Anchor to Blockchain</h2>
-            <p>The final step is to push your staged hashes to the Solana blockchain. This creates the immutable proof.</p>
-            <CodeBlock language="bash">
-                vdr anchor
-            </CodeBlock>
-            <p>You will receive a transaction signature and a link to the Solana Explorer.</p>
-            <CodeBlock language="text">
-                {`🚀 Anchoring to Solana Mainnet...
-✔ Transaction confirmed!
-Signature: 3mZ5...8zY2
-Explorer: https://explorer.solana.com/tx/3mZ5...`}
-            </CodeBlock>
-
-            <h2 id="verify">6. Verify Your Document</h2>
-            <p>Anyone with access to the file can now verify its integrity against the blockchain record.</p>
-            <CodeBlock language="bash">
-                vdr verify q1-financials.pdf
-            </CodeBlock>
-            <p>Result:</p>
-            <CodeBlock language="text">
-                {`✔ INTEGRITY VERIFIED
-Anchor Date: Mar 10, 2026, 09:30 AM
-Status: Valid & Immutable`}
-            </CodeBlock>
-
-            <h2 id="troubleshooting">Troubleshooting</h2>
-            <div className="space-y-4 my-8">
-                <div className="p-4 rounded-lg border border-[#2A2A2A] bg-[#111]">
-                    <h4 className="text-[14px] font-semibold mb-2">Error: Command not found</h4>
-                    <p className="text-[13px] text-[#888]">Ensure that your npm global binaries directory is in your system PATH.</p>
+                <h2 id="installation" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    1. Installation
+                </h2>
+                <p className="text-gray-300 mb-4">Install the CLI globally using npm:</p>
+                <div className="bg-black/60 border border-white/10 rounded-xl p-4 mb-8 flex items-center justify-between group">
+                    <code className="text-purple-300 font-mono text-sm">npm install -g sipheron-vdr</code>
+                    <Terminal className="text-gray-600 group-hover:text-purple-400 transition-colors" size={18} />
                 </div>
-                <div className="p-4 rounded-lg border border-[#2A2A2A] bg-[#111]">
-                    <h4 className="text-[14px] font-semibold mb-2">Error: Insufficient Funds</h4>
-                    <p className="text-[13px] text-[#888]">If using your own wallet, ensure you have at least 0.002 SOL for transaction fees.</p>
+
+                <h2 id="get-api-key" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    2. Get API Key
+                </h2>
+                <div className="flex gap-4 p-6 rounded-2xl border border-white/10 bg-white/5 mb-8">
+                    <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center shrink-0">
+                        <Key className="text-purple-400" size={20} />
+                    </div>
+                    <div>
+                        <p className="text-gray-300 text-sm leading-relaxed mb-3">
+                            Log in to your dashboard, navigate to <strong>API Keys</strong>, and create a new key with <code className="text-purple-300">write</code> scope.
+                        </p>
+                        <Link href="https://app.sipheron.com/keys" className="text-xs font-bold text-purple-400 uppercase tracking-widest flex items-center gap-1 hover:gap-2 transition-all">
+                            Open Dashboard <ChevronRight size={14} />
+                        </Link>
+                    </div>
+                </div>
+
+                <h2 id="link-account" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    3. Link Account
+                </h2>
+                <p className="text-gray-300 mb-4">Connect your local CLI to your SipHeron account:</p>
+                <div className="bg-black/60 border border-white/10 rounded-xl p-4 mb-8">
+                    <code className="text-purple-300 font-mono text-sm">vdr link YOUR_API_KEY</code>
+                </div>
+
+                <h2 id="stage-files" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    4. Stage Files
+                </h2>
+                <p className="text-gray-300 mb-4">Compute the hash of your document without uploading the file:</p>
+                <div className="bg-black/60 border border-white/10 rounded-xl p-4 mb-8">
+                    <code className="text-purple-300 font-mono text-sm">vdr stage ./my_document.pdf</code>
+                </div>
+
+                <h2 id="anchor-onchain" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    5. Anchor On-Chain
+                </h2>
+                <p className="text-gray-300 mb-4">Submit the staged hash to the Solana Devnet (it's free!):</p>
+                <div className="bg-black/60 border border-white/10 rounded-xl p-4 mb-8">
+                    <code className="text-purple-300 font-mono text-sm">vdr anchor --devnet</code>
+                </div>
+
+                <h2 id="verify-proof" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    6. Verify Proof
+                </h2>
+                <p className="text-gray-300 mb-4">Confirm the document's integrity at any time:</p>
+                <div className="bg-black/60 border border-white/10 rounded-xl p-4 mb-16">
+                    <code className="text-purple-300 font-mono text-sm">vdr verify ./my_document.pdf</code>
                 </div>
             </div>
-
-            <div className="min-h-[100vh]" />
-
-            <h2 id="next">Next Steps</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 my-8">
-                <Link href="/docs/cli/anchor" className="p-4 rounded-lg border border-[#2A2A2A] bg-[#111] hover:border-[#9B6EFF] transition-colors">
-                    <h4 className="text-[14px] font-semibold mb-1">Anchor Deep Dive</h4>
-                    <span className="text-[12px] text-[#555]">Learn about all the flags and options for anchoring.</span>
-                </Link>
-                <Link href="/docs/api" className="p-4 rounded-lg border border-[#2A2A2A] bg-[#111] hover:border-[#9B6EFF] transition-colors">
-                    <h4 className="text-[14px] font-semibold mb-1">API Integration</h4>
-                    <span className="text-[12px] text-[#555]">Build custom verification logic into your app.</span>
-                </Link>
-            </div>
-
-            <DocsPrevNext
-                prev={{ label: 'Introduction', href: '/docs' }}
-                next={{ label: 'Installation', href: '/docs/getting-started/installation' }}
-            />
-        </div>
+        </DocLayout>
     );
 }

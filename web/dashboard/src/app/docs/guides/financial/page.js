@@ -1,60 +1,96 @@
-import Breadcrumb from '../../components/Breadcrumb';
-import Callout from '../../components/Callout';
-import CodeBlock from '../../components/CodeBlock';
-import ParamTable, { ParamRow } from '../../components/ParamTable';
-import DocsPrevNext from '../../components/DocsPrevNext';
+import DocLayout from '../../components/DocLayout';
+import { Landmark, TrendingUp, ShieldCheck, PieChart, FileCheck, Info } from 'lucide-react';
 
-export default function Page() {
-  return (
-    <div>
-      <Breadcrumb items={[{"label":"Guides","href":"/docs/guides"},{"label":"Financial"}]} />
-      <div className="flex items-center justify-between mb-8">
-        <span className="text-[12px] text-[#555]">Last updated March 10, 2026</span>
-      </div>
+const HEADINGS = [
+    { id: 'financial-transparency', title: 'Financial Transparency', level: 2 },
+    { id: 'audit-readiness', title: 'Audit Readiness', level: 2 },
+    { id: 'use-cases', title: 'Key Use Cases', level: 2 },
+    { id: 'audit-trail', title: 'The Immutable Audit Trail', level: 2 },
+    { id: 'regulatory-compliance', title: 'Regulatory Compliance', level: 2 },
+];
 
-      <h1 id="title">Financial Reports</h1>
-      <p className="text-[18px] text-[#EDEDED] leading-relaxed mb-10">
-        Extensive documentation for Financial Reports. Learn how to leverage SipHeron VDR for your enterprise needs.
-      </p>
+export default function GuideFinancialPage() {
+    return (
+        <DocLayout headings={HEADINGS}>
+            <div className="max-w-4xl">
+                <h1 className="text-4xl font-bold text-white mb-4">Guide: Financial Reporting & Audits</h1>
+                <p className="text-xl text-gray-300 mb-12 leading-relaxed">
+                    Ensure the integrity of your financial disclosures, audit logs, and tax filings using blockchain-backed verification.
+                </p>
 
-      <h2 id="overview">Overview</h2>
-      <p>This section provides a comprehensive overview of Financial Reports. Our platform ensures that every interaction is secure, immutable, and verifiable.</p>
-      <div className="min-h-[50vh]" />
+                <h2 id="financial-transparency" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Financial Transparency
+                </h2>
+                <p className="text-gray-300 mb-6 font-light">
+                    In an era of increased regulatory scrutiny, being able to prove that financial data has not been manipulated after the fact is essential for public trust and shareholder confidence. SipHeron VDR provides a "Proof of non-tampering" for every spreadsheet and report your firm produces.
+                </p>
 
-      <h2 id="how-it-works">How It Works</h2>
-      <p>Detailed technical explanation of Financial Reports.</p>
-      <CodeBlock language="text">
-{`Technical flow for Financial Reports...`}
-      </CodeBlock>
-      <div className="min-h-[50vh]" />
+                <h2 id="audit-readiness" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Audit Readiness
+                </h2>
+                <p className="text-gray-300 mb-4">
+                    Traditional audits involve manual sampling and verifying document versions through email chains. With SipHeron, you can provide auditors with a single list of blockchain-verified hashes for the entire fiscal year.
+                </p>
+                <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-4 mb-8 flex gap-3 font-light text-sm">
+                    <FileCheck className="w-5 h-5 text-green-300 shrink-0" />
+                    <p className="text-green-300">
+                        Auditors can verify 100% of your records in seconds using our batch verification tools, rather than relying on statistical sampling.
+                    </p>
+                </div>
 
-      <h2 id="examples">Detailed Examples</h2>
-      <CodeBlock language="bash">
-# Example command for Financial Reports
-vdr example --flag
-      </CodeBlock>
-      <div className="min-h-[100vh]" />
+                <h2 id="use-cases" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Key Use Cases
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                    <div className="p-4 rounded-xl border border-white/10 bg-white/5">
+                        <h4 className="text-white font-bold mb-2 text-sm uppercase">Quarterly Disclosures</h4>
+                        <p className="text-xs text-gray-400">Anchor 10-Q and 10-K filings to prove they haven't been modified post-submission.</p>
+                    </div>
+                    <div className="p-4 rounded-xl border border-white/10 bg-white/5">
+                        <h4 className="text-white font-bold mb-2 text-sm uppercase">Trade Confirmations</h4>
+                        <p className="text-xs text-gray-400">Lock in trade details at the moment of execution to prevent front-running disputes.</p>
+                    </div>
+                    <div className="p-4 rounded-xl border border-white/10 bg-white/5">
+                        <h4 className="text-white font-bold mb-2 text-sm uppercase">Tax Documents</h4>
+                        <p className="text-xs text-gray-400">Store immutable proofs of tax filings to streamline future government audits.</p>
+                    </div>
+                    <div className="p-4 rounded-xl border border-white/10 bg-white/5">
+                        <h4 className="text-white font-bold mb-2 text-sm uppercase">Loan Applications</h4>
+                        <p className="text-xs text-gray-400">Verify the authenticity of borrower-provided financial statements.</p>
+                    </div>
+                </div>
 
-      <h2 id="parameters">Parameters & Configuration</h2>
-      <ParamTable>
-        <ParamRow name="param_1" type="string" required={true} description="Description for parameter 1" />
-        <ParamRow name="param_2" type="number" required={false} description="Description for parameter 2" />
-      </ParamTable>
-      <div className="min-h-[50vh]" />
+                <h2 id="audit-trail" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    The Immutable Audit Trail
+                </h2>
+                <p className="text-gray-300 mb-6">
+                    A typical financial audit trail in SipHeron looks like this:
+                </p>
+                <div className="border-l-2 border-purple-500/30 ml-4 pl-6 space-y-8 mb-12">
+                    <div className="relative">
+                        <div className="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-purple-500 border-4 border-black" />
+                        <h5 className="text-white font-bold text-sm mb-1 uppercase tracking-wider">EOD Reconciliation</h5>
+                        <p className="text-xs text-gray-400">CLI automatically anchors end-of-day balances at 11:59 PM.</p>
+                    </div>
+                    <div className="relative">
+                        <div className="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-purple-500 border-4 border-black" />
+                        <h5 className="text-white font-bold text-sm mb-1 uppercase tracking-wider">Monthly Closing</h5>
+                        <p className="text-xs text-gray-400">Controller anchors the final monthly report.</p>
+                    </div>
+                    <div className="relative">
+                        <div className="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-purple-500 border-4 border-black" />
+                        <h5 className="text-white font-bold text-sm mb-1 uppercase tracking-wider">Annual Audit</h5>
+                        <p className="text-xs text-gray-400">External auditors verify all monthly anchors using the API.</p>
+                    </div>
+                </div>
 
-      <h2 id="best-practices">Best Practices</h2>
-      <Callout type="tip">Always test your Financial Reports configuration in devnet before moving to mainnet.</Callout>
-      <div className="min-h-[100vh]" />
-
-      <div className="mt-16 pt-6 border-t border-[#1F1F1F] flex items-center justify-between mb-8">
-        <span className="text-[12px] text-[#555]">Was this helpful?</span>
-        <div className="flex items-center gap-2">
-          <button className="text-[12px] px-3 py-1 border border-[#2A2A2A] rounded hover:border-[#444] text-[#888]">Yes</button>
-          <button className="text-[12px] px-3 py-1 border border-[#2A2A2A] rounded hover:border-[#444] text-[#888]">No</button>
-        </div>
-      </div>
-
-      <DocsPrevNext />
-    </div>
-  );
+                <h2 id="regulatory-compliance" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Regulatory Compliance
+                </h2>
+                <p className="text-gray-300 mb-16 leading-relaxed text-justify">
+                    SipHeron VDR helps firms meet the data integrity requirements of <strong>Sarbanes-Oxley (SOX)</strong> and <strong>GDPR</strong> by ensuring that records remain accurate and that any changes are detectable.
+                </p>
+            </div>
+        </DocLayout>
+    );
 }

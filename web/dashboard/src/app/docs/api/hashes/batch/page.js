@@ -1,60 +1,17 @@
-import Breadcrumb from '../../../components/Breadcrumb';
-import Callout from '../../../components/Callout';
-import CodeBlock from '../../../components/CodeBlock';
-import ParamTable, { ParamRow } from '../../../components/ParamTable';
-import DocsPrevNext from '../../../components/DocsPrevNext';
+import DocLayout from '../../../components/DocLayout';
 
-export default function Page() {
-  return (
-    <div>
-      <Breadcrumb items={[{"label":"API Reference","href":"/docs/api"},{"label":"Hashes","href":"/docs/api/hashes"},{"label":"Batch"}]} />
-      <div className="flex items-center justify-between mb-8">
-        <span className="text-[12px] text-[#555]">Last updated March 10, 2026</span>
-      </div>
+const HEADINGS = [
+    { id: 'batch-register', title: 'Batch Register', level: 2 },
+];
 
-      <h1 id="title">Batch Register</h1>
-      <p className="text-[18px] text-[#EDEDED] leading-relaxed mb-10">
-        Extensive documentation for Batch Register. Learn how to leverage SipHeron VDR for your enterprise needs.
-      </p>
-
-      <h2 id="overview">Overview</h2>
-      <p>This section provides a comprehensive overview of Batch Register. Our platform ensures that every interaction is secure, immutable, and verifiable.</p>
-      <div className="min-h-[50vh]" />
-
-      <h2 id="how-it-works">How It Works</h2>
-      <p>Detailed technical explanation of Batch Register.</p>
-      <CodeBlock language="text">
-{`Technical flow for Batch Register...`}
-      </CodeBlock>
-      <div className="min-h-[50vh]" />
-
-      <h2 id="examples">Detailed Examples</h2>
-      <CodeBlock language="bash">
-# Example command for Batch Register
-vdr example --flag
-      </CodeBlock>
-      <div className="min-h-[100vh]" />
-
-      <h2 id="parameters">Parameters & Configuration</h2>
-      <ParamTable>
-        <ParamRow name="param_1" type="string" required={true} description="Description for parameter 1" />
-        <ParamRow name="param_2" type="number" required={false} description="Description for parameter 2" />
-      </ParamTable>
-      <div className="min-h-[50vh]" />
-
-      <h2 id="best-practices">Best Practices</h2>
-      <Callout type="tip">Always test your Batch Register configuration in devnet before moving to mainnet.</Callout>
-      <div className="min-h-[100vh]" />
-
-      <div className="mt-16 pt-6 border-t border-[#1F1F1F] flex items-center justify-between mb-8">
-        <span className="text-[12px] text-[#555]">Was this helpful?</span>
-        <div className="flex items-center gap-2">
-          <button className="text-[12px] px-3 py-1 border border-[#2A2A2A] rounded hover:border-[#444] text-[#888]">Yes</button>
-          <button className="text-[12px] px-3 py-1 border border-[#2A2A2A] rounded hover:border-[#444] text-[#888]">No</button>
-        </div>
-      </div>
-
-      <DocsPrevNext />
-    </div>
-  );
+export default function ApiHashesBatchPage() {
+    return (
+        <DocLayout headings={HEADINGS}>
+            <div className="max-w-4xl">
+                <h1 className="text-4xl font-bold text-white mb-4">API: Batch Register</h1>
+                <p className="text-gray-300 mb-8 font-mono">POST /api/hashes/batch</p>
+                <p className="text-gray-400">Anchor multiple document hashes in a single Solana transaction for maximum cost efficiency.</p>
+            </div>
+        </DocLayout>
+    );
 }

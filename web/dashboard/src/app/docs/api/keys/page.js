@@ -1,110 +1,118 @@
-import Breadcrumb from '../../components/Breadcrumb';
-import Callout from '../../components/Callout';
-import CodeBlock from '../../components/CodeBlock';
-import ParamTable, { ParamRow } from '../../components/ParamTable';
-import DocsPrevNext from '../../components/DocsPrevNext';
-import Link from 'next/link';
-import { KeyRound, ShieldCheck, Key, Lock, UserCheck, RefreshCw, AlertTriangle, CheckCircle, Info, ShieldAlert, Terminal, Fingerprint, Eye, Globe, Server, Activity, ArrowRight, Zap, ListTree } from 'lucide-react';
+import DocLayout from '../../components/DocLayout';
+import { Key, List, Trash2, Edit, Plus, Info } from 'lucide-react';
 
-export default function APIKeysOverview() {
+const HEADINGS = [
+    { id: 'overview', title: 'Keys API Overview', level: 2 },
+    { id: 'list-keys', title: 'List API Keys', level: 2 },
+    { id: 'create-key', title: 'Create API Key', level: 2 },
+    { id: 'revoke-key', title: 'Revoke API Key', level: 2 },
+    { id: 'schemas', title: 'Data Schema', level: 2 },
+];
+
+export default function ApiKeysPage() {
     return (
-        <div className="pb-20">
-            <Breadcrumb items={[{ "label": "API Reference", "href": "/docs/api" }, { "label": "Key Management" }]} />
-            <div className="flex items-center justify-between mb-8">
-                <span className="text-[12px] text-[#555]">Last updated March 10, 2026</span>
-            </div>
+        <DocLayout headings={HEADINGS}>
+            <div className="max-w-4xl">
+                <h1 className="text-4xl font-bold text-white mb-4">Keys API</h1>
+                <p className="text-xl text-gray-300 mb-12 leading-relaxed">
+                    Manage your organization's API keys programmatically. This API is restricted to users with <code className="text-purple-300">admin</code> privileges.
+                </p>
 
-            <h1 id="api-key-management">API Key Management Operations</h1>
-            <p className="text-[18px] text-[#EDEDED] leading-relaxed mb-10">
-                While the dashboard provides a convenient UI for managing credentials, high-scale enterprises
-                often need to automate the lifecycle of their API keys. The <code>/v1/keys</code> family of
-                endpoints allows you to programmatically create, rotate, and revoke access.
-                This 3,000vh reference details the administrative key API.
-            </p>
+                <h2 id="overview" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Overview
+                </h2>
+                <p className="text-gray-300 mb-6 font-light">
+                    While you can manage keys in the SipHeron Dashboard, the Keys API allows you to automate rotations or build custom internal administrative tools for your team.
+                </p>
 
-            <h2 id="key-lifecycle-automation">Why Automate Key Lifecycles?</h2>
-            <p className="text-[16px] leading-relaxed mb-8">
-                Manual key management leads to "Credential Stale-out," where keys remain active for years,
-                increasing the risk of compromise. Automated rotation significantly reduces your
-                organizational attack surface.
-            </p>
+                <h2 id="list-keys" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    List API Keys
+                </h2>
+                <p className="text-gray-300 mb-4 font-mono text-sm bg-black/40 p-3 rounded-lg border border-white/10">
+                    <span className="text-blue-400 font-bold mr-2">GET</span> /api/keys
+                </p>
+                <p className="text-gray-400 mb-4 text-sm italic">Returns all keys currently active in your organization. For security, the actual key value is NOT returned.</p>
+                <h4 className="text-white font-bold mb-2 text-sm uppercase tracking-wider">Example Response</h4>
+                <pre className="bg-black/60 border border-white/10 rounded-xl p-4 overflow-x-auto mb-8 text-xs text-purple-200">
+                    <code className="font-mono">
+{`{
+  "success": true,
+  "data": [
+    {
+      "id": "key_182...901",
+      "name": "Production Server",
+      "scope": "write",
+      "createdAt": "2026-01-15T10:00:00Z",
+      "lastUsed": "2026-03-12T12:00:00Z"
+    }
+  ]
+}`}
+                    </code>
+                </pre>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-20">
-                <div className="p-8 border border-[#222] bg-[#0A0A0A] rounded-2xl relative overflow-hidden group shadow-2xl">
-                    <div className="absolute top-0 right-0 p-4 opacity-5">
-                        <RefreshCw className="w-24 h-24 text-[#9B6EFF]" />
-                    </div>
-                    <h5 className="text-[16px] font-bold text-[#EDEDED] mb-3 uppercase tracking-tighter">Automated Rotation</h5>
-                    <p className="text-[12px] text-[#555] leading-relaxed">
-                        Use a daily CRON job or a Lambda function to create a new key, update your
-                        Secret Manager (AWS Secrets Manager / HashiCorp Vault), and revoke the
-                        previous key.
+                <h2 id="create-key" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Create API Key
+                </h2>
+                <p className="text-gray-300 mb-4 font-mono text-sm bg-black/40 p-3 rounded-lg border border-white/10">
+                    <span className="text-green-500 font-bold mr-2">POST</span> /api/keys
+                </p>
+                <div className="overflow-x-auto mb-6">
+                    <table className="w-full text-xs">
+                        <thead>
+                            <tr className="border-b border-white/10 text-gray-400">
+                                <th className="text-left py-2 pr-4 font-medium">Field</th>
+                                <th className="text-left py-2 pr-4 font-medium">Type</th>
+                                <th className="text-left py-2 pr-4 font-medium">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-white/5 text-gray-300">
+                            <tr>
+                                <td className="py-2 pr-4 font-mono">name</td>
+                                <td className="py-2 pr-4 italic">string</td>
+                                <td className="py-2 pr-4">Descriptive name for the key.</td>
+                            </tr>
+                            <tr>
+                                <td className="py-2 pr-4 font-mono">scope</td>
+                                <td className="py-2 pr-4 italic">string</td>
+                                <td className="py-2 pr-4">read, write, or admin.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 mb-8 flex gap-3">
+                    <Info className="w-5 h-5 text-blue-300 shrink-0" />
+                    <p className="text-blue-300 text-xs">
+                        <strong>Security Note:</strong> The created key will be returned in the response as <code className="text-white">secret</code>. This is the only time you will ever see this value.
                     </p>
                 </div>
-                <div className="p-8 border border-[#222] bg-[#0A0A0A] rounded-2xl relative overflow-hidden group shadow-2xl">
-                    <div className="absolute top-0 right-0 p-4 opacity-5">
-                        <ShieldAlert className="w-24 h-24 text-[#F87171]" />
-                    </div>
-                    <h5 className="text-[16px] font-bold text-[#EDEDED] mb-3 uppercase tracking-tighter">Emergency Nullification</h5>
-                    <p className="text-[12px] text-[#555] leading-relaxed">
-                        If your CI/CD pipeline detects a potential intrusion, a single API call to the
-                        revoke endpoint can instantly invalidate all active keys across your fleet.
-                    </p>
-                </div>
+
+                <h2 id="revoke-key" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Revoke API Key
+                </h2>
+                <p className="text-gray-300 mb-4 font-mono text-sm bg-black/40 p-3 rounded-lg border border-white/10">
+                    <span className="text-red-500 font-bold mr-2">DELETE</span> /api/keys/:id
+                </p>
+                <p className="text-gray-300 mb-6">
+                    Immediately invalidates the key. Any requests currently in-flight may complete, but all future requests using this key will return a <code className="text-red-400">401 Unauthorized</code> error.
+                </p>
+
+                <h2 id="schemas" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Data Schema
+                </h2>
+                <pre className="bg-black/60 border border-white/10 rounded-xl p-4 overflow-x-auto mb-16 text-xs text-purple-200">
+                    <code className="font-mono">
+{`interface ApiKey {
+  id: string;             // prefix: key_
+  name: string;           // user-defined name
+  scope: 'read' | 'write' | 'admin';
+  organizationId: string;
+  createdAt: string;      // ISO 8601
+  lastUsedAt?: string;    // ISO 8601 or null
+  secret?: string;        // Only present on creation!
+}`}
+                    </code>
+                </pre>
             </div>
-
-            <h2 id="endpoint-index">Key Management Endpoints</h2>
-            <div className="space-y-4 mb-24">
-                <Link href="/docs/api/keys/create" className="block p-8 border border-[#222] bg-[#050505] rounded-xl group hover:border-[#9B6EFF50] transition-all">
-                    <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-3">
-                            <span className="px-2 py-1 bg-[#10B981] text-white text-[10px] font-bold rounded">POST</span>
-                            <h6 className="text-[15px] font-bold text-[#EDEDED]">v1/keys/create</h6>
-                        </div>
-                        <ArrowRight className="w-4 h-4 text-[#555] group-hover:text-[#9B6EFF] transition-colors" />
-                    </div>
-                    <p className="text-[11px] text-[#555]">Provision a new cryptographically strong API key with custom scopes.</p>
-                </Link>
-                <Link href="/docs/api/keys/list" className="block p-8 border border-[#222] bg-[#050505] rounded-xl group hover:border-[#3B82F650] transition-all">
-                    <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-3">
-                            <span className="px-2 py-1 bg-[#3B82F6] text-white text-[10px] font-bold rounded">GET</span>
-                            <h6 className="text-[15px] font-bold text-[#EDEDED]">v1/keys/list</h6>
-                        </div>
-                        <ArrowRight className="w-4 h-4 text-[#555] group-hover:text-[#3B82F6] transition-colors" />
-                    </div>
-                    <p className="text-[11px] text-[#555]">Audit all active keys for your project including last-used timestamps.</p>
-                </Link>
-                <Link href="/docs/api/keys/revoke" className="block p-8 border border-[#222] bg-[#050505] rounded-xl group hover:border-[#F8717150] transition-all">
-                    <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-3">
-                            <span className="px-2 py-1 bg-[#F87171] text-white text-[10px] font-bold rounded">DELETE</span>
-                            <h6 className="text-[15px] font-bold text-[#EDEDED]">v1/keys/revoke</h6>
-                        </div>
-                        <ArrowRight className="w-4 h-4 text-[#555] group-hover:text-[#F87171] transition-colors" />
-                    </div>
-                    <p className="text-[11px] text-[#555]">Instantly invalidate a key, preventing all future requests.</p>
-                </Link>
-            </div>
-
-            <h2 id="security-guards">Authorization Guards</h2>
-            <Callout type="warning">
-                <strong>Admin Level Access:</strong> These endpoints are highly sensitive. They cannot be
-                authorized using a standard API key unless that key has the <code>vdr.org:admin</code> scope.
-                Usually, these requests should be performed using a short-lived Bearer token obtained via
-                MFA-secured login.
-            </Callout>
-
-            <div className="mt-20 pt-10 border-t border-[#1F1F1F] flex items-center justify-between mb-12">
-                <span className="text-[14px] text-[#555] font-medium font-mono uppercase tracking-[0.3em] text-[#9B6EFF]">IAM Gateway v1.0.2</span>
-                <div className="flex items-center gap-3">
-                    <Link href="/docs/api/keys/create" className="text-[13px] px-8 py-4 bg-[#9B6EFF] rounded-full text-white font-bold hover:bg-[#8A5EEF] transition-all flex items-center gap-2">
-                        Next: Creating Keys <ArrowRight className="w-4 h-4" />
-                    </Link>
-                </div>
-            </div>
-
-            <DocsPrevNext prev={{ label: 'Auth Errors', href: '/docs/api/auth/errors' }} next={{ label: 'Create Key', href: '/docs/api/keys/create' }} />
-        </div>
+        </DocLayout>
     );
 }

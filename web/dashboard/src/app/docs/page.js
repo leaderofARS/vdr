@@ -1,206 +1,256 @@
 import Link from 'next/link';
-import Breadcrumb from './components/Breadcrumb';
-import Callout from './components/Callout';
+import DocLayout from './components/DocLayout';
 import CodeBlock from './components/CodeBlock';
-import ParamTable, { ParamRow } from './components/ParamTable';
-import DocsPrevNext from './components/DocsPrevNext';
-import { CheckCircle2, Shield, Zap, Globe, Lock, ScrollText } from 'lucide-react';
+import { Shield, Zap, Lock, Search, Globe, FileText, CheckCircle2, AlertCircle } from 'lucide-react';
+
+const HEADINGS = [
+    { id: 'what-is-sipheron', title: 'What is SipHeron VDR?', level: 2 },
+    { id: 'problem-it-solves', title: 'The Problem It Solves', level: 2 },
+    { id: 'document-fraud', title: 'Fighting Document Fraud', level: 3 },
+    { id: 'tampering-forgery', title: 'Tampering and Forgery', level: 3 },
+    { id: 'how-it-works', title: 'How It Works (Simply)', level: 2 },
+    { id: 'step-1-hash', title: '1. The Fingerprint (Hash)', level: 3 },
+    { id: 'step-2-anchor', title: '2. The Anchor (Blockchain)', level: 3 },
+    { id: 'step-3-verify', title: '3. The Truth (Verification)', level: 3 },
+    { id: 'why-solana', title: 'Why Solana?', level: 2 },
+    { id: 'architecture', title: 'Architecture Overview', level: 2 },
+    { id: 'key-features', title: 'Key Features', level: 2 },
+    { id: 'who-is-it-for', title: 'Who is it for?', level: 2 },
+    { id: 'what-it-is-not', title: 'What SipHeron VDR is NOT', level: 2 },
+    { id: 'get-started', title: 'Get Started', level: 2 },
+];
 
 export default function DocsPage() {
     return (
-        <div>
-            <Breadcrumb items={[]} />
-            <div className="flex items-center justify-between mb-8">
-                <span className="text-[12px] text-[#555]">Last updated March 10, 2026</span>
-            </div>
+        <DocLayout headings={HEADINGS}>
+            <div className="max-w-4xl">
+                <h1 className="text-4xl font-bold text-white mb-4">Introduction</h1>
+                <p className="text-xl text-gray-300 mb-12 leading-relaxed">
+                    SipHeron VDR (Vessel Daily Report) is an enterprise-grade blockchain document verification platform built on the Solana network.
+                    It provides an immutable trail of truth for critical digital assets, ensuring integrity and trust across global operations.
+                </p>
 
-            <h1 id="introduction">Introduction to SipHeron VDR</h1>
-            <p className="text-[18px] text-[#EDEDED] leading-relaxed mb-10">
-                SipHeron VDR (Vessel Daily Report) is an enterprise-grade blockchain document verification platform built on Solana.
-                It provides an immutable trail of truth for critical documents, ensuring integrity and trust across global operations.
-            </p>
+                <h2 id="what-is-sipheron" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    What is SipHeron VDR?
+                </h2>
+                <p className="text-gray-300 leading-relaxed mb-4">
+                    At its core, SipHeron VDR is a "notary of the digital age." It allows you to take any file—a PDF contract, a financial report, an image, or a log file—and generate a cryptographic proof that the file existed in a specific state at a specific point in time.
+                </p>
+                <p className="text-gray-300 leading-relaxed mb-4">
+                    Think of it as a permanent, public timestamp that cannot be faked, altered, or deleted. By "anchoring" your documents to the blockchain, you create a defensive layer of transparency that protects both you and your stakeholders.
+                </p>
 
-            <h2 id="overview">Overview</h2>
-            <p>
-                In today's digital landscape, the authenticity of critical reports—legal documents, financial statements, and operational logs—is often questioned.
-                SipHeron VDR leverages the high-speed, low-cost Solana blockchain to anchor document hashes, creating a cryptographically verifiable "proof of existence" at a specific point in time.
-            </p>
-            <p>
-                Traditional notary services are slow and expensive. Cloud storage is mutable and depends on the trust of a single provider.
-                SipHeron VDR combines the speed of modern storage with the decentralization and immutability of blockchain.
-            </p>
-            <p>
-                Our platform is designed for scale, processing thousands of hash registrations per second while maintaining sub-second latency for verification queries.
-                Whether you are a maritime operator tracking vessel logs or a law firm managing sensitive contracts, SipHeron VDR provides the infrastructure for trust.
-            </p>
+                <h2 id="problem-it-solves" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    The Problem It Solves
+                </h2>
+                <p className="text-gray-300 leading-relaxed mb-6">
+                    Digital documents are inherently fragile. They can be modified in seconds, backdated by administrators, or deleted entirely. In sectors where trust is paramount, this creates massive liability.
+                </p>
 
-            <h2 id="architecture">Architecture</h2>
-            <p>
-                The SipHeron VDR ecosystem consists of several layers working in harmony to ensure data integrity and accessibility.
-            </p>
-            <CodeBlock language="text">
-                {`
-┌───────────┐      ┌──────────────┐      ┌───────────────┐      ┌────────────┐
-│   User    │────▶ │     CLI      │────▶ │      API      │────▶ │   Solana   │
-│ (Desktop) │      │ (VDR Client) │      │ (Auth/Middle) │      │ (Mainnet)  │
-└───────────┘      └──────────────┘      └───────────────┘      └────────────┘
-      │                   ▲                      │                    │
-      │                   │                      │                    │
-      └───────────────────┴──────────────────────┴────────────────────┘
-                          Persistent Secure Verification Loop
+                <h3 id="document-fraud" className="text-lg font-bold text-white mt-8 mb-3 scroll-mt-24">
+                    Fighting Document Fraud
+                </h3>
+                <p className="text-gray-300 leading-relaxed mb-4">
+                    In 2023 alone, document fraud cost enterprises billions of dollars. Traditional methods of verification—signatures, physical seals, and centralized databases—are no longer enough to combat modern forgery techniques.
+                </p>
+                <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 mb-6">
+                    <p className="text-blue-300 text-sm">
+                        SipHeron VDR eliminates the need to trust a central authority. The blockchain serves as the ultimate, impartial witness.
+                    </p>
+                </div>
+
+                <h3 id="tampering-forgery" className="text-lg font-bold text-white mt-8 mb-3 scroll-mt-24">
+                    Tampering and Forgery
+                </h3>
+                <p className="text-gray-300 leading-relaxed mb-4">
+                    Consider a maritime vessel report or a construction safety log. If an accident occurs, the integrity of these logs is often the first thing challenged. With SipHeron, you can prove that the logs were created minutes after the event and have not been touched since.
+                </p>
+                <ul className="list-disc list-inside text-gray-300 space-y-2 mb-6 ml-4">
+                    <li><strong>Diplomas:</strong> Prevent degree fraud by anchoring graduation certificates.</li>
+                    <li><strong>Contracts:</strong> Prove an NDA was signed on a specific date before any leaks occurred.</li>
+                    <li><strong>Invoices:</strong> Verify that a payment request matches the original issued version.</li>
+                    <li><strong>IP Proofs:</strong> Establish "Prior Art" for patents or creative works.</li>
+                </ul>
+
+                <h2 id="how-it-works" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    How It Works (Simply)
+                </h2>
+                <p className="text-gray-300 leading-relaxed mb-6">
+                    You don't need to be a blockchain expert to use SipHeron. The process can be broken down into three easy steps.
+                </p>
+
+                <h3 id="step-1-hash" className="text-lg font-bold text-white mt-8 mb-3 scroll-mt-24">
+                    1. The Fingerprint (Hash)
+                </h3>
+                <p className="text-gray-300 leading-relaxed mb-4">
+                    Imagine taking a document and running it through a high-tech blender that spits out a unique 64-character code. This code is the <strong>hash</strong>. If you change even one tiny comma in the document, the code changes completely. This hash is the digital fingerprint of your file.
+                </p>
+
+                <h3 id="step-2-anchor" className="text-lg font-bold text-white mt-8 mb-3 scroll-mt-24">
+                    2. The Anchor (Blockchain)
+                </h3>
+                <p className="text-gray-300 leading-relaxed mb-4">
+                    SipHeron takes that digital fingerprint and "anchors" it into the Solana blockchain. It's like carving the hash and the current time into a mountain that can never be moved. This creates a permanent, immutable record of your document's existence.
+                </p>
+
+                <h3 id="step-3-verify" className="text-lg font-bold text-white mt-8 mb-3 scroll-mt-24">
+                    3. The Truth (Verification)
+                </h3>
+                <p className="text-gray-300 leading-relaxed mb-4">
+                    Ten years from now, anyone can take that same file and re-calculate its digital fingerprint. If it matches the one carved into the mountain, the file is 100% authentic. If it doesn't match, you know the file has been tampered with.
+                </p>
+
+                <h2 id="why-solana" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Why Solana?
+                </h2>
+                <p className="text-gray-300 leading-relaxed mb-6">
+                    We chose Solana for one reason: <strong>Performance at Scale.</strong>
+                </p>
+                <div className="overflow-x-auto mb-6">
+                    <table className="w-full text-sm">
+                        <thead>
+                            <tr className="border-b border-white/10">
+                                <th className="text-left py-3 pr-4 text-gray-400 font-medium">Metric</th>
+                                <th className="text-left py-3 pr-4 text-gray-400 font-medium">Value</th>
+                                <th className="text-left py-3 pr-4 text-gray-400 font-medium">Benefit</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-white/5">
+                            <tr>
+                                <td className="py-3 pr-4 text-gray-300">Block Time</td>
+                                <td className="py-3 pr-4 text-purple-300">~400ms</td>
+                                <td className="py-3 pr-4 text-gray-400">Near-instant transaction finality.</td>
+                            </tr>
+                            <tr>
+                                <td className="py-3 pr-4 text-gray-300">Transaction Cost</td>
+                                <td className="py-3 pr-4 text-purple-300">&lt; $0.0001</td>
+                                <td className="py-3 pr-4 text-gray-400">Low-cost anchoring for enterprise volume.</td>
+                            </tr>
+                            <tr>
+                                <td className="py-3 pr-4 text-gray-300">Throughput</td>
+                                <td className="py-3 pr-4 text-purple-300">65,000+ TPS</td>
+                                <td className="py-3 pr-4 text-gray-400">Handles thousands of document anchors simultaneously.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h2 id="architecture" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Architecture Overview
+                </h2>
+                <p className="text-gray-300 leading-relaxed mb-6">
+                    The SipHeron VDR ecosystem is built for security and privacy. Your raw data never leaves your infrastructure.
+                </p>
+                <pre className="bg-black/60 border border-white/10 rounded-xl p-4 overflow-x-auto mb-6">
+                    <code className="text-sm text-purple-200 font-mono">
+{`[ Your Environment ]         [ SipHeron Cloud ]         [ Solana Blockchain ]
+      │                            │                           │
+      │ (Local Hashing)            │                           │
+      ├───────────────────────────▶│ (Metadata & Usage)        │
+      │    SHA-256 Hash Only       │                           │
+      │                            ├──────────────────────────▶│ (PDA Creation)
+      │                            │    Anchor Request         │   Immutable Proof
+      │                            │                           │   (Hash + Time)
+      │                            │◀──────────────────────────┤
+      │                            │    Confirmation           │
+      │◀───────────────────────────┤                           │
+      │    Verification Receipt    │                           │
 `}
-            </CodeBlock>
-            <p>
-                1. **User Layer**: The local environment where files are generated.
-                2. **CLI Layer**: Computes SHA-256 hashes locally so your raw data never leaves your machine.
-                3. **API Layer**: Handles authentication, logging, and relays instructions to the blockchain.
-                4. **Solana Layer**: The final source of truth where hashes and timestamps are stored immutably.
-            </p>
+                    </code>
+                </pre>
 
-            <h2 id="concept-glossary">Core Concepts</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 my-8">
-                <div className="p-4 rounded-lg border border-[#2A2A2A] bg-[#111]">
-                    <h4 className="text-[14px] font-semibold mb-2 flex items-center gap-2"><Shield className="w-4 h-4 text-[#9B6EFF]" /> Anchoring</h4>
-                    <p className="text-[13px] text-[#888] mb-0">The process of recording a cryptographic hash on the Solana blockchain to create a permanent record.</p>
-                </div>
-                <div className="p-4 rounded-lg border border-[#2A2A2A] bg-[#111]">
-                    <h4 className="text-[14px] font-semibold mb-2 flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#9B6EFF]" /> Verification</h4>
-                    <p className="text-[13px] text-[#888] mb-0">Re-hashing a local file and comparing it against the on-chain record to ensure zero modifications.</p>
-                </div>
-                <div className="p-4 rounded-lg border border-[#2A2A2A] bg-[#111]">
-                    <h4 className="text-[14px] font-semibold mb-2 flex items-center gap-2"><Zap className="w-4 h-4 text-[#9B6EFF]" /> Staging</h4>
-                    <p className="text-[13px] text-[#888] mb-0">Preparing local files for anchoring by generating hashes and metadata in a hidden .vdr directory.</p>
-                </div>
-                <div className="p-4 rounded-lg border border-[#2A2A2A] bg-[#111]">
-                    <h4 className="text-[14px] font-semibold mb-2 flex items-center gap-2"><Lock className="w-4 h-4 text-[#9B6EFF]" /> Immutable Storage</h4>
-                    <p className="text-[13px] text-[#888] mb-0">Once a hash is anchored on Solana, it cannot be deleted, altered, or backdated by anyone.</p>
-                </div>
-            </div>
-
-            <h2 id="quick-start">Quick Start in 5 Commands</h2>
-            <p>Get started with SipHeron VDR in less than two minutes.</p>
-            <CodeBlock language="bash">
-                {`# 1. Install the CLI
-npm install -g @sipheron/vdr-cli
-
-# 2. Login to your account
-vdr login
-
-# 3. Initialize a directory
-vdr link ./my-docs
-
-# 4. Stage your files
-vdr stage ./my-docs/report.pdf
-
-# 5. Anchor to blockchain
-vdr anchor --mainnet`}
-            </CodeBlock>
-
-            <h2 id="when-to-use">When to use SipHeron VDR?</h2>
-            <p>
-                SipHeron VDR is ideal for scenarios where the integrity of digital assets must be provable to third parties without central authority.
-            </p>
-            <div className="space-y-4 my-6">
-                <div className="flex gap-4">
-                    <div className="mt-1"><ScrollText className="w-5 h-5 text-[#9B6EFF]" /></div>
-                    <div>
-                        <h4 className="text-[15px] font-medium text-[#EDEDED]">Regulatory Compliance</h4>
-                        <p className="text-[14px] text-[#888]">Automate the audit trail for environmental reports, safety logs, and quality certifications.</p>
+                <h2 id="key-features" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Key Features
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+                    <div className="flex gap-4">
+                        <Lock className="w-6 h-6 text-purple-400 shrink-0" />
+                        <div>
+                            <h4 className="font-bold text-white mb-1">Privacy First</h4>
+                            <p className="text-sm text-gray-400">Files are hashed locally. SipHeron never sees or stores your document content.</p>
+                        </div>
+                    </div>
+                    <div className="flex gap-4">
+                        <Zap className="w-6 h-6 text-purple-400 shrink-0" />
+                        <div>
+                            <h4 className="font-bold text-white mb-1">Sub-Second Speed</h4>
+                            <p className="text-sm text-gray-400">Anchor your documents in milliseconds thanks to Solana's high-speed consensus.</p>
+                        </div>
+                    </div>
+                    <div className="flex gap-4">
+                        <Globe className="w-6 h-6 text-purple-400 shrink-0" />
+                        <div>
+                            <h4 className="font-bold text-white mb-1">Public Verification</h4>
+                            <p className="text-sm text-gray-400">Generate public verification links or QR codes for third-party auditing.</p>
+                        </div>
+                    </div>
+                    <div className="flex gap-4">
+                        <FileText className="w-6 h-6 text-purple-400 shrink-0" />
+                        <div>
+                            <h4 className="font-bold text-white mb-1">Bulk Operations</h4>
+                            <p className="text-sm text-gray-400">Anchor thousands of records in a single batch to save on costs and time.</p>
+                        </div>
                     </div>
                 </div>
-                <div className="flex gap-4">
-                    <div className="mt-1"><Globe className="w-5 h-5 text-[#9B6EFF]" /></div>
-                    <div>
-                        <h4 className="text-[15px] font-medium text-[#EDEDED]">Global Supply Chain</h4>
-                        <p className="text-[14px] text-[#888]">Verify bills of lading and customs documents across multiple stakeholders instantly.</p>
-                    </div>
+
+                <h2 id="who-is-it-for" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Who is it for?
+                </h2>
+                <p className="text-gray-300 leading-relaxed mb-4">
+                    SipHeron VDR provides value across a wide range of industries including:
+                </p>
+                <ul className="list-disc list-inside text-gray-300 space-y-2 mb-8 ml-4">
+                    <li><strong>Enterprises:</strong> Automating compliance audit trails (SOX, ISO, ESG).</li>
+                    <li><strong>Law Firms:</strong> Ensuring the provenance and timing of legal filings.</li>
+                    <li><strong>Universities:</strong> Issuing tamper-proof diplomas and transcripts.</li>
+                    <li><strong>Developers:</strong> Integrating document integrity into existing SaaS platforms.</li>
+                    <li><strong>Compliance Teams:</strong> Monitoring real-time operational logs for tampering.</li>
+                </ul>
+
+                <h2 id="what-it-is-not" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    What SipHeron VDR is NOT
+                </h2>
+                <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-4 mb-6">
+                    <p className="text-yellow-300 text-sm">
+                        ⚠️ Understanding limitations is key to a secure implementation.
+                    </p>
+                </div>
+                <ul className="list-disc list-inside text-gray-300 space-y-2 mb-8 ml-4">
+                    <li><strong>Not a Cloud Storage Service:</strong> We do not store your files. If you lose your document, you cannot retrieve it from SipHeron.</li>
+                    <li><strong>Not a Document Reader:</strong> We cannot see what is inside your documents. We only see the mathematical fingerprint.</li>
+                    <li><strong>Not a Legal Advice Service:</strong> While we provide proof of existence, the legal weight of that proof depends on your local jurisdiction.</li>
+                </ul>
+
+                <h2 id="get-started" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Get Started
+                </h2>
+                <p className="text-gray-300 leading-relaxed mb-8">
+                    Ready to start anchoring? Follow our guides to integrate SipHeron into your workflow.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-16">
+                    <Link href="/docs/quick-start" className="p-6 rounded-xl border border-white/10 bg-white/5 hover:border-purple-500/30 hover:bg-white/[0.07] transition-all group">
+                        <Zap className="w-8 h-8 text-purple-400 mb-3 group-hover:scale-110 transition-transform" />
+                        <h4 className="text-lg font-bold text-white mb-1">Quick Start</h4>
+                        <p className="text-sm text-gray-400">Install the CLI and anchor your first document in under 5 minutes.</p>
+                    </Link>
+                    <Link href="/docs/cli" className="p-6 rounded-xl border border-white/10 bg-white/5 hover:border-purple-500/30 hover:bg-white/[0.07] transition-all group">
+                        <Search className="w-8 h-8 text-purple-400 mb-3 group-hover:scale-110 transition-transform" />
+                        <h4 className="text-lg font-bold text-white mb-1">CLI Reference</h4>
+                        <p className="text-sm text-gray-400">Master every command and flag available in the SipHeron CLI.</p>
+                    </Link>
+                    <Link href="/docs/api" className="p-6 rounded-xl border border-white/10 bg-white/5 hover:border-purple-500/30 hover:bg-white/[0.07] transition-all group">
+                        <CodeBlock language="bash" className="hidden" />
+                        <CheckCircle2 className="w-8 h-8 text-purple-400 mb-3 group-hover:scale-110 transition-transform" />
+                        <h4 className="text-lg font-bold text-white mb-1">API Reference</h4>
+                        <p className="text-sm text-gray-400">Integrate VDR programmatically with our comprehensive REST API.</p>
+                    </Link>
+                    <Link href="/docs/concepts/how-hashing-works" className="p-6 rounded-xl border border-white/10 bg-white/5 hover:border-purple-500/30 hover:bg-white/[0.07] transition-all group">
+                        <Shield className="w-8 h-8 text-purple-400 mb-3 group-hover:scale-110 transition-transform" />
+                        <h4 className="text-lg font-bold text-white mb-1">Core Concepts</h4>
+                        <p className="text-sm text-gray-400">Deep dive into hashing, anchor lifecycles, and verification models.</p>
+                    </Link>
                 </div>
             </div>
-
-            <h2 id="comparison">Comparison: VDR vs Others</h2>
-            <ParamTable>
-                <tr className="border-b border-[#1F1F1F]">
-                    <th className="px-4 py-3 text-left text-[#555]">Feature</th>
-                    <th className="px-4 py-3 text-left text-[#555]">SipHeron VDR</th>
-                    <th className="px-4 py-3 text-left text-[#555]">Cloud Storage</th>
-                    <th className="px-4 py-3 text-left text-[#555]">Traditional Notary</th>
-                </tr>
-                <tr>
-                    <td className="px-4 py-3 text-[#EDEDED]">Immutability</td>
-                    <td className="px-4 py-3 text-[#4ADE80]">Native / Perfect</td>
-                    <td className="px-4 py-3 text-[#F87171]">Limited / Mutable</td>
-                    <td className="px-4 py-3 text-[#EDEDED]">Paper-based</td>
-                </tr>
-                <tr>
-                    <td className="px-4 py-3 text-[#EDEDED]">Cost</td>
-                    <td className="px-4 py-3 text-[#4ADE80]">$0.0001 / hash</td>
-                    <td className="px-4 py-3 text-[#EDEDED]">Subscription</td>
-                    <td className="px-4 py-3 text-[#F87171]">$20+ per doc</td>
-                </tr>
-                <tr>
-                    <td className="px-4 py-3 text-[#EDEDED]">Speed</td>
-                    <td className="px-4 py-3 text-[#4ADE80]">&lt; 1 Second</td>
-                    <td className="px-4 py-3 text-[#4ADE80]">Instant</td>
-                    <td className="px-4 py-3 text-[#F87171]">Days / Weeks</td>
-                </tr>
-            </ParamTable>
-
-            <h2 id="limits">Platform Limits</h2>
-            <p>We strive to provide maximum throughput while maintaining network stability.</p>
-            <ParamTable>
-                <ParamRow name="Max File Size" type="No Limit" required={false} description="We hash locally; file size doesn't affect anchoring cost." />
-                <ParamRow name="Batch Size" type="10,000" required={false} description="Maximum hashes per single batch register call." />
-                <ParamRow name="Rate Limit (Tier 1)" type="100 req/s" required={false} description="Standard API rate limit for document verification." />
-                <ParamRow name="Retention" type="Forever" required={false} description="On-chain records never expire and cannot be deleted." />
-            </ParamTable>
-
-            <h2 id="best-practices">Best Practices</h2>
-            <Callout type="tip">
-                Always run <code>vdr verify</code> after anchoring to ensure the blockchain record perfectly matches your local file.
-            </Callout>
-            <Callout type="info">
-                For enterprise environments, we recommend using <strong>Permanent API Keys</strong> instead of session-based auth for CI/CD integrations.
-            </Callout>
-
-            <h2 id="faq">Frequently Asked Questions</h2>
-            <div className="space-y-6 my-8">
-                <div>
-                    <h4 className="text-[15px] font-medium text-[#EDEDED] mb-2">Does my file content get uploaded to the blockchain?</h4>
-                    <p className="text-[14px] text-[#888]">No. We only store the SHA-256 hash. Your actual document content stays private and never leaves your secure environment unless you explicitly choose to use our encrypted storage addon.</p>
-                </div>
-                <div>
-                    <h4 className="text-[15px] font-medium text-[#EDEDED] mb-2">What happens if the SipHeron API goes down?</h4>
-                    <p className="text-[14px] text-[#888]">Your proofs are stored on the Solana blockchain. You can verify them using any standard Solana explorer or a third-party open-source verification script. You are never locked into our platform.</p>
-                </div>
-            </div>
-
-            <div className="min-h-[50vh]" /> {/* Added to contribute to 400vh but realistically I'll add more content */}
-            <h2 id="next-steps">Next Steps</h2>
-            <p>Explore the full potential of SipHeron VDR by diving into our specialized guides.</p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 my-8">
-                <Link href="/docs/quickstart" className="p-4 rounded-lg border border-[#2A2A2A] bg-[#111] hover:border-[#9B6EFF] transition-colors">
-                    <h4 className="text-[14px] font-semibold mb-1">Quick Start</h4>
-                    <span className="text-[12px] text-[#555]">Go from zero to anchored in minutes.</span>
-                </Link>
-                <Link href="/docs/cli" className="p-4 rounded-lg border border-[#2A2A2A] bg-[#111] hover:border-[#9B6EFF] transition-colors">
-                    <h4 className="text-[14px] font-semibold mb-1">CLI Reference</h4>
-                    <span className="text-[12px] text-[#555]">Master the power of the command line.</span>
-                </Link>
-                <Link href="/docs/api" className="p-4 rounded-lg border border-[#2A2A2A] bg-[#111] hover:border-[#9B6EFF] transition-colors">
-                    <h4 className="text-[14px] font-semibold mb-1">API Reference</h4>
-                    <span className="text-[12px] text-[#555]">Integrate VDR into your own applications.</span>
-                </Link>
-            </div>
-
-            <div className="mt-16 pt-6 border-t border-[#1F1F1F] flex items-center justify-between mb-8">
-                <span className="text-[12px] text-[#555]">Was this helpful?</span>
-                <div className="flex items-center gap-2">
-                    <button className="text-[12px] px-3 py-1 border border-[#2A2A2A] rounded hover:border-[#444] text-[#888] hover:text-[#EDEDED]">Yes</button>
-                    <button className="text-[12px] px-3 py-1 border border-[#2A2A2A] rounded hover:border-[#444] text-[#888] hover:text-[#EDEDED]">No</button>
-                </div>
-            </div>
-
-            <DocsPrevNext next={{ label: 'Quick Start', href: '/docs/quickstart' }} />
-        </div>
+        </DocLayout>
     );
 }

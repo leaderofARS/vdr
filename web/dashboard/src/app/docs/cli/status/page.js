@@ -1,60 +1,91 @@
-import Breadcrumb from '../../components/Breadcrumb';
-import Callout from '../../components/Callout';
-import CodeBlock from '../../components/CodeBlock';
-import ParamTable, { ParamRow } from '../../components/ParamTable';
-import DocsPrevNext from '../../components/DocsPrevNext';
+import DocLayout from '../../components/DocLayout';
+import { Layers, Info, Terminal, User, Network } from 'lucide-react';
 
-export default function Page() {
-  return (
-    <div>
-      <Breadcrumb items={[{"label":"CLI Reference","href":"/docs/cli"},{"label":"status"}]} />
-      <div className="flex items-center justify-between mb-8">
-        <span className="text-[12px] text-[#555]">Last updated March 10, 2026</span>
-      </div>
+const HEADINGS = [
+    { id: 'overview', title: 'Overview', level: 2 },
+    { id: 'synopsis', title: 'Synopsis', level: 2 },
+    { id: 'how-it-works', title: 'How it works', level: 2 },
+    { id: 'example-output', title: 'Example Output', level: 2 },
+    { id: 'config-details', title: 'Configuration Details', level: 3 },
+    { id: 'staging-details', title: 'Staging Details', level: 3 },
+];
 
-      <h1 id="title">sipheron-vdr status</h1>
-      <p className="text-[18px] text-[#EDEDED] leading-relaxed mb-10">
-        Extensive documentation for sipheron-vdr status. Learn how to leverage SipHeron VDR for your enterprise needs.
-      </p>
+export default function CliStatusPage() {
+    return (
+        <DocLayout headings={HEADINGS}>
+            <div className="max-w-4xl">
+                <h1 className="text-4xl font-bold text-white mb-4">vdr status</h1>
+                <p className="text-xl text-gray-300 mb-12 leading-relaxed">
+                    View your current local environment status, authenticated organization, and pending staging queue.
+                </p>
 
-      <h2 id="overview">Overview</h2>
-      <p>This section provides a comprehensive overview of sipheron-vdr status. Our platform ensures that every interaction is secure, immutable, and verifiable.</p>
-      <div className="min-h-[50vh]" />
+                <h2 id="overview" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Overview
+                </h2>
+                <p className="text-gray-300 mb-4">
+                    The <code className="text-purple-300">status</code> command provides a snapshot of your local SipHeron VDR configuration. Use it to check which organization you are linked to and how many files are waiting to be anchored.
+                </p>
 
-      <h2 id="how-it-works">How It Works</h2>
-      <p>Detailed technical explanation of sipheron-vdr status.</p>
-      <CodeBlock language="text">
-{`Technical flow for sipheron-vdr status...`}
-      </CodeBlock>
-      <div className="min-h-[50vh]" />
+                <h2 id="synopsis" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Synopsis
+                </h2>
+                <pre className="bg-black/60 border border-white/10 rounded-xl p-4 overflow-x-auto mb-6">
+                    <code className="text-sm text-purple-200 font-mono">
+                        sipheron-vdr status
+                    </code>
+                </pre>
 
-      <h2 id="examples">Detailed Examples</h2>
-      <CodeBlock language="bash">
-# Example command for sipheron-vdr status
-vdr example --flag
-      </CodeBlock>
-      <div className="min-h-[100vh]" />
+                <h2 id="how-it-works" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    How it works
+                </h2>
+                <ol className="list-decimal list-inside text-gray-300 space-y-3 mb-8 ml-4">
+                    <li>Reads your encrypted <code className="text-purple-300">config.json</code> to identify your API key.</li>
+                    <li>Calls the SipHeron API to get the latest organization name and plan status.</li>
+                    <li>Counts the number of records in your local <code className="text-purple-300">staging.json</code>.</li>
+                    <li>Checks for CLI updates and displays a notification if a newer version is available.</li>
+                </ol>
 
-      <h2 id="parameters">Parameters & Configuration</h2>
-      <ParamTable>
-        <ParamRow name="param_1" type="string" required={true} description="Description for parameter 1" />
-        <ParamRow name="param_2" type="number" required={false} description="Description for parameter 2" />
-      </ParamTable>
-      <div className="min-h-[50vh]" />
+                <h2 id="example-output" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Example Output
+                </h2>
+                <pre className="bg-black/60 border border-white/10 rounded-xl p-4 overflow-x-auto mb-6 text-sm">
+                    <code className="font-mono">
+{`--- Environment ---
+CLI Version: 0.9.6
+Config: ~/.vdr/config.json
+Network: mainnet-beta
 
-      <h2 id="best-practices">Best Practices</h2>
-      <Callout type="tip">Always test your sipheron-vdr status configuration in devnet before moving to mainnet.</Callout>
-      <div className="min-h-[100vh]" />
+--- Authentication ---
+Organization: SipHeron Enterprise
+Linked Wallet: 8N2j...Fp7
+Plan: Business
 
-      <div className="mt-16 pt-6 border-t border-[#1F1F1F] flex items-center justify-between mb-8">
-        <span className="text-[12px] text-[#555]">Was this helpful?</span>
-        <div className="flex items-center gap-2">
-          <button className="text-[12px] px-3 py-1 border border-[#2A2A2A] rounded hover:border-[#444] text-[#888]">Yes</button>
-          <button className="text-[12px] px-3 py-1 border border-[#2A2A2A] rounded hover:border-[#444] text-[#888]">No</button>
-        </div>
-      </div>
+--- Staging Queue ---
+Pending Files: 3
+Total Batch Size: ~5 KB
+Last Staged: 2 hours ago
 
-      <DocsPrevNext />
-    </div>
-  );
+--- Solana Status ---
+Network Latency: 420ms
+Smart Contract: 6ecWP...zAwo (Stable)`}
+                    </code>
+                </pre>
+
+                <h3 id="config-details" className="text-lg font-bold text-white mt-8 mb-3 scroll-mt-24">
+                    Configuration Details
+                </h3>
+                <p className="text-gray-300 mb-4">
+                    The current network (devnet or mainnet) is determined by your most recent <code className="text-purple-300">link</code> or <code className="text-purple-300">config</code> command. You can permanently change this with:
+                </p>
+                <code className="bg-white/5 p-2 rounded text-xs text-purple-300">vdr config set network mainnet</code>
+
+                <h3 id="staging-details" className="text-lg font-bold text-white mt-8 mb-3 scroll-mt-24">
+                    Staging Details
+                </h3>
+                <p className="text-gray-300 mb-16">
+                    If <code className="text-purple-300">Pending Files</code> is greater than zero, those files have not yet been written to the blockchain. You must run <code className="text-purple-300">vdr anchor</code> to finalize them.
+                </p>
+            </div>
+        </DocLayout>
+    );
 }

@@ -1,60 +1,83 @@
-import Breadcrumb from '../../components/Breadcrumb';
-import Callout from '../../components/Callout';
-import CodeBlock from '../../components/CodeBlock';
-import ParamTable, { ParamRow } from '../../components/ParamTable';
-import DocsPrevNext from '../../components/DocsPrevNext';
+import DocLayout from '../../components/DocLayout';
+import { Shield, Key, Lock, AlertCircle, Info, RefreshCcw } from 'lucide-react';
 
-export default function Page() {
-  return (
-    <div>
-      <Breadcrumb items={[{"label":"Authentication","href":"/docs/authentication"},{"label":"Bearer Tokens"}]} />
-      <div className="flex items-center justify-between mb-8">
-        <span className="text-[12px] text-[#555]">Last updated March 10, 2026</span>
-      </div>
+const HEADINGS = [
+    { id: 'what-are-bearer-tokens', title: 'What are Bearer Tokens?', level: 2 },
+    { id: 'how-they-are-used', title: 'How they are used', level: 2 },
+    { id: 'acquisition', title: 'Acquiring a Token', level: 2 },
+    { id: 'expiry-refreshing', title: 'Expiry & Refreshing', level: 2 },
+    { id: 'security-implications', title: 'Security Implications', level: 2 },
+];
 
-      <h1 id="title">Bearer Tokens</h1>
-      <p className="text-[18px] text-[#EDEDED] leading-relaxed mb-10">
-        Extensive documentation for Bearer Tokens. Learn how to leverage SipHeron VDR for your enterprise needs.
-      </p>
+export default function BearerTokensPage() {
+    return (
+        <DocLayout headings={HEADINGS}>
+            <div className="max-w-4xl">
+                <h1 className="text-4xl font-bold text-white mb-4">Bearer Tokens (JWT)</h1>
+                <p className="text-xl text-gray-300 mb-12 leading-relaxed">
+                    Short-lived JSON Web Tokens (JWT) used for authenticated user sessions within the SipHeron web platform.
+                </p>
 
-      <h2 id="overview">Overview</h2>
-      <p>This section provides a comprehensive overview of Bearer Tokens. Our platform ensures that every interaction is secure, immutable, and verifiable.</p>
-      <div className="min-h-[50vh]" />
+                <h2 id="what-are-bearer-tokens" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    What are Bearer Tokens?
+                </h2>
+                <p className="text-gray-300 mb-6 font-light">
+                    Bearer tokens are the standard for web authentication. They allow the server to identify the user making a request based on a signed token string included in the <code className="text-purple-300">Authorization</code> header.
+                </p>
 
-      <h2 id="how-it-works">How It Works</h2>
-      <p>Detailed technical explanation of Bearer Tokens.</p>
-      <CodeBlock language="text">
-{`Technical flow for Bearer Tokens...`}
-      </CodeBlock>
-      <div className="min-h-[50vh]" />
+                <h2 id="how-they-are-used" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    How they are used
+                </h2>
+                <p className="text-gray-300 mb-4">
+                    When you log in to the SipHeron dashboard, our API issues a JWT stored in a secure, HTTP-only cookie. For direct API access, you can also send the token manually:
+                </p>
+                <div className="bg-black/60 border border-white/10 rounded-xl p-4 mb-8">
+                    <code className="text-purple-300 font-mono text-sm leading-8">
+                        Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                    </code>
+                </div>
 
-      <h2 id="examples">Detailed Examples</h2>
-      <CodeBlock language="bash">
-# Example command for Bearer Tokens
-vdr example --flag
-      </CodeBlock>
-      <div className="min-h-[100vh]" />
+                <h2 id="acquisition" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Acquiring a Token
+                </h2>
+                <p className="text-gray-300 mb-4">You can obtain a bearer token by authenticating with your email and password via the login endpoint:</p>
+                <pre className="bg-black/60 border border-white/10 rounded-xl p-4 overflow-x-auto mb-8 text-xs text-purple-200">
+                    <code className="font-mono">
+{`POST https://api.sipheron.com/api/auth/login
+{
+  "email": "user@example.com",
+  "password": "your_password"
+}
 
-      <h2 id="parameters">Parameters & Configuration</h2>
-      <ParamTable>
-        <ParamRow name="param_1" type="string" required={true} description="Description for parameter 1" />
-        <ParamRow name="param_2" type="number" required={false} description="Description for parameter 2" />
-      </ParamTable>
-      <div className="min-h-[50vh]" />
+// Result:
+{
+  "token": "eyJhbGciOiJIUzI1Ni..."
+}`}
+                    </code>
+                </pre>
 
-      <h2 id="best-practices">Best Practices</h2>
-      <Callout type="tip">Always test your Bearer Tokens configuration in devnet before moving to mainnet.</Callout>
-      <div className="min-h-[100vh]" />
+                <h2 id="expiry-refreshing" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Expiry & Refreshing
+                </h2>
+                <div className="flex gap-4 p-4 rounded-xl border border-blue-500/20 bg-blue-500/5 mb-8">
+                    <RefreshCcw className="w-5 h-5 text-blue-400 shrink-0 mt-1" />
+                    <p className="text-blue-200 text-sm">
+                        Bearer tokens expire after 2 hours. The SipHeron Dashboard automatically handles token refreshing using a separate, secure refresh token stored in your browser's persistent storage.
+                    </p>
+                </div>
 
-      <div className="mt-16 pt-6 border-t border-[#1F1F1F] flex items-center justify-between mb-8">
-        <span className="text-[12px] text-[#555]">Was this helpful?</span>
-        <div className="flex items-center gap-2">
-          <button className="text-[12px] px-3 py-1 border border-[#2A2A2A] rounded hover:border-[#444] text-[#888]">Yes</button>
-          <button className="text-[12px] px-3 py-1 border border-[#2A2A2A] rounded hover:border-[#444] text-[#888]">No</button>
-        </div>
-      </div>
-
-      <DocsPrevNext />
-    </div>
-  );
+                <h2 id="security-implications" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Security Implications
+                </h2>
+                <div className="space-y-4 mb-16">
+                    <div className="p-4 rounded-xl border border-red-500/20 bg-red-500/5 flex gap-3">
+                        <AlertCircle className="w-5 h-5 text-red-500 shrink-0" />
+                        <p className="text-gray-300 text-xs">
+                            <strong>Statelessness:</strong> JWTs are stateless. Once issued, they cannot be easily "revoked" on the server until they expire. For high-security programmatic access, we recommend using <strong>API Keys</strong> instead.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </DocLayout>
+    );
 }

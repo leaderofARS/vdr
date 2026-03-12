@@ -1,60 +1,106 @@
-import Breadcrumb from '../../components/Breadcrumb';
-import Callout from '../../components/Callout';
-import CodeBlock from '../../components/CodeBlock';
-import ParamTable, { ParamRow } from '../../components/ParamTable';
-import DocsPrevNext from '../../components/DocsPrevNext';
+import DocLayout from '../../components/DocLayout';
+import { History, List, ExternalLink, Clock, Hash } from 'lucide-react';
 
-export default function Page() {
-  return (
-    <div>
-      <Breadcrumb items={[{"label":"CLI Reference","href":"/docs/cli"},{"label":"history"}]} />
-      <div className="flex items-center justify-between mb-8">
-        <span className="text-[12px] text-[#555]">Last updated March 10, 2026</span>
-      </div>
+const HEADINGS = [
+    { id: 'overview', title: 'Overview', level: 2 },
+    { id: 'synopsis', title: 'Synopsis', level: 2 },
+    { id: 'options', title: 'Options', level: 2 },
+    { id: 'output-format', title: 'Output Format', level: 2 },
+    { id: 'example', title: 'Example', level: 2 },
+    { id: 'filtering', title: 'Filtering Results', level: 2 },
+];
 
-      <h1 id="title">sipheron-vdr history</h1>
-      <p className="text-[18px] text-[#EDEDED] leading-relaxed mb-10">
-        Extensive documentation for sipheron-vdr history. Learn how to leverage SipHeron VDR for your enterprise needs.
-      </p>
+export default function CliHistoryPage() {
+    return (
+        <DocLayout headings={HEADINGS}>
+            <div className="max-w-4xl">
+                <h1 className="text-4xl font-bold text-white mb-4">vdr history</h1>
+                <p className="text-xl text-gray-300 mb-12 leading-relaxed">
+                    Retrieve a list of your most recent document anchors and transaction details from the blockchain.
+                </p>
 
-      <h2 id="overview">Overview</h2>
-      <p>This section provides a comprehensive overview of sipheron-vdr history. Our platform ensures that every interaction is secure, immutable, and verifiable.</p>
-      <div className="min-h-[50vh]" />
+                <h2 id="overview" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Overview
+                </h2>
+                <p className="text-gray-300 mb-4">
+                    The <code className="text-purple-300">history</code> command allows you to audit your past activities. It fetches the last N records associated with your organization, providing hashes, timestamps, and direct links to the Solana Explorer.
+                </p>
 
-      <h2 id="how-it-works">How It Works</h2>
-      <p>Detailed technical explanation of sipheron-vdr history.</p>
-      <CodeBlock language="text">
-{`Technical flow for sipheron-vdr history...`}
-      </CodeBlock>
-      <div className="min-h-[50vh]" />
+                <h2 id="synopsis" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Synopsis
+                </h2>
+                <pre className="bg-black/60 border border-white/10 rounded-xl p-4 overflow-x-auto mb-6">
+                    <code className="text-sm text-purple-200 font-mono">
+                        sipheron-vdr history [limit] [options]
+                    </code>
+                </pre>
 
-      <h2 id="examples">Detailed Examples</h2>
-      <CodeBlock language="bash">
-# Example command for sipheron-vdr history
-vdr example --flag
-      </CodeBlock>
-      <div className="min-h-[100vh]" />
+                <h2 id="options" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Options
+                </h2>
+                <div className="overflow-x-auto mb-6">
+                    <table className="w-full text-sm">
+                        <thead>
+                            <tr className="border-b border-white/10">
+                                <th className="text-left py-3 pr-4 text-gray-400 font-medium">Flag</th>
+                                <th className="text-left py-3 pr-4 text-gray-400 font-medium">Default</th>
+                                <th className="text-left py-3 pr-4 text-gray-400 font-medium">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-white/5">
+                            <tr>
+                                <td className="py-3 pr-4 text-purple-300 font-mono">--limit, -l &lt;n&gt;</td>
+                                <td className="py-3 pr-4 text-gray-400">10</td>
+                                <td className="py-3 pr-4 text-gray-300">Number of recent records to display.</td>
+                            </tr>
+                            <tr>
+                                <td className="py-3 pr-4 text-purple-300 font-mono">--json</td>
+                                <td className="py-3 pr-4 text-gray-400">false</td>
+                                <td className="py-3 pr-4 text-gray-300">Return history as a JSON array.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
 
-      <h2 id="parameters">Parameters & Configuration</h2>
-      <ParamTable>
-        <ParamRow name="param_1" type="string" required={true} description="Description for parameter 1" />
-        <ParamRow name="param_2" type="number" required={false} description="Description for parameter 2" />
-      </ParamTable>
-      <div className="min-h-[50vh]" />
+                <h2 id="output-format" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Output Format
+                </h2>
+                <p className="text-gray-300 mb-4">The command displays a table with the following columns:</p>
+                <ul className="list-disc list-inside text-gray-400 space-y-2 mb-8 ml-4">
+                    <li><strong>Timestamp:</strong> Date and time the anchor was confirmed.</li>
+                    <li><strong>Hash:</strong> The first 8 characters of the SHA-256 hash.</li>
+                    <li><strong>Network:</strong> Solana Devnet or Mainnet.</li>
+                    <li><strong>Explorer:</strong> A shortened URL to view the transaction.</li>
+                </ul>
 
-      <h2 id="best-practices">Best Practices</h2>
-      <Callout type="tip">Always test your sipheron-vdr history configuration in devnet before moving to mainnet.</Callout>
-      <div className="min-h-[100vh]" />
+                <h2 id="example" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Example
+                </h2>
+                <pre className="bg-black/60 border border-white/10 rounded-xl p-4 overflow-x-auto mb-6 text-xs text-purple-200">
+                    <code className="font-mono">
+{`Showing last 5 anchors:
 
-      <div className="mt-16 pt-6 border-t border-[#1F1F1F] flex items-center justify-between mb-8">
-        <span className="text-[12px] text-[#555]">Was this helpful?</span>
-        <div className="flex items-center gap-2">
-          <button className="text-[12px] px-3 py-1 border border-[#2A2A2A] rounded hover:border-[#444] text-[#888]">Yes</button>
-          <button className="text-[12px] px-3 py-1 border border-[#2A2A2A] rounded hover:border-[#444] text-[#888]">No</button>
-        </div>
-      </div>
+DATE (UTC)       HASH       NETWORK    STATUS
+2026-03-12 10:15  85e17e30   mainnet    CONFIRMED
+2026-03-12 09:44  f2d4a1c5   mainnet    CONFIRMED
+2026-03-11 23:12  a3b8d1b6   mainnet    REVOKED
+2026-03-10 14:05  c5dae3d8   devnet     CONFIRMED
+2026-03-10 12:20  2b30193e   devnet     CONFIRMED`}
+                    </code>
+                </pre>
 
-      <DocsPrevNext />
-    </div>
-  );
+                <h2 id="filtering" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Filtering Results
+                </h2>
+                <p className="text-gray-300 mb-4">
+                    You can restrict history to a specific network to avoid clutter:
+                </p>
+                <pre className="bg-black/60 border border-white/10 rounded-xl p-4 overflow-x-auto mb-16">
+                    <code className="text-sm text-purple-200 font-mono">
+                        sipheron-vdr history --limit 50 --mainnet
+                    </code>
+                </pre>
+            </div>
+        </DocLayout>
+    );
 }

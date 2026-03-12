@@ -1,60 +1,108 @@
-import Breadcrumb from '../../components/Breadcrumb';
-import Callout from '../../components/Callout';
-import CodeBlock from '../../components/CodeBlock';
-import ParamTable, { ParamRow } from '../../components/ParamTable';
-import DocsPrevNext from '../../components/DocsPrevNext';
+import DocLayout from '../../components/DocLayout';
+import { Code, Package, Zap, ShieldCheck, Terminal, Info } from 'lucide-react';
 
-export default function Page() {
-  return (
-    <div>
-      <Breadcrumb items={[{"label":"SDKs","href":"/docs/sdks"},{"label":"JavaScript"}]} />
-      <div className="flex items-center justify-between mb-8">
-        <span className="text-[12px] text-[#555]">Last updated March 10, 2026</span>
-      </div>
+const HEADINGS = [
+    { id: 'installation', title: 'Installation', level: 2 },
+    { id: 'initialization', title: 'Initialization', level: 2 },
+    { id: 'anchoring-files', title: 'Anchoring Files', level: 2 },
+    { id: 'verifying-hashes', title: 'Verifying Hashes', level: 2 },
+    { id: 'full-example', title: 'Full Example', level: 2 },
+    { id: 'browser-usage', title: 'Browser Usage', level: 2 },
+];
 
-      <h1 id="title">JavaScript SDK</h1>
-      <p className="text-[18px] text-[#EDEDED] leading-relaxed mb-10">
-        Extensive documentation for JavaScript SDK. Learn how to leverage SipHeron VDR for your enterprise needs.
-      </p>
+export default function SdkJavascriptPage() {
+    return (
+        <DocLayout headings={HEADINGS}>
+            <div className="max-w-4xl">
+                <h1 className="text-4xl font-bold text-white mb-4">SipHeron VDR JavaScript SDK</h1>
+                <p className="text-xl text-gray-300 mb-12 leading-relaxed">
+                    The official client library for Node.js and the browser. Securely interact with SipHeron VDR using idiomatic JavaScript.
+                </p>
 
-      <h2 id="overview">Overview</h2>
-      <p>This section provides a comprehensive overview of JavaScript SDK. Our platform ensures that every interaction is secure, immutable, and verifiable.</p>
-      <div className="min-h-[50vh]" />
+                <h2 id="installation" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Installation
+                </h2>
+                <pre className="bg-black/60 border border-white/10 rounded-xl p-4 overflow-x-auto mb-8 text-xs text-purple-200">
+                    <code className="font-mono">
+                        npm install @sipheron/vdr-sdk
+                    </code>
+                </pre>
 
-      <h2 id="how-it-works">How It Works</h2>
-      <p>Detailed technical explanation of JavaScript SDK.</p>
-      <CodeBlock language="text">
-{`Technical flow for JavaScript SDK...`}
-      </CodeBlock>
-      <div className="min-h-[50vh]" />
+                <h2 id="initialization" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Initialization
+                </h2>
+                <pre className="bg-black/60 border border-white/10 rounded-xl p-4 overflow-x-auto mb-8 text-xs text-purple-200">
+                    <code className="font-mono">
+{`import { SipHeronClient } from '@sipheron/vdr-sdk';
 
-      <h2 id="examples">Detailed Examples</h2>
-      <CodeBlock language="bash">
-# Example command for JavaScript SDK
-vdr example --flag
-      </CodeBlock>
-      <div className="min-h-[100vh]" />
+const vdr = new SipHeronClient({
+  apiKey: process.env.SIPHERON_API_KEY,
+  network: 'mainnet' // default is devnet
+});`}
+                    </code>
+                </pre>
 
-      <h2 id="parameters">Parameters & Configuration</h2>
-      <ParamTable>
-        <ParamRow name="param_1" type="string" required={true} description="Description for parameter 1" />
-        <ParamRow name="param_2" type="number" required={false} description="Description for parameter 2" />
-      </ParamTable>
-      <div className="min-h-[50vh]" />
+                <h2 id="anchoring-files" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Anchoring Files
+                </h2>
+                <p className="text-gray-300 mb-4 font-light">
+                    The SDK automatically handles file hashing and batching if provided with a file list.
+                </p>
+                <pre className="bg-black/60 border border-white/10 rounded-xl p-4 overflow-x-auto mb-8 text-xs text-purple-200">
+                    <code className="font-mono">
+{`const result = await vdr.anchorFile('./agreement.pdf', {
+  metadata: { department: 'Legal' }
+});
 
-      <h2 id="best-practices">Best Practices</h2>
-      <Callout type="tip">Always test your JavaScript SDK configuration in devnet before moving to mainnet.</Callout>
-      <div className="min-h-[100vh]" />
+console.log('Document Anchored:', result.pda);`}
+                    </code>
+                </pre>
 
-      <div className="mt-16 pt-6 border-t border-[#1F1F1F] flex items-center justify-between mb-8">
-        <span className="text-[12px] text-[#555]">Was this helpful?</span>
-        <div className="flex items-center gap-2">
-          <button className="text-[12px] px-3 py-1 border border-[#2A2A2A] rounded hover:border-[#444] text-[#888]">Yes</button>
-          <button className="text-[12px] px-3 py-1 border border-[#2A2A2A] rounded hover:border-[#444] text-[#888]">No</button>
-        </div>
-      </div>
+                <h2 id="verifying-hashes" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Verifying Hashes
+                </h2>
+                <pre className="bg-black/60 border border-white/10 rounded-xl p-4 overflow-x-auto mb-8 text-xs text-purple-200">
+                    <code className="font-mono">
+{`const isValid = await vdr.verify('85e17e3073507d3910c...');
+if (isValid.authentic) {
+  console.log('Document is untampered. Confirmed at:', isValid.timestamp);
+}`}
+                    </code>
+                </pre>
 
-      <DocsPrevNext />
-    </div>
-  );
+                <h2 id="full-example" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Full Example
+                </h2>
+                <pre className="bg-black/60 border border-white/10 rounded-xl p-4 overflow-x-auto mb-12 text-xs text-purple-200">
+                    <code className="font-mono">
+{`import { SipHeronClient } from '@sipheron/vdr-sdk';
+import fs from 'fs';
+
+async function run() {
+  const vdr = new SipHeronClient({ apiKey: 'svdr_...' });
+  
+  // 1. Stage and Anchor
+  const { hash, txSignature } = await vdr.anchorFile('./invoice.pdf');
+  console.log(\`Anchored hash \${hash} in \${txSignature}\`);
+
+  // 2. Poll for confirmation (optional, webhooks recommended)
+  const status = await vdr.getStatus(hash);
+  console.log('Status:', status.label);
+}
+
+run();`}
+                    </code>
+                </pre>
+
+                <h2 id="browser-usage" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Browser Usage
+                </h2>
+                <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-4 mb-16">
+                    <p className="text-yellow-300 text-sm">
+                        ⚠️ Never include your <code className="text-purple-300">apiKey</code> in browser-side code. Use the SDK in the browser only for <strong>Public Verification</strong> or by proxying requests through your own backend.
+                    </p>
+                </div>
+            </div>
+        </DocLayout>
+    );
 }

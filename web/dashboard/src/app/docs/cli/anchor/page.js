@@ -1,120 +1,137 @@
-import Breadcrumb from '../../components/Breadcrumb';
-import Callout from '../../components/Callout';
-import CodeBlock from '../../components/CodeBlock';
-import ParamTable, { ParamRow } from '../../components/ParamTable';
-import DocsPrevNext from '../../components/DocsPrevNext';
+import DocLayout from '../../components/DocLayout';
+import { Anchor, Zap, Cpu, Network, Clock, AlertCircle } from 'lucide-react';
 
-export default function AnchorPage() {
+const HEADINGS = [
+    { id: 'overview', title: 'Overview', level: 2 },
+    { id: 'synopsis', title: 'Synopsis', level: 2 },
+    { id: 'options', title: 'Options', level: 2 },
+    { id: 'how-it-works', title: 'How it works', level: 2 },
+    { id: 'examples', title: 'Examples', level: 2 },
+    { id: 'output', title: 'Output', level: 2 },
+    { id: 'errors', title: 'Common Errors', level: 2 },
+];
+
+export default function CliAnchorPage() {
     return (
-        <div>
-            <Breadcrumb items={[
-                { label: 'CLI Reference', href: '/docs/cli' },
-                { label: 'sipheron-vdr anchor' }
-            ]} />
-            <div className="flex items-center justify-between mb-8">
-                <span className="text-[12px] text-[#555]">Last updated March 10, 2026</span>
-            </div>
+        <DocLayout headings={HEADINGS}>
+            <div className="max-w-4xl">
+                <h1 className="text-4xl font-bold text-white mb-4">vdr anchor</h1>
+                <p className="text-xl text-gray-300 mb-12 leading-relaxed">
+                    Submit your staged document hashes to the Solana blockchain for permanent, immutable timestamping.
+                </p>
 
-            <h1 id="anchor">sipheron-vdr anchor</h1>
-            <p className="text-[18px] text-[#EDEDED] leading-relaxed mb-10">
-                The anchor command is the core of the SipHeron VDR ecosystem. it pushes your locally staged SHA-256 hashes to the Solana blockchain.
-            </p>
+                <h2 id="overview" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Overview
+                </h2>
+                <p className="text-gray-300 mb-4">
+                    The <code className="text-purple-300">anchor</code> command is the core of the SipHeron platform. It takes all hashes you have previously "staged" and bundles them into a transaction that is sent to the Solana network.
+                </p>
 
-            <h2 id="synopsis">Synopsis</h2>
-            <CodeBlock language="text">
-                vdr anchor [options] [files...]
-            </CodeBlock>
-            <p>
-                By default, <code>anchor</code> will process all files in the current staged set that have not yet been anchored.
-                You can also specify individual files if you only want to anchor a subset.
-            </p>
+                <h2 id="synopsis" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Synopsis
+                </h2>
+                <pre className="bg-black/60 border border-white/10 rounded-xl p-4 overflow-x-auto mb-6">
+                    <code className="text-sm text-purple-200 font-mono">
+                        sipheron-vdr anchor [options]
+                    </code>
+                </pre>
 
-            <h2 id="options">Options</h2>
-            <ParamTable>
-                <ParamRow name="--mainnet" type="boolean" required={false} description="Anchor to Solana Mainnet (Default)" />
-                <ParamRow name="--devnet" type="boolean" required={false} description="Anchor to Solana Devnet for testing" />
-                <ParamRow name="--batch" type="number" required={false} description="Max number of files per transaction (Max 50)" />
-                <ParamRow name="--force" type="boolean" required={false} description="Re-anchor files that have already been anchored" />
-                <ParamRow name="--silent" type="boolean" required={false} description="Do not output progress to terminal" />
-                <ParamRow name="--json" type="boolean" required={false} description="Output results in JSON format" />
-            </ParamTable>
-
-            <h2 id="how-it-works">How It Works</h2>
-            <p>
-                When you run the anchor command, SipHeron VDR performs a multi-step handshake:
-            </p>
-            <CodeBlock language="text">
-                {`1. Retrieve Staged Hashes (from .vdr/staged)
-2. Connect to Solana RPC (~150ms)
-3. Request Batch Registration from API (~300ms)
-4. Sign Transaction (using local or VDR-managed key)
-5. Submit to Cluster (~400ms)
-6. Confirm Finality (~1-2s)`}
-            </CodeBlock>
-
-            <h2 id="examples">Examples</h2>
-
-            <h3 id="anchor-all">Anchor all staged files</h3>
-            <CodeBlock language="bash">
-                vdr anchor
-            </CodeBlock>
-
-            <h3 id="anchor-specific">Anchor specific files to Devnet</h3>
-            <CodeBlock language="bash">
-                vdr anchor --devnet report.pdf invoice.xml
-            </CodeBlock>
-
-            <h3 id="anchor-batch">Anchor with custom batch size</h3>
-            <CodeBlock language="bash">
-                vdr anchor --batch 10
-            </CodeBlock>
-
-            <h2 id="expected-output">Expected Output</h2>
-            <CodeBlock language="text">
-                {`✔ Preparing batch [12 files]
-✔ Validating hashes...
-✔ Syncing with Solana...
-✔ Transaction: 4kL9p...x9A1 (Confirmed)
-✔ 12/12 files successfully anchored.
-
-Total Fee: 0.00045 SOL
-Timestamp: 1710059400 (Mar 10, 2026)`}
-            </CodeBlock>
-
-            <h2 id="error-codes">Error Codes</h2>
-            <ParamTable>
-                <ParamRow name="VDR_001" type="AUTH_ERROR" required={false} description="Not logged in. Run 'vdr login' first." />
-                <ParamRow name="VDR_002" type="EMPTY_STAGE" required={false} description="No files staged. Run 'vdr stage' first." />
-                <ParamRow name="VDR_042" type="DUPLICATE_HASH" required={false} description="File hash already exists on-chain." />
-                <ParamRow name="VDR_500" type="NETWORK_ERROR" required={false} description="Unable to reach Solana RPC nodes." />
-            </ParamTable>
-
-            <h2 id="best-practices">Best Practices</h2>
-            <Callout type="warning">
-                Avoid using <code>--force</code> unless you have a specific reason to re-anchor. Solana storage costs are permanent; once anchored, you cannot "un-spend" the fee.
-            </Callout>
-            <Callout type="tip">
-                Use <code>--json</code> when integrating <code>vdr anchor</code> into automated CI/CD pipelines to easily parse the transaction signature.
-            </Callout>
-
-            <div className="min-h-[150vh]" />
-
-            <h2 id="faq">FAQ</h2>
-            <div className="space-y-6 my-8">
-                <div>
-                    <h4 className="text-[15px] font-medium text-[#EDEDED] mb-2">Can I anchor files larger than 1GB?</h4>
-                    <p className="text-[14px] text-[#888]">Yes. Since we only anchor the SHA-256 hash, the file size does not matter. The hash is always a fixed 64 characters.</p>
+                <h2 id="options" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Options
+                </h2>
+                <div className="overflow-x-auto mb-6">
+                    <table className="w-full text-sm">
+                        <thead>
+                            <tr className="border-b border-white/10">
+                                <th className="text-left py-3 pr-4 text-gray-400 font-medium">Flag</th>
+                                <th className="text-left py-3 pr-4 text-gray-400 font-medium">Default</th>
+                                <th className="text-left py-3 pr-4 text-gray-400 font-medium">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-white/5">
+                            <tr>
+                                <td className="py-3 pr-4 text-purple-300 font-mono">--devnet</td>
+                                <td className="py-3 pr-4 text-gray-400">true</td>
+                                <td className="py-3 pr-4 text-gray-300">Anchor to the Solana Devnet (testing).</td>
+                            </tr>
+                            <tr>
+                                <td className="py-3 pr-4 text-purple-300 font-mono">--mainnet</td>
+                                <td className="py-3 pr-4 text-gray-400">false</td>
+                                <td className="py-3 pr-4 text-gray-300">Anchor to the Solana Mainnet-Beta (production).</td>
+                            </tr>
+                            <tr>
+                                <td className="py-3 pr-4 text-purple-300 font-mono">--batch-size &lt;n&gt;</td>
+                                <td className="py-3 pr-4 text-gray-400">100</td>
+                                <td className="py-3 pr-4 text-gray-300">Maximum hashes per single transaction.</td>
+                            </tr>
+                            <tr>
+                                <td className="py-3 pr-4 text-purple-300 font-mono">--yes, -y</td>
+                                <td className="py-3 pr-4 text-gray-400">false</td>
+                                <td className="py-3 pr-4 text-gray-300">Skip the confirmation prompt. Recommended for CI/CD.</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-                <div>
-                    <h4 className="text-[15px] font-medium text-[#EDEDED] mb-2">How long does my anchor last?</h4>
-                    <p className="text-[14px] text-[#888]">Forever. Solana's data storage (via SipHeron's Rent-Exempt accounts) ensures your proofs remain on-chain indefinitely.</p>
+
+                <h2 id="how-it-works" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    How it works
+                </h2>
+                <ol className="list-decimal list-inside text-gray-300 space-y-3 mb-8 ml-4">
+                    <li>Reads all hashes from your localstaging database (<code className="text-purple-300">~/.vdr/staging.json</code>).</li>
+                    <li>Groups hashes into optimal batch sizes.</li>
+                    <li>Uploads the batch metadata to SipHeron Cloud via secure API.</li>
+                    <li>Triggers the Solana smart contract to create persistent PDA accounts.</li>
+                    <li>Clears your local staging queue upon successful transaction confirmation.</li>
+                </ol>
+
+                <h2 id="examples" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Examples
+                </h2>
+                
+                <h3 className="text-white font-bold mb-3 mt-8">Standard anchor (Devnet)</h3>
+                <pre className="bg-black/60 border border-white/10 rounded-xl p-4 overflow-x-auto mb-6">
+                    <code className="text-sm text-purple-200 font-mono">
+                        sipheron-vdr anchor
+                    </code>
+                </pre>
+
+                <h3 className="text-white font-bold mb-3 mt-8">Production anchor (Mainnet)</h3>
+                <pre className="bg-black/60 border border-white/10 rounded-xl p-4 overflow-x-auto mb-6">
+                    <code className="text-sm text-purple-200 font-mono">
+                        sipheron-vdr anchor --mainnet --yes
+                    </code>
+                </pre>
+
+                <h2 id="output" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Output
+                </h2>
+                <pre className="bg-black/60 border border-white/10 rounded-xl p-4 overflow-x-auto mb-6 text-sm">
+                    <code className="font-mono">
+{`Found 25 staged hashes.
+Network: Solana Mainnet-Beta
+Batch Size: 100
+Confirm anchoring 25 files? (y/N) y
+
+🚀 Anchoring batch 1/1...
+✓ Transaction confirmed: 4N8jQ...z7s
+✓ 25 document(s) anchored successfully.`}
+                    </code>
+                </pre>
+
+                <h2 id="errors" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
+                    Common Errors
+                </h2>
+                <div className="space-y-4 mb-16">
+                    <div className="p-4 rounded-xl border border-red-500/20 bg-red-500/5">
+                        <h4 className="font-bold text-white text-sm">No hashes staged</h4>
+                        <p className="text-xs text-gray-400 mt-1">Run <code className="text-purple-300">vdr stage &lt;file&gt;</code> first to add documents to the queue.</p>
+                    </div>
+                    <div className="p-4 rounded-xl border border-red-500/20 bg-red-500/5">
+                        <h4 className="font-bold text-white text-sm">Insufficient SOL</h4>
+                        <p className="text-xs text-gray-400 mt-1">If you are using your own wallet (Advanced Mode), ensure you have enough SOL for transaction fees. In Standard Mode, SipHeron covers these fees.</p>
+                    </div>
                 </div>
             </div>
-
-            <DocsPrevNext
-                prev={{ label: 'sipheron-vdr stage', href: '/docs/cli/stage' }}
-                next={{ label: 'sipheron-vdr verify', href: '/docs/cli/verify' }}
-            />
-        </div>
+        </DocLayout>
     );
 }
