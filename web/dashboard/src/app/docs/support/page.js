@@ -1,5 +1,5 @@
 import DocLayout from '../components/DocLayout';
-import { Mail, MessageSquare, Discord, Twitter, Github, HelpCircle, LifeBuoy } from 'lucide-react';
+import { Mail, MessageSquare, Twitter, Github, HelpCircle, LifeBuoy } from 'lucide-react';
 
 const HEADINGS = [
     { id: 'contact-support', title: 'Contact Support', level: 2 },
@@ -51,7 +51,7 @@ export default function SupportPage() {
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-12">
                     <a href="https://discord.gg/sipheron" className="flex items-center gap-3 p-4 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition-colors">
-                        <Discord className="w-5 h-5 text-indigo-400" />
+                        <MessageSquare className="w-5 h-5 text-indigo-400" />
                         <span className="text-sm text-white font-medium">Discord</span>
                     </a>
                     <a href="https://twitter.com/sipheron_vdr" className="flex items-center gap-3 p-4 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition-colors">

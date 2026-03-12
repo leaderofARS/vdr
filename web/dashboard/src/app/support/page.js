@@ -6,7 +6,6 @@ import { motion } from 'framer-motion';
 import { 
     Mail, 
     MessageSquare, 
-    Discord, 
     Twitter, 
     Github, 
     LifeBuoy, 
@@ -44,7 +43,7 @@ export default function SupportPage() {
             bg: "bg-blue-500/10"
         },
         {
-            icon: <Discord className="w-6 h-6" />,
+            icon: <MessageSquare className="w-6 h-6" />,
             title: "Developer Discord",
             description: "Join our active community of builders on the Solana network.",
             linkText: "Join Discord",

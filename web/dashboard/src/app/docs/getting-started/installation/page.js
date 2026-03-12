@@ -1,4 +1,4 @@
-import DocLayout from '../../../components/DocLayout';
+import DocLayout from '../../components/DocLayout';
 import { Terminal, Download, ShieldCheck, AlertCircle, Info, Hash } from 'lucide-react';
 
 const HEADINGS = [
