@@ -1,40 +1,45 @@
-'use client'
+'use client';
 import { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
 
 export default function DocsTOC() {
     const [headings, setHeadings] = useState([])
     const [activeId, setActiveId] = useState('')
+    const pathname = usePathname()
 
     useEffect(() => {
-        // Get all headings in the main content area
-        const elements = Array.from(document.querySelectorAll('main h2, main h3'))
-        const headingData = elements.map(el => {
-            // Ensure element has an ID for linking
-            if (!el.id) {
-                el.id = el.textContent.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
-            }
-            return {
-                id: el.id,
-                text: el.textContent,
-                level: el.tagName
-            }
-        });
-        setHeadings(headingData)
+        // Delay slightly to ensure DOM is updated after navigation
+        const timer = setTimeout(() => {
+            const elements = Array.from(document.querySelectorAll('.docs-content h2, .docs-content h3'))
+            const headingData = elements.map(el => {
+                if (!el.id) {
+                    el.id = el.textContent.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
+                }
+                return {
+                    id: el.id,
+                    text: el.textContent,
+                    level: el.tagName
+                }
+            });
+            setHeadings(headingData)
 
-        const observer = new IntersectionObserver(
-            entries => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        setActiveId(entry.target.id)
-                    }
-                })
-            },
-            { rootMargin: '-20% 0px -70% 0px' }
-        )
+            const observer = new IntersectionObserver(
+                entries => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            setActiveId(entry.target.id)
+                        }
+                    })
+                },
+                { rootMargin: '-10% 0px -80% 0px' }
+            )
 
-        elements.forEach(el => observer.observe(el))
-        return () => observer.disconnect()
-    }, [])
+            elements.forEach(el => observer.observe(el))
+            return () => observer.disconnect()
+        }, 100);
+
+        return () => clearTimeout(timer);
+    }, [pathname])
 
     if (headings.length === 0) return null;
 
@@ -48,13 +53,26 @@ export default function DocsTOC() {
                         href={`#${h.id}`}
                         onClick={(e) => {
                             e.preventDefault();
-                            document.getElementById(h.id)?.scrollIntoView({ behavior: 'smooth' });
+                            const el = document.getElementById(h.id);
+                            if (el) {
+                                const offset = 80;
+                                const bodyRect = document.body.getBoundingClientRect().top;
+                                const elementRect = el.getBoundingClientRect().top;
+                                const elementPosition = elementRect - bodyRect;
+                                const offsetPosition = elementPosition - offset;
+
+                                window.scrollTo({
+                                    top: offsetPosition,
+                                    behavior: 'smooth'
+                                });
+                            }
                             setActiveId(h.id);
+                            window.history.pushState(null, '', `#${h.id}`);
                         }}
-                        className={`block text-[13px] transition-colors duration-150 leading-snug ${h.level === 'H3' ? 'pl-3' : ''
+                        className={`block text-[13px] transition-colors duration-150 leading-snug hover:text-[#EDEDED] ${h.level === 'H3' ? 'pl-3' : ''
                             } ${activeId === h.id
-                                ? 'text-[#EDEDED] font-medium'
-                                : 'text-[#888888] hover:text-[#EDEDED]'
+                                ? 'text-[#9B6EFF] font-medium'
+                                : 'text-[#555555]'
                             }`}
                     >
                         {h.text}

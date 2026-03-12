@@ -1,18 +1,11 @@
 import DocLayout from '../../components/DocLayout';
 import { Database, Shield, Lock, Globe, HardDrive, Info } from 'lucide-react';
 
-const HEADINGS = [
-    { id: 'pdas-explained', title: 'Program Derived Addresses (PDAs)', level: 2 },
-    { id: 'data-schema', title: 'Data Schema', level: 2 },
-    { id: 'immutability-lifecycle', title: 'Immutability & Lifecycle', level: 2 },
-    { id: 'storage-costs', title: 'Storage Costs (Rent)', level: 2 },
-    { id: 'network-differences', title: 'Devnet vs Mainnet', level: 2 },
-    { id: 'direct-access', title: 'Reading from Solana directly', level: 2 },
-];
+
 
 export default function OnChainConceptPage() {
     return (
-        <DocLayout headings={HEADINGS}>
+        <DocLayout>
             <div className="max-w-4xl">
                 <h1 className="text-4xl font-bold text-white mb-4">On-Chain Storage</h1>
                 <p className="text-xl text-gray-300 mb-12 leading-relaxed">

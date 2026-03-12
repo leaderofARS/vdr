@@ -1,18 +1,10 @@
 import DocLayout from '../../components/DocLayout';
 import { Shield, CheckCircle2, XCircle, Search, Globe, QrCode } from 'lucide-react';
 
-const HEADINGS = [
-    { id: 'verification-overview', title: 'What is Verification?', level: 2 },
-    { id: 'cli-verification', title: 'CLI Verification', level: 2 },
-    { id: 'public-verification', title: 'Public URL Verification', level: 2 },
-    { id: 'qr-codes', title: 'QR Code Integration', level: 2 },
-    { id: 'outcomes', title: 'Verification Outcomes', level: 2 },
-    { id: 'independent-verification', title: 'Independent Verification', level: 2 },
-];
 
 export default function VerificationConceptPage() {
     return (
-        <DocLayout headings={HEADINGS}>
+        <DocLayout >
             <div className="max-w-4xl">
                 <h1 className="text-4xl font-bold text-white mb-4">Verification Model</h1>
                 <p className="text-xl text-gray-300 mb-12 leading-relaxed">

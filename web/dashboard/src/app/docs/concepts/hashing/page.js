@@ -1,19 +1,10 @@
 import DocLayout from '../../components/DocLayout';
 import { Hash, Shield, Lock, Zap, Search, EyeOff, Info } from 'lucide-react';
 
-const HEADINGS = [
-    { id: 'what-is-hashing', title: 'What is Cryptographic Hashing?', level: 2 },
-    { id: 'sha-256', title: 'SHA-256 Standard', level: 2 },
-    { id: 'hashing-process', title: 'The Hashing Process', level: 2 },
-    { id: 'key-properties', title: 'Key Properties', level: 2 },
-    { id: 'collision-resistance', title: 'Collision Resistance', level: 3 },
-    { id: 'privacy-security', title: 'Privacy & Security', level: 2 },
-    { id: 'code-example', title: 'Code Example', level: 2 },
-];
 
 export default function HashingConceptPage() {
     return (
-        <DocLayout headings={HEADINGS}>
+        <DocLayout >
             <div className="max-w-4xl">
                 <h1 className="text-4xl font-bold text-white mb-4">How Hashing Works</h1>
                 <p className="text-xl text-gray-300 mb-12 leading-relaxed">
