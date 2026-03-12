@@ -125,7 +125,7 @@ router.post('/register', validateInput(registerSchema), async (req, res, next) =
 
         const hashedPassword = await bcrypt.hash(password, 12);
         const user = await prisma.user.create({
-            data: { email: sanitizedEmail, password: hashedPassword }
+            data: { email: sanitizedEmail, password: hashedPassword, name }
         });
 
         // Send Welcome Email (Non-blocking)
