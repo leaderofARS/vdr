@@ -1,20 +1,12 @@
 import DocLayout from '../components/DocLayout';
-import { Rocket, Terminal, Key, Hash, Send, CheckCircle2, ChevronRight } from 'lucide-react';
+import { Terminal, Key, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 
-const HEADINGS = [
-    { id: 'prerequisites', title: 'Prerequisites', level: 2 },
-    { id: 'installation', title: '1. Installation', level: 2 },
-    { id: 'get-api-key', title: '2. Get API Key', level: 2 },
-    { id: 'link-account', title: '3. Link Account', level: 2 },
-    { id: 'stage-files', title: '4. Stage Files', level: 2 },
-    { id: 'anchor-onchain', title: '5. Anchor On-Chain', level: 2 },
-    { id: 'verify-proof', title: '6. Verify Proof', level: 2 },
-];
+
 
 export default function QuickStartPage() {
     return (
-        <DocLayout headings={HEADINGS}>
+        <DocLayout headings={[]}>
             <div className="max-w-4xl">
                 <h1 className="text-4xl font-bold text-white mb-4">Quick Start</h1>
                 <p className="text-xl text-gray-300 mb-12 leading-relaxed">
@@ -50,7 +42,7 @@ export default function QuickStartPage() {
                         <p className="text-gray-300 text-sm leading-relaxed mb-3">
                             Log in to your dashboard, navigate to <strong>API Keys</strong>, and create a new key with <code className="text-purple-300">write</code> scope.
                         </p>
-                        <Link href="https://app.sipheron.com/keys" className="text-xs font-bold text-purple-400 uppercase tracking-widest flex items-center gap-1 hover:gap-2 transition-all">
+                        <Link href="https://app.sipheron.com/dashboard/keys" className="text-xs font-bold text-purple-400 uppercase tracking-widest flex items-center gap-1 hover:gap-2 transition-all">
                             Open Dashboard <ChevronRight size={14} />
                         </Link>
                     </div>
