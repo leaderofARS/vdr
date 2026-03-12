@@ -17,7 +17,6 @@ model User {
 
   organizations Organization[]
   apiKeys       ApiKey[]
-  memberships   OrgMember[]
 }
 
 model Organization {
@@ -35,8 +34,6 @@ model Organization {
   records       HashRecord[]
   notifications Notification[]
   webhooks      Webhook[]
-  members       OrgMember[]
-  invites       OrgInvite[]
 
   createdAt DateTime @default(now())
 }
@@ -156,36 +153,4 @@ model ApiUsageLog {
 
   @@index([apiKeyId, createdAt])
   @@index([orgId, createdAt])
-}
-
-model OrgMember {
-  id             String       @id @default(uuid())
-  organizationId String
-  userId         String
-  role           String       @default("member") // owner, admin, member
-  joinedAt       DateTime     @default(now())
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([organizationId, userId])
-  @@index([organizationId])
-  @@index([userId])
-}
-
-model OrgInvite {
-  id             String       @id @default(uuid())
-  organizationId String
-  email          String
-  role           String       @default("member") // admin, member
-  token          String       @unique @default(uuid())
-  invitedBy      String       // userId of inviter
-  status         String       @default("pending") // pending, accepted, expired, cancelled
-  createdAt      DateTime     @default(now())
-  expiresAt      DateTime
-  acceptedAt     DateTime?
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-
-  @@index([organizationId])
-  @@index([email])
-  @@index([token])
 }
