@@ -15,8 +15,12 @@ function usageLogger(req, res, next) {
 
     // Listen to the 'finish' event to log after response is sent
     res.on('finish', () => {
-        // We only care about API key usage or authenticated org usage for metrics
-        if (req.organization) {
+        // Filter out ALL ambient GET requests from the dashboard to prevent graph inflation
+        // Transactions graph should only track mutations (POST/PUT) for dashboard users,
+        // while tracking all throughput for API Key users.
+        const isDashboardAmbientGet = !req.apiKey && req.method === 'GET';
+        
+        if (req.organization && !isDashboardAmbientGet) {
             const durationMs = Date.now() - startTime;
 
             // Fire and forget — we don't await this to avoid slowing down the response
