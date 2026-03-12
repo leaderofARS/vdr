@@ -10,6 +10,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import Script from 'next/script';
 import "./globals.css";
 import GlobalNavbar from "@/components/navbar/GlobalNavbar";
+import CookieConsent from "@/components/ui/CookieConsent";
 import { Analytics } from "@vercel/analytics/next";
 
 const geistSans = Geist({
@@ -74,6 +75,7 @@ export default function RootLayout({ children }) {
       >
         <div className="global-navbar-wrapper">
           <GlobalNavbar />
+          <CookieConsent />
         </div>
         <Script
           defer
