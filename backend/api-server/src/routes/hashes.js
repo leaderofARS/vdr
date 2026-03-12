@@ -316,6 +316,52 @@ router.post('/', authenticate, async (req, res, next) => {
 });
 
 /**
+ * @route GET /api/hashes/badge/:hash
+ * @description returns SVG verification badge (public, no auth)
+ */
+router.get('/badge/:hash', async (req, res) => {
+    try {
+        const { hash } = req.params;
+        const record = await prisma.hashRecord.findUnique({
+            where: { hash },
+            select: { status: true, hash: true, isRevoked: true }
+        });
+
+        const verified = record && (record.status === 'CONFIRMED' || record.status === 'active') && !record.isRevoked;
+        const color = verified ? '#22c55e' : (record && (record.status === 'revoked' || record.isRevoked) ? '#ef4444' : '#555555');
+        const label = verified ? 'verified' : (record && (record.status === 'revoked' || record.isRevoked) ? 'revoked' : 'not found');
+        const icon = verified ? '✓' : '✗';
+
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="180" height="20">
+  <linearGradient id="b" x2="0" y2="100%">
+    <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
+    <stop offset="1" stop-opacity=".1"/>
+  </linearGradient>
+  <clipPath id="r">
+    <rect width="180" height="20" rx="3" fill="#fff"/>
+  </clipPath>
+  <g clip-path="url(#r)">
+    <rect width="110" height="20" fill="#2d2d2d"/>
+    <rect x="110" width="70" height="20" fill="${color}"/>
+    <rect width="180" height="20" fill="url(#b)"/>
+  </g>
+  <g fill="#fff" text-anchor="middle" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="110">
+    <text x="555" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="1000" lengthAdjust="spacing">SipHeron VDR</text>
+    <text x="555" y="140" transform="scale(.1)" textLength="1000" lengthAdjust="spacing">SipHeron VDR</text>
+    <text x="1445" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="600" lengthAdjust="spacing">${icon} ${label}</text>
+    <text x="1445" y="140" transform="scale(.1)" textLength="600" lengthAdjust="spacing">${icon} ${label}</text>
+  </g>
+</svg>`;
+
+        res.setHeader('Content-Type', 'image/svg+xml');
+        res.setHeader('Cache-Control', 'public, max-age=300'); // 5 min cache
+        res.send(svg);
+    } catch (err) {
+        res.status(500).send('');
+    }
+});
+
+/**
  * @route GET /api/hashes/:hash
  * @description Get detail for a specific hash.
  */
