@@ -369,7 +369,7 @@ router.post('/forgot-password', validateInput(forgotSchema), async (req, res, ne
 
         try {
             const { sendPasswordResetEmail } = require('../services/emailService');
-            await sendPasswordResetEmail(sanitizedEmail, token);
+            sendPasswordResetEmail(sanitizedEmail, token).catch(e => console.error('[AUTH] Reset email failed:', e.message));
         } catch (e) { }
 
         res.json(genericMessage);
