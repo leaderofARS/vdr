@@ -62,6 +62,34 @@ const authenticate = async (req, res, next) => {
             req.user = apiKeyRecord.user;
             req.organization = apiKeyRecord.organization;
             req.apiKey = apiKeyRecord; // Set this for usageLogger
+
+            // Attach orgRole for RBAC checks
+            if (req.user && req.organization) {
+                try {
+                    const org = await prisma.organization.findUnique({
+                        where: { id: req.organization.id },
+                        select: { ownerId: true }
+                    });
+
+                    if (org?.ownerId === req.user.id) {
+                        req.user.orgRole = 'owner';
+                    } else {
+                        const member = await prisma.orgMember.findUnique({
+                            where: {
+                                organizationId_userId: {
+                                    organizationId: req.organization.id,
+                                    userId: req.user.id
+                                }
+                            },
+                            select: { role: true }
+                        });
+                        req.user.orgRole = member?.role || 'member';
+                    }
+                } catch (err) {
+                    req.user.orgRole = 'member';
+                }
+            }
+
             return next();
         }
 
@@ -93,6 +121,34 @@ const authenticate = async (req, res, next) => {
 
             req.user = user;
             req.organization = user.organizations.length > 0 ? user.organizations[0] : null;
+
+            // Attach orgRole for RBAC checks
+            if (req.user && req.organization) {
+                try {
+                    const org = await prisma.organization.findUnique({
+                        where: { id: req.organization.id },
+                        select: { ownerId: true }
+                    });
+
+                    if (org?.ownerId === req.user.id) {
+                        req.user.orgRole = 'owner';
+                    } else {
+                        const member = await prisma.orgMember.findUnique({
+                            where: {
+                                organizationId_userId: {
+                                    organizationId: req.organization.id,
+                                    userId: req.user.id
+                                }
+                            },
+                            select: { role: true }
+                        });
+                        req.user.orgRole = member?.role || 'member';
+                    }
+                } catch (err) {
+                    req.user.orgRole = 'member';
+                }
+            }
+
             return next();
         }
 

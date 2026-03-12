@@ -9,6 +9,7 @@ const prisma = require('../config/database');
 const solanaService = require('../services/solana');
 const authenticate = require('../middleware/auth');
 const webhookService = require('../services/webhookService');
+const { requireRole } = require('../middleware/rbac');
 
 const router = express.Router();
 
@@ -115,7 +116,7 @@ router.get('/', authenticate, async (req, res, next) => {
  * @route GET /api/hashes/export
  * @description Export all hashes as CSV or JSON
  */
-router.get('/export', authenticate, async (req, res, next) => {
+router.get('/export', authenticate, requireRole('admin'), async (req, res, next) => {
     try {
         if (!req.organization) {
             return res.status(403).json({ error: 'Institutional Context Required' });
@@ -262,7 +263,7 @@ router.get('/:hash', authenticate, async (req, res, next) => {
  * @description Revoke a document's proof on-chain and in the database.
  * @access Private (Institutional API Key required)
  */
-router.post('/revoke', authenticate, async (req, res, next) => {
+router.post('/revoke', authenticate, requireRole('admin'), async (req, res, next) => {
     try {
         const { hash } = req.body;
 
