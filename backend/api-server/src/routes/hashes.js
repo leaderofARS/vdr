@@ -8,6 +8,7 @@ const express = require('express');
 const prisma = require('../config/database');
 const solanaService = require('../services/solana');
 const authenticate = require('../middleware/auth');
+const { requireRole } = require('../middleware/rbac');
 const webhookService = require('../services/webhookService');
 const { logAudit, AUDIT_ACTIONS } = require('../utils/auditLogger');
 
