@@ -12,6 +12,7 @@ const { parsePagination, buildPaginationResponse, applyPagination } = require('.
 const crypto = require('crypto');
 const { z } = require('zod');
 const { validateInput } = require('../middleware/security');
+const { requireRole } = require('../middleware/rbac');
 
 const router = express.Router();
 
@@ -69,7 +70,7 @@ router.get('/', authenticate, async (req, res, next) => {
  * @route DELETE /api/keys/:id
  * @description Revoke (deactivate) an API key. 
  */
-router.delete('/:id', authenticate, async (req, res, next) => {
+router.delete('/:id', authenticate, requireRole('admin'), async (req, res, next) => {
     try {
         if (!req.organization) {
             return res.status(403).json({ error: 'Institutional Context Required' });
@@ -105,7 +106,7 @@ router.delete('/:id', authenticate, async (req, res, next) => {
  * @route POST /api/keys
  * @description Create a new API key for the organization.
  */
-router.post('/', authenticate, validateInput(createKeySchema), async (req, res, next) => {
+router.post('/', authenticate, requireRole('admin'), validateInput(createKeySchema), async (req, res, next) => {
     try {
         const { name, scope = 'write' } = req.body;
         if (!req.organization) {

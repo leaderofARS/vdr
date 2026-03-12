@@ -18,27 +18,20 @@ const prisma = require('../config/database');
 const authenticate = require('../middleware/auth');
 const { sendOrgInviteEmail } = require('../services/emailService');
 const { validateInput } = require('../middleware/security');
+const { requireRole, requireOwner } = require('../middleware/rbac');
 
-// ─── RBAC helper ─────────────────────────────────────────────────────────────
-// Returns member record for user in org, or null
-async function getMemberRole(userId, organizationId) {
-    // Org owner always has owner role even if not in OrgMember table
-    const org = await prisma.organization.findUnique({
-        where: { id: organizationId },
-        select: { ownerId: true }
-    });
-    if (!org) return null;
-    if (org.ownerId === userId) return 'owner';
-
-    const member = await prisma.orgMember.findUnique({
-        where: { organizationId_userId: { organizationId, userId } }
-    });
-    return member?.role || null;
-}
-
-function canManageMembers(role) {
-    return role === 'owner' || role === 'admin';
-}
+// ─── GET /api/members/me/role ────────────────────────────────────────────────
+// returns current user's role in org
+router.get('/me/role', authenticate, async (req, res) => {
+    try {
+        res.json({
+            role: req.user.orgRole || 'member',
+            organizationId: req.organization?.id
+        });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to get role' });
+    }
+});
 
 // ─── GET /api/members ─────────────────────────────────────────────────────────
 // List all members of caller's org
@@ -97,16 +90,11 @@ router.get('/', authenticate, async (req, res) => {
 
 // ─── POST /api/members/invite ─────────────────────────────────────────────────
 // Invite a user by email to join the org
-router.post('/invite', authenticate, validateInput, async (req, res) => {
+router.post('/invite', authenticate, requireRole('admin'), validateInput, async (req, res) => {
     try {
         const organizationId = req.organization?.id;
         const userId = req.user?.id;
         if (!organizationId) return res.status(400).json({ error: 'No organization linked' });
-
-        const role = await getMemberRole(userId, organizationId);
-        if (!canManageMembers(role)) {
-            return res.status(403).json({ error: 'Only admins and owners can invite members' });
-        }
 
         const { email, role: inviteRole = 'member' } = req.body;
         if (!email) return res.status(400).json({ error: 'Email is required' });
@@ -188,16 +176,10 @@ router.post('/invite', authenticate, validateInput, async (req, res) => {
 
 // ─── GET /api/members/invites ─────────────────────────────────────────────────
 // List all pending invites for org
-router.get('/invites', authenticate, async (req, res) => {
+router.get('/invites', authenticate, requireRole('admin'), async (req, res) => {
     try {
         const organizationId = req.organization?.id;
-        const userId = req.user?.id;
         if (!organizationId) return res.status(400).json({ error: 'No organization linked' });
-
-        const role = await getMemberRole(userId, organizationId);
-        if (!canManageMembers(role)) {
-            return res.status(403).json({ error: 'Only admins and owners can view invites' });
-        }
 
         // Auto-expire old invites
         await prisma.orgInvite.updateMany({
@@ -219,16 +201,10 @@ router.get('/invites', authenticate, async (req, res) => {
 
 // ─── DELETE /api/members/invites/:inviteId ────────────────────────────────────
 // Cancel a pending invite
-router.delete('/invites/:inviteId', authenticate, async (req, res) => {
+router.delete('/invites/:inviteId', authenticate, requireRole('admin'), async (req, res) => {
     try {
         const organizationId = req.organization?.id;
-        const userId = req.user?.id;
         const { inviteId } = req.params;
-
-        const role = await getMemberRole(userId, organizationId);
-        if (!canManageMembers(role)) {
-            return res.status(403).json({ error: 'Only admins and owners can cancel invites' });
-        }
 
         const invite = await prisma.orgInvite.findFirst({
             where: { id: inviteId, organizationId }
@@ -341,16 +317,12 @@ router.post('/accept/:token', authenticate, async (req, res) => {
 
 // ─── DELETE /api/members/:memberId ───────────────────────────────────────────
 // Remove a member from org (admin/owner only, cannot remove owner)
-router.delete('/:memberId', authenticate, async (req, res) => {
+router.delete('/:memberId', authenticate, requireRole('admin'), async (req, res) => {
     try {
         const organizationId = req.organization?.id;
-        const userId = req.user?.id;
         const { memberId } = req.params;
 
-        const callerRole = await getMemberRole(userId, organizationId);
-        if (!canManageMembers(callerRole)) {
-            return res.status(403).json({ error: 'Only admins and owners can remove members' });
-        }
+        const callerRole = req.user.orgRole;
 
         const member = await prisma.orgMember.findFirst({
             where: { id: memberId, organizationId }
@@ -380,21 +352,11 @@ router.delete('/:memberId', authenticate, async (req, res) => {
 
 // ─── PATCH /api/members/:memberId/role ───────────────────────────────────────
 // Change a member's role (owner only)
-router.patch('/:memberId/role', authenticate, async (req, res) => {
+router.patch('/:memberId/role', authenticate, requireOwner, async (req, res) => {
     try {
         const organizationId = req.organization?.id;
-        const userId = req.user?.id;
         const { memberId } = req.params;
         const { role: newRole } = req.body;
-
-        if (!['admin', 'member'].includes(newRole)) {
-            return res.status(400).json({ error: 'Role must be admin or member' });
-        }
-
-        const callerRole = await getMemberRole(userId, organizationId);
-        if (callerRole !== 'owner') {
-            return res.status(403).json({ error: 'Only the owner can change member roles' });
-        }
 
         const member = await prisma.orgMember.findFirst({
             where: { id: memberId, organizationId }

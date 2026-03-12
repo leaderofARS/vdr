@@ -9,6 +9,7 @@ const authenticate = require('../middleware/auth');
 const webhookService = require('../services/webhookService');
 const { z } = require('zod');
 const { validateInput } = require('../middleware/security');
+const { requireRole } = require('../middleware/rbac');
 
 const router = express.Router();
 
@@ -39,7 +40,7 @@ router.get('/', authenticate, async (req, res, next) => {
  * @route POST /api/webhooks
  * @description Register a new webhook.
  */
-router.post('/', authenticate, validateInput(webhookSchema), async (req, res, next) => {
+router.post('/', authenticate, requireRole('admin'), validateInput(webhookSchema), async (req, res, next) => {
     try {
         if (!req.organization) {
             return res.status(403).json({ error: 'Institutional Context Required' });
@@ -61,7 +62,7 @@ router.post('/', authenticate, validateInput(webhookSchema), async (req, res, ne
  * @route DELETE /api/webhooks/:id
  * @description Delete a single webhook.
  */
-router.delete('/:id', authenticate, async (req, res, next) => {
+router.delete('/:id', authenticate, requireRole('admin'), async (req, res, next) => {
     try {
         if (!req.organization) {
             return res.status(403).json({ error: 'Institutional Context Required' });

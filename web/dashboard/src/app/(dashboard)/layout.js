@@ -9,7 +9,7 @@ import {
     Search, Bell, User, Binary, AlignLeft, Building2,
     CheckCircle2, AlertTriangle, Info, X, Clock, ExternalLink, RefreshCw,
     XCircle, KeyRound, Trash2, Zap, BarChart3, CreditCard, ChevronLeft, ChevronRight,
-    Sun, Moon, Wallet
+    Sun, Moon, Wallet, Users
 } from 'lucide-react';
 import { api, logout, isAuthenticated } from '@/utils/api';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -198,6 +198,7 @@ export default function DashboardLayout({ children }) {
         { name: 'Billing', href: '/dashboard/billing', icon: CreditCard },
         { name: 'Global Explorer', href: '/explorer', icon: ShieldCheck },
         { name: 'Node Settings', href: '/dashboard/settings', icon: Settings },
+        { name: 'Team', href: '/dashboard/team', icon: Users },
     ];
 
     const breadcrumbName = navItems.find(item => item.href === pathname)?.name || 'Dashboard';
