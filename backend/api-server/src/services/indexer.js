@@ -114,7 +114,8 @@ class VdrIndexer {
                     await prisma.hashRecord.upsert({
                         where: { pdaAddress: pdaStr },
                         update: {
-                            isRevoked: record.account.isRevoked
+                            isRevoked: record.account.isRevoked,
+                            status: record.account.isRevoked ? 'revoked' : 'CONFIRMED'
                         },
                         create: {
                             hash: hashStr,
@@ -123,6 +124,7 @@ class VdrIndexer {
                             timestamp: record.account.timestamp.toNumber(),
                             expiry: record.account.expiry.toNumber(),
                             isRevoked: record.account.isRevoked,
+                            status: record.account.isRevoked ? 'revoked' : 'CONFIRMED',
                             metadata: record.account.metadata,
                             txSignature: "indexed_background",
                             organizationId: org.id

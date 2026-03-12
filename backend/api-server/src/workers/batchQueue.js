@@ -53,7 +53,8 @@ const worker = new Worker('HashRegistration', async job => {
                 where: { pdaAddress },
                 update: {
                     txSignature: tx,
-                    organizationId: organizationId
+                    organizationId: organizationId,
+                    status: 'CONFIRMED'
                 },
                 create: {
                     hash,
@@ -63,6 +64,7 @@ const worker = new Worker('HashRegistration', async job => {
                     expiry: expiry || 0,
                     metadata: metadata,
                     txSignature: tx,
+                    status: 'CONFIRMED',
                     organizationId: organizationId
                 },
                 include: {
