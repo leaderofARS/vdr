@@ -136,7 +136,7 @@ const SIDEBAR_ITEMS = [
         title: 'SDKs & Tools',
         items: [
             { label: 'JavaScript SDK', href: '/docs/sdks/javascript' },
-            { label: 'Python SDK', href: '/docs/sdks/python', soon: true },
+            { label: 'Python SDK', href: '/docs/sdks/python' },
             { label: 'REST API', href: '/docs/api' }
         ]
     },
