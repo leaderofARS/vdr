@@ -23,20 +23,15 @@ export default function WebhooksPage() {
     const [logsLoading, setLogsLoading] = useState({});
     const [testResults, setTestResults] = useState({});
     const [testingId, setTestingId] = useState(null);
-    const [myRole, setMyRole] = useState('member');
     const [toast, setToast] = useState(null);
 
     const fetchWebhooks = useCallback(async () => {
         setLoading(true);
         try {
-            const [{ data: whs }, { data: roleData }] = await Promise.all([
-                api.get('/api/webhooks'),
-                api.get('/api/members/me/role')
-            ]);
-            setWebhooks(whs);
-            setMyRole(roleData.role || 'member');
+            const { data } = await api.get('/api/webhooks');
+            setWebhooks(data);
         } catch (error) {
-            showToast('Failed to load data', 'error');
+            showToast('Failed to load webhooks', 'error');
         } finally {
             setLoading(false);
         }
@@ -126,14 +121,7 @@ export default function WebhooksPage() {
                 </motion.div>
 
                 <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}>
-                    <GlowButton
-                        onClick={() => setIsCreateModalOpen(true)}
-                        icon={Plus}
-                        className="px-8 py-4"
-                        disabled={myRole !== 'admin' && myRole !== 'owner'}
-                    >
-                        PROVISION ENDPOINT
-                    </GlowButton>
+                    <GlowButton onClick={() => setIsCreateModalOpen(true)} icon={Plus} className="px-8 py-4">PROVISION ENDPOINT</GlowButton>
                 </motion.div>
             </div>
 
@@ -277,15 +265,13 @@ function WebhookRow({ webhook, onDelete, onTest, isTesting, testResult, isSelect
                         >
                             <Activity className="w-4 h-4" />
                         </button>
-                        {(myRole === 'admin' || myRole === 'owner') && (
-                            <button
-                                onClick={() => onDelete(webhook.id)}
-                                className="p-3 rounded-2xl bg-danger/5 border border-bg-border text-text-muted hover:text-danger hover:border-danger/30 transition-all"
-                                title="Remove Configuration"
-                            >
-                                <Trash2 className="w-4 h-4" />
-                            </button>
-                        )}
+                        <button
+                            onClick={() => onDelete(webhook.id)}
+                            className="p-3 rounded-2xl bg-danger/5 border border-bg-border text-text-muted hover:text-danger hover:border-danger/30 transition-all"
+                            title="Remove Configuration"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                        </button>
                     </div>
                 </td>
             </PurpleTableRow>

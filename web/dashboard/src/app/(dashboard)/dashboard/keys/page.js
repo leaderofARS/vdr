@@ -18,7 +18,6 @@ export default function ApiKeysPage() {
     const [keys, setKeys] = useState([]);
     const [loading, setLoading] = useState(true);
     const [org, setOrg] = useState(null);
-    const [myRole, setMyRole] = useState('member');
     const [createModalOpen, setCreateModalOpen] = useState(false);
     const [nameInput, setNameInput] = useState('');
     const [scopeInput, setScopeInput] = useState('write');
@@ -40,14 +39,14 @@ export default function ApiKeysPage() {
     const fetchData = useCallback(async () => {
         setLoading(true);
         try {
-            const [orgRes, keysRes, roleRes] = await Promise.allSettled([
+            const [orgRes, keysRes] = await Promise.allSettled([
                 api.get('/api/org'),
-                api.get('/api/keys'),
-                api.get('/api/members/me/role')
+                api.get('/api/keys')
             ]);
 
-            if (orgRes.status === 'fulfilled') setOrg(orgRes.value.data);
-            if (roleRes.status === 'fulfilled') setMyRole(roleRes.value.data.role || 'member');
+            if (orgRes.status === 'fulfilled') {
+                setOrg(orgRes.value.data);
+            }
 
             if (keysRes.status === 'fulfilled') {
                 // Backend returns pagination wrapper: { data: [...], total, page, limit }
@@ -186,7 +185,7 @@ export default function ApiKeysPage() {
                 <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
                     <GlowButton
                         onClick={() => { setNewKeyData(null); setCreateModalOpen(true); }}
-                        disabled={!org || (myRole !== 'admin' && myRole !== 'owner')}
+                        disabled={!org}
                     >
                         <Plus className="w-4 h-4 mr-2" />
                         Create Secret Key
@@ -276,19 +275,17 @@ export default function ApiKeysPage() {
                                                 <Check className="w-3.5 h-3.5" />
                                             </GlowButton>
                                         )}
-                                        {(myRole === 'admin' || myRole === 'owner') && (
-                                            <GlowButton
-                                                variant={deleteConfirmId === row.id ? 'danger' : 'ghost'}
-                                                onClick={() => handleDelete(row.id)}
-                                                className="!px-3 !py-1.5 min-h-0 text-xs"
-                                                title={deleteConfirmId === row.id ? 'Click again to confirm' : 'Revoke key'}
-                                            >
-                                                <Trash2 className="w-3.5 h-3.5" />
-                                                {deleteConfirmId === row.id && (
-                                                    <span className="ml-1 text-[10px]">Confirm?</span>
-                                                )}
-                                            </GlowButton>
-                                        )}
+                                        <GlowButton
+                                            variant={deleteConfirmId === row.id ? 'danger' : 'ghost'}
+                                            onClick={() => handleDelete(row.id)}
+                                            className="!px-3 !py-1.5 min-h-0 text-xs"
+                                            title={deleteConfirmId === row.id ? 'Click again to confirm' : 'Revoke key'}
+                                        >
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                            {deleteConfirmId === row.id && (
+                                                <span className="ml-1 text-[10px]">Confirm?</span>
+                                            )}
+                                        </GlowButton>
                                     </div>
                                 </td>
                             </PurpleTableRow>

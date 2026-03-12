@@ -17,20 +17,10 @@ const router = express.Router();
 const prisma = require('../config/database');
 const authenticate = require('../middleware/auth');
 const { sendOrgInviteEmail } = require('../services/emailService');
+const { validateInput } = require('../middleware/security');
 const { requireRole, requireOwner } = require('../middleware/rbac');
-const { z } = require('zod');
-
-const inviteSchema = z.object({
-    email: z.string().email().toLowerCase(),
-    role: z.enum(['admin', 'member']).optional().default('member')
-});
-
-const updateRoleSchema = z.object({
-    role: z.enum(['admin', 'member'])
-});
 
 // ─── GET /api/members/me/role ────────────────────────────────────────────────
-// returns current user's role in org
 router.get('/me/role', authenticate, async (req, res) => {
     try {
         res.json({
@@ -43,13 +33,11 @@ router.get('/me/role', authenticate, async (req, res) => {
 });
 
 // ─── GET /api/members ─────────────────────────────────────────────────────────
-// List all members of caller's org
 router.get('/', authenticate, async (req, res) => {
     try {
         const organizationId = req.organization?.id;
         if (!organizationId) return res.status(400).json({ error: 'No organization linked' });
 
-        // Always include owner
         const org = await prisma.organization.findUnique({
             where: { id: organizationId },
             include: {
@@ -65,7 +53,6 @@ router.get('/', authenticate, async (req, res) => {
 
         if (!org) return res.status(404).json({ error: 'Organization not found' });
 
-        // Build unified member list — owner first
         const ownerEntry = {
             id: org.owner.id,
             email: org.owner.email,
@@ -76,7 +63,7 @@ router.get('/', authenticate, async (req, res) => {
         };
 
         const memberList = org.members
-            .filter(m => m.userId !== org.ownerId) // exclude owner duplicate
+            .filter(m => m.userId !== org.ownerId)
             .map(m => ({
                 id: m.id,
                 userId: m.userId,
@@ -98,8 +85,7 @@ router.get('/', authenticate, async (req, res) => {
 });
 
 // ─── POST /api/members/invite ─────────────────────────────────────────────────
-// Invite a user by email to join the org
-router.post('/invite', authenticate, requireRole('admin'), validateInput(inviteSchema), async (req, res) => {
+router.post('/invite', authenticate, requireRole('admin'), async (req, res) => {
     try {
         const organizationId = req.organization?.id;
         const userId = req.user?.id;
@@ -113,20 +99,22 @@ router.post('/invite', authenticate, requireRole('admin'), validateInput(inviteS
 
         // Check org member limit (soft cap: 20 members)
         const memberCount = await prisma.orgMember.count({ where: { organizationId } });
-        if (memberCount >= 19) { // 19 + owner = 20
+        if (memberCount >= 19) {
             return res.status(400).json({ error: 'Organization member limit reached (20)' });
         }
 
         // Check if already a member
         const existingUser = await prisma.user.findUnique({ where: { email } });
         if (existingUser) {
-            const alreadyMember = await prisma.orgMember.findUnique({
-                where: { organizationId_userId: { organizationId, userId: existingUser.id } }
-            });
-            const isOwner = (await prisma.organization.findUnique({
-                where: { id: organizationId }, select: { ownerId: true }
-            }))?.ownerId === existingUser.id;
-
+            const [alreadyMember, orgData] = await Promise.all([
+                prisma.orgMember.findUnique({
+                    where: { organizationId_userId: { organizationId, userId: existingUser.id } }
+                }),
+                prisma.organization.findUnique({
+                    where: { id: organizationId }, select: { ownerId: true }
+                })
+            ]);
+            const isOwner = orgData?.ownerId === existingUser.id;
             if (alreadyMember || isOwner) {
                 return res.status(409).json({ error: 'This user is already a member of the organization' });
             }
@@ -158,15 +146,23 @@ router.post('/invite', authenticate, requireRole('admin'), validateInput(inviteS
 
         const inviteUrl = `${process.env.FRONTEND_URL || 'https://app.sipheron.com'}/invite/accept/${invite.token}`;
 
-        // Fire-and-forget email sending
-        sendOrgInviteEmail({
-            toEmail: email,
-            inviterName: inviter.name || inviter.email,
-            orgName: org.name,
-            role: inviteRole,
-            inviteUrl,
-            expiresAt
-        }).catch(err => console.error('[MEMBERS] Background invite email failed:', err.message));
+        console.log('[MEMBERS] Sending invite email to:', email, 'inviteUrl:', inviteUrl);
+
+        // Send email — wrapped in try/catch so invite succeeds even if email fails
+        try {
+            await sendOrgInviteEmail({
+                toEmail: email,
+                inviterName: inviter?.name || inviter?.email || 'A team member',
+                orgName: org?.name || 'your organization',
+                role: inviteRole,
+                inviteUrl,
+                expiresAt
+            });
+            console.log('[MEMBERS] Invite email sent successfully to:', email);
+        } catch (emailErr) {
+            console.error('[MEMBERS] Invite email failed:', emailErr.message, emailErr.stack);
+            // Continue — invite was created in DB, email failure is non-fatal
+        }
 
         res.status(201).json({
             message: `Invitation sent to ${email}`,
@@ -185,7 +181,6 @@ router.post('/invite', authenticate, requireRole('admin'), validateInput(inviteS
 });
 
 // ─── GET /api/members/invites ─────────────────────────────────────────────────
-// List all pending invites for org
 router.get('/invites', authenticate, requireRole('admin'), async (req, res) => {
     try {
         const organizationId = req.organization?.id;
@@ -210,7 +205,6 @@ router.get('/invites', authenticate, requireRole('admin'), async (req, res) => {
 });
 
 // ─── DELETE /api/members/invites/:inviteId ────────────────────────────────────
-// Cancel a pending invite
 router.delete('/invites/:inviteId', authenticate, requireRole('admin'), async (req, res) => {
     try {
         const organizationId = req.organization?.id;
@@ -237,7 +231,7 @@ router.delete('/invites/:inviteId', authenticate, requireRole('admin'), async (r
 });
 
 // ─── GET /api/members/accept/:token ──────────────────────────────────────────
-// Public route — validate token, redirect to login/register if needed
+// Public route — no auth required
 router.get('/accept/:token', async (req, res) => {
     try {
         const { token } = req.params;
@@ -254,7 +248,6 @@ router.get('/accept/:token', async (req, res) => {
             return res.status(400).json({ error: 'Invitation has expired' });
         }
 
-        // Return invite details so frontend can show accept page
         res.json({
             valid: true,
             invite: {
@@ -271,7 +264,6 @@ router.get('/accept/:token', async (req, res) => {
 });
 
 // ─── POST /api/members/accept/:token ─────────────────────────────────────────
-// Authenticated route — accept invite and join org
 router.post('/accept/:token', authenticate, async (req, res) => {
     try {
         const { token } = req.params;
@@ -326,12 +318,10 @@ router.post('/accept/:token', authenticate, async (req, res) => {
 });
 
 // ─── DELETE /api/members/:memberId ───────────────────────────────────────────
-// Remove a member from org (admin/owner only, cannot remove owner)
 router.delete('/:memberId', authenticate, requireRole('admin'), async (req, res) => {
     try {
         const organizationId = req.organization?.id;
         const { memberId } = req.params;
-
         const callerRole = req.user.orgRole;
 
         const member = await prisma.orgMember.findFirst({
@@ -339,15 +329,12 @@ router.delete('/:memberId', authenticate, requireRole('admin'), async (req, res)
         });
         if (!member) return res.status(404).json({ error: 'Member not found' });
 
-        // Cannot remove owner
         const org = await prisma.organization.findUnique({
             where: { id: organizationId }, select: { ownerId: true }
         });
         if (member.userId === org.ownerId) {
             return res.status(403).json({ error: 'Cannot remove the organization owner' });
         }
-
-        // Admins cannot remove other admins
         if (callerRole === 'admin' && member.role === 'admin') {
             return res.status(403).json({ error: 'Admins cannot remove other admins' });
         }
@@ -361,12 +348,15 @@ router.delete('/:memberId', authenticate, requireRole('admin'), async (req, res)
 });
 
 // ─── PATCH /api/members/:memberId/role ───────────────────────────────────────
-// Change a member's role (owner only)
-router.patch('/:memberId/role', authenticate, requireOwner, validateInput(updateRoleSchema), async (req, res) => {
+router.patch('/:memberId/role', authenticate, requireOwner, async (req, res) => {
     try {
         const organizationId = req.organization?.id;
         const { memberId } = req.params;
         const { role: newRole } = req.body;
+
+        if (!['admin', 'member'].includes(newRole)) {
+            return res.status(400).json({ error: 'Role must be admin or member' });
+        }
 
         const member = await prisma.orgMember.findFirst({
             where: { id: memberId, organizationId }

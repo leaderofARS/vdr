@@ -188,8 +188,6 @@ export default function DashboardLayout({ children }) {
         </div>
     );
 
-    const userRole = contextData?.user?.role?.toLowerCase() || 'member';
-
     const navItems = [
         { name: 'Analytics', href: '/dashboard', icon: LayoutDashboard },
         { name: 'Organization', href: '/dashboard/org', icon: Building2 },
@@ -201,10 +199,7 @@ export default function DashboardLayout({ children }) {
         { name: 'Global Explorer', href: '/explorer', icon: ShieldCheck },
         { name: 'Node Settings', href: '/dashboard/settings', icon: Settings },
         { name: 'Team', href: '/dashboard/team', icon: Users },
-    ].filter(item => {
-        if (item.name === 'Team') return ['owner', 'admin'].includes(userRole);
-        return true;
-    });
+    ];
 
     const breadcrumbName = navItems.find(item => item.href === pathname)?.name || 'Dashboard';
 
