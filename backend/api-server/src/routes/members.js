@@ -96,6 +96,7 @@ router.post('/invite', authenticate, requireRole('admin'), validateInput, async 
         const userId = req.user?.id;
         if (!organizationId) return res.status(400).json({ error: 'No organization linked' });
 
+
         const { email, role: inviteRole = 'member' } = req.body;
         if (!email) return res.status(400).json({ error: 'Email is required' });
         if (!['admin', 'member'].includes(inviteRole)) {
@@ -205,6 +206,7 @@ router.delete('/invites/:inviteId', authenticate, requireRole('admin'), async (r
     try {
         const organizationId = req.organization?.id;
         const { inviteId } = req.params;
+
 
         const invite = await prisma.orgInvite.findFirst({
             where: { id: inviteId, organizationId }
@@ -323,6 +325,7 @@ router.delete('/:memberId', authenticate, requireRole('admin'), async (req, res)
         const { memberId } = req.params;
 
         const callerRole = req.user.orgRole;
+
 
         const member = await prisma.orgMember.findFirst({
             where: { id: memberId, organizationId }
