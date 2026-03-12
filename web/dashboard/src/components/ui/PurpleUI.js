@@ -16,7 +16,7 @@ export const PurpleCard = ({ children, className = "", hover = true }) => (
 
 // --- GlowButton ---
 export const GlowButton = ({ children, onClick, className = "", variant = "primary", loading = false, disabled = false, icon: Icon }) => {
-    const baseClasses = "relative px-6 py-2.5 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all duration-200 overflow-hidden group active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed";
+    const baseClasses = "relative px-6 py-3 min-h-[44px] rounded-lg font-semibold flex items-center justify-center gap-2 transition-all duration-200 overflow-hidden group active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed";
     const variants = {
         primary: "button-primary-glow text-white hover:shadow-[0_0_40px_rgba(124,92,191,0.4)]",
         danger: "bg-danger text-white hover:bg-red-500 hover:shadow-[0_0_20px_rgba(239,68,68,0.3)] animate-pulse-on-hover",
@@ -74,7 +74,7 @@ export const MonoHash = ({ hash, className = "" }) => {
 
     return (
         <div className={`group flex items-center gap-2 font-mono text-purple-vivid bg-purple-dim/10 rounded px-2 py-1 border border-purple-dim/20 transition-all hover:bg-purple-dim/20 ${className}`}>
-            <span className="truncate max-w-[150px]">{hash}</span>
+            <span className="truncate max-w-[80px] sm:max-w-[150px] md:max-w-[200px]">{hash}</span>
             <button
                 onClick={copyToClipboard}
                 className="text-text-muted hover:text-purple-glow transition-colors"

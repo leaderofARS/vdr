@@ -253,7 +253,7 @@ export default function UsageDashboard() {
                         <Activity className="w-8 h-8 text-purple-vivid" />
                         Infrastructure Intelligence
                     </h1>
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-wrap items-center gap-3">
                         <PurpleBadge variant="purple">REAL-TIME MONITORING</PurpleBadge>
                         <span className="text-text-muted text-xs font-mono uppercase tracking-widest">
                             Synched {lastSync.toLocaleTimeString()}
@@ -318,7 +318,7 @@ export default function UsageDashboard() {
             </PurpleCard>
 
             {/* Metrics Row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <UsageMetricCard title="System Throughput" value={summary?.totalRequests || 0} icon={Zap} trend="+12.4%" trendUp active />
                 <UsageMetricCard title="Success Reliability" value={summary?.successRate || '0%'} icon={CheckCircle2} suffix="" trend="Optimal" trendUp />
                 <UsageMetricCard title="Network Latency" value={summary?.avgResponseTime || 0} suffix="ms" icon={Clock} trend="-4ms" trendUp />
@@ -401,11 +401,12 @@ export default function UsageDashboard() {
                             <Globe className="w-4 h-4 text-purple-glow" /> Cluster Performance
                         </h3>
                     </div>
-                    <PurpleTable headers={["Endpoint Path", "Method", "Volume", "Latency"]}>
+                    <div className="overflow-x-auto">
+                        <PurpleTable headers={["Endpoint Path", "Method", "Volume", "Latency"]}>
                         {loading ? <UsageTableSkeleton cols={4} /> : endpoints.map((ep, i) => (
                             <PurpleTableRow key={i}>
                                 <td className="px-8 py-5">
-                                    <code className="text-xs text-purple-glow bg-purple-glow/5 px-2 py-1 rounded border border-purple-glow/10">{ep.endpoint}</code>
+                                    <code className="text-xs text-purple-glow bg-purple-glow/5 px-2 py-1 rounded border border-purple-glow/10 block max-w-[150px] truncate">{ep.endpoint}</code>
                                 </td>
                                 <td className="px-8 py-5">
                                     <span className={`text-[10px] font-bold px-2 py-1 rounded-lg ${ep.method === 'POST' ? 'bg-success/10 text-success' : 'bg-purple-vivid/10 text-purple-vivid'}`}>
@@ -421,6 +422,7 @@ export default function UsageDashboard() {
                             </PurpleTableRow>
                         ))}
                     </PurpleTable>
+                    </div>
                 </PurpleCard>
 
                 {/* API Key Intelligence */}
@@ -430,11 +432,12 @@ export default function UsageDashboard() {
                             <Key className="w-4 h-4 text-purple-glow" /> Credential Dynamics
                         </h3>
                     </div>
-                    <PurpleTable headers={["Credential Identity", "Utilization", "Last Global Signal", "Status"]}>
+                    <div className="overflow-x-auto">
+                        <PurpleTable headers={["Credential Identity", "Utilization", "Last Global Signal", "Status"]}>
                         {loading ? <UsageTableSkeleton cols={4} /> : apiKeys.map((key, i) => (
                             <PurpleTableRow key={i} className="cursor-pointer" onClick={() => setFilterKey(key.id || key.name)}>
                                 <td className="px-8 py-5">
-                                    <div className="text-sm font-bold text-text-primary">{key.name}</div>
+                                    <div className="text-sm font-bold text-text-primary max-w-[150px] truncate">{key.name}</div>
                                 </td>
                                 <td className="px-8 py-5">
                                     <span className="text-sm font-mono text-purple-glow">{key.total} reqs</span>
@@ -448,6 +451,7 @@ export default function UsageDashboard() {
                             </PurpleTableRow>
                         ))}
                     </PurpleTable>
+                    </div>
                 </PurpleCard>
             </div>
 
@@ -480,8 +484,9 @@ export default function UsageDashboard() {
                 </div>
 
                 <PurpleCard className="p-0 overflow-hidden border-bg-border/50">
-                    <PurpleTable headers={["Timestamp (UTC)", "Origin Key", "Request Context", "Result", "Duration"]}>
-                        {logsLoading ? <UsageTableSkeleton cols={5} rows={10} /> : logs.length > 0 ? logs.map((log, i) => (
+                    <div className="overflow-x-auto">
+                        <PurpleTable headers={["Timestamp (UTC)", "Origin Key", "Request Context", "Result", "Duration"]}>
+                            {logsLoading ? <UsageTableSkeleton cols={5} rows={10} /> : logs.length > 0 ? logs.map((log, i) => (
                             <PurpleTableRow key={i}>
                                 <td className="px-8 py-4 text-[11px] font-mono text-text-muted">
                                     {(() => {
@@ -499,8 +504,8 @@ export default function UsageDashboard() {
                                     </div>
                                 </td>
                                 <td className="px-8 py-4">
-                                    <div className="flex flex-col gap-1">
-                                        <code className="text-[11px] text-text-primary font-bold">{log.endpoint}</code>
+                                    <div className="flex flex-col gap-1 max-w-[150px] sm:max-w-none">
+                                        <code className="text-[11px] text-text-primary font-bold truncate">{log.endpoint}</code>
                                         <span className="text-[10px] text-text-muted font-bold uppercase tracking-widest">{log.method}</span>
                                     </div>
                                 </td>
@@ -529,6 +534,7 @@ export default function UsageDashboard() {
                             </tr>
                         )}
                     </PurpleTable>
+                    </div>
 
                     {!logsLoading && pagination.totalPages > 1 && (
                         <div className="px-8 py-6 border-t border-bg-border/50 flex items-center justify-between bg-purple-dim/5">

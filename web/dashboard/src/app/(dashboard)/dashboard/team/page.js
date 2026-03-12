@@ -159,7 +159,7 @@ export default function TeamPage() {
                         <button
                             onClick={handleInvite}
                             disabled={inviting || !inviteEmail.trim()}
-                            className="px-6 py-2.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white text-sm font-bold rounded-xl transition-colors"
+                            className="px-6 py-2.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white text-sm font-bold rounded-xl transition-colors min-h-[44px]"
                         >
                             {inviting ? 'Sending...' : 'Send Invite'}
                         </button>
@@ -191,7 +191,7 @@ export default function TeamPage() {
 
                 <div className="divide-y divide-white/5">
                     {members.map(member => (
-                        <div key={member.id} className="px-6 py-4 flex items-center justify-between gap-4">
+                        <div key={member.id} className="px-6 py-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                             <div className="flex items-center gap-3 min-w-0">
                                 {/* Avatar */}
                                 <div className="w-9 h-9 rounded-full bg-purple-500/20 border border-purple-500/30 flex items-center justify-center flex-shrink-0">
@@ -203,7 +203,7 @@ export default function TeamPage() {
                                     <p className="text-sm text-white font-medium truncate">
                                         {member.name || member.email}
                                     </p>
-                                    <p className="text-xs text-gray-500 truncate">{member.email}</p>
+                                    <p className="text-xs text-gray-500 truncate max-w-[200px] sm:max-w-none">{member.email}</p>
                                 </div>
                             </div>
 
@@ -226,7 +226,7 @@ export default function TeamPage() {
                                 {canManage && !member.isOwner && (
                                     <button
                                         onClick={() => handleRemoveMember(member.id, member.email)}
-                                        className={`text-xs px-3 py-1 rounded-lg border transition-colors ${
+                                        className={`text-xs px-3 py-2 min-h-[44px] rounded-lg border transition-colors ${
                                             confirmRemove === member.id
                                                 ? 'border-red-500/50 bg-red-500/20 text-red-300'
                                                 : 'border-white/10 text-gray-500 hover:text-red-400 hover:border-red-500/30'

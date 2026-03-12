@@ -117,7 +117,7 @@ export default function SettingsPage() {
         <div className="max-w-5xl mx-auto pb-32 space-y-12">
             {/* Page Header */}
             <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-text-primary to-text-secondary bg-clip-text text-transparent mb-3 flex items-center gap-4">
+                <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-text-primary to-text-secondary bg-clip-text text-transparent mb-3 flex flex-col sm:flex-row sm:items-center gap-4">
                     <Cpu className="w-10 h-10 text-purple-vivid" />
                     System Parameters
                 </h1>
@@ -146,14 +146,14 @@ export default function SettingsPage() {
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
                             <div className="space-y-3">
                                 <label className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] ml-1">Legal Identity Name</label>
-                                <div className="flex gap-3">
+                                <div className="flex flex-col sm:flex-row gap-3">
                                     <PurpleInput
                                         value={displayName}
                                         onChange={(e) => setDisplayName(e.target.value)}
                                         placeholder="Organization name"
                                         className="flex-1"
                                     />
-                                    <GlowButton type="submit" loading={savingProfile} disabled={!displayName} className="px-6">
+                                    <GlowButton type="submit" loading={savingProfile} disabled={!displayName} className="px-6 py-3 min-h-[44px]">
                                         UPDATE
                                     </GlowButton>
                                 </div>
@@ -162,11 +162,11 @@ export default function SettingsPage() {
                             <div className="space-y-3">
                                 <label className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] ml-1">Network Identity Wallet</label>
                                 <div className="p-3 bg-black/30 border border-bg-border rounded-2xl flex items-center justify-between group">
-                                    <span className="font-mono text-xs text-purple-vivid truncate max-w-[300px]">{org?.solanaPubkey || "FETCHING..."}</span>
+                                    <span className="font-mono text-xs text-purple-vivid truncate max-w-[150px] sm:max-w-none">{org?.solanaPubkey || "FETCHING..."}</span>
                                     <button
                                         type="button"
                                         onClick={() => copyToClipboard(org?.solanaPubkey, 'wallet')}
-                                        className="text-text-muted hover:text-white transition-colors"
+                                        className="text-text-muted hover:text-white transition-colors p-2"
                                     >
                                         {copiedStates['wallet'] ? <CheckCircle2 className="w-4 h-4 text-success" /> : <Copy className="w-4 h-4" />}
                                     </button>

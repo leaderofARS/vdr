@@ -237,12 +237,12 @@ export default function AnalyticsDashboard() {
             <div className="absolute inset-x-0 -top-20 h-64 bg-purple-glow/5 blur-[120px] pointer-events-none" />
 
             {/* Header Section */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                 <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
                     <h1 className="text-3xl font-bold bg-gradient-to-r from-text-primary to-text-secondary bg-clip-text text-transparent mb-2">
                         {stats?.org?.name || 'Institutional Console'}
                     </h1>
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-wrap items-center gap-3">
                         <PurpleBadge variant="purple">Console Authority</PurpleBadge>
                         <span className="text-text-muted font-mono text-xs truncate max-w-[200px]">
                             ID: {stats?.org?.id || 'PROVISIONING'}
@@ -259,7 +259,7 @@ export default function AnalyticsDashboard() {
                 <motion.div
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    className="flex items-center gap-3"
+                    className="flex flex-wrap items-center gap-3"
                 >
                     <div className="flex flex-col items-end mr-4 hidden lg:flex">
                         <span className="text-[10px] text-text-muted uppercase font-bold tracking-widest leading-none mb-1">Last Data Sync</span>
@@ -300,7 +300,7 @@ export default function AnalyticsDashboard() {
             </div>
 
             {/* Metric Cards Row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <MetricCard
                     title="Proofs Anchored"
                     value={stats?.stats?.totalAnchors ?? 0}
@@ -340,7 +340,7 @@ export default function AnalyticsDashboard() {
             <PurpleCard className="overflow-hidden p-0">
                 {/* Chart Header */}
                 <div className="px-6 pt-6 pb-2">
-                    <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                         <div>
                             <h3 className="text-lg font-bold text-text-primary flex items-center gap-2.5 mb-1">
                                 <div className="p-1.5 rounded-lg bg-purple-dim/30">
@@ -539,7 +539,7 @@ export default function AnalyticsDashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Registry Table */}
                 <div className="lg:col-span-2 space-y-4">
-                    <div className="flex flex-col md:flex-row gap-4">
+                    <div className="flex flex-col sm:flex-row gap-4">
                         <div className="flex-1">
                             <PurpleInput
                                 placeholder="Filter by evidence hash or metadata..."
@@ -563,14 +563,17 @@ export default function AnalyticsDashboard() {
                     </div>
 
                     <PurpleCard id="recent-activity-table" className="p-0 border-bg-border/50">
-                        <PurpleTable headers={["Evidence Hash Source", "Description", "Anchored At", "Status", "Actions"]}>
+                        <div className="overflow-x-auto">
+                            <PurpleTable headers={["Evidence Hash Source", "Description", "Anchored At", "Status", "Actions"]}>
                             {hashesLoading ? (
                                 <TableSkeleton />
                             ) : hashes.length > 0 ? (
                                 hashes.map((record, i) => (
                                     <PurpleTableRow key={i}>
                                         <td className="px-5 py-4">
-                                            <MonoHash hash={record.hash} />
+                                            <div className="max-w-[120px] sm:max-w-none">
+                                                <MonoHash hash={record.hash} />
+                                            </div>
                                         </td>
                                         <td className="px-5 py-4 text-text-secondary max-w-[200px] truncate">
                                             {record.metadata || "No metadata provided"}
@@ -615,6 +618,7 @@ export default function AnalyticsDashboard() {
                                 </tr>
                             )}
                         </PurpleTable>
+                    </div>
 
                         {/* Pagination */}
                         {!hashesLoading && pagination && (

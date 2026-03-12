@@ -54,7 +54,13 @@ export default function DashboardLayout({ children }) {
     const [unreadCount, setUnreadCount] = useState(0);
     const [loading, setLoading] = useState(false);
     const [refreshFailed, setRefreshFailed] = useState(false);
+    const [mobileOpen, setMobileOpen] = useState(false);
     const [contextData, setContextData] = useState(null);
+
+    // Close mobile sidebar on navigation
+    useEffect(() => {
+        setMobileOpen(false);
+    }, [pathname]);
 
     const pollUnreadCount = async () => {
         try {
@@ -217,9 +223,18 @@ export default function DashboardLayout({ children }) {
             {/* Glass Header */}
             <header className="h-16 bg-bg-primary/80 backdrop-blur-md border-b border-bg-border flex items-center justify-between px-6 z-30 relative shrink-0">
                 <div className="flex items-center gap-6">
+                    {/* Mobile Menu Toggle */}
+                    <button
+                        onClick={() => setMobileOpen(!mobileOpen)}
+                        className="lg:hidden p-2 -ml-2 text-text-secondary hover:text-purple-glow transition-all"
+                    >
+                        <Menu className="w-6 h-6" />
+                    </button>
+
+                    {/* Desktop Sidebar Toggle */}
                     <button
                         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                        className="text-text-secondary hover:text-purple-glow transition-all"
+                        className="hidden lg:block text-text-secondary hover:text-purple-glow transition-all"
                     >
                         <motion.div animate={{ rotate: isSidebarOpen ? 0 : 180 }}>
                             <AlignLeft className="w-5 h-5" />
@@ -374,9 +389,28 @@ export default function DashboardLayout({ children }) {
             </header>
 
             <div className="flex flex-1 overflow-hidden relative">
+                {/* Mobile Sidebar Backdrop */}
+                <AnimatePresence>
+                    {mobileOpen && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
+                            onClick={() => setMobileOpen(false)}
+                        />
+                    )}
+                </AnimatePresence>
+
                 {/* Modern Sidebar */}
                 <aside
-                    className={`bg-bg-primary/50 backdrop-blur-sm border-r border-bg-border transition-all duration-300 flex flex-col relative z-20 ${isSidebarOpen ? 'w-72' : 'w-20'} hidden md:flex overflow-hidden`}
+                    className={`
+                        fixed inset-y-0 left-0 z-50 w-72 bg-bg-primary/95 backdrop-blur-xl border-r border-bg-border transition-all duration-300 transform
+                        lg:static lg:translate-x-0
+                        ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+                        ${isSidebarOpen ? 'lg:w-72' : 'lg:w-20'}
+                        flex flex-col overflow-hidden
+                    `}
                 >
                     <Particles />
 
@@ -466,7 +500,7 @@ export default function DashboardLayout({ children }) {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.4, ease: "easeOut" }}
-                        className="p-8 max-w-[1600px] mx-auto min-h-full"
+                        className="p-4 sm:p-8 max-w-[1600px] mx-auto min-h-full"
                     >
                         {children}
                     </motion.div>

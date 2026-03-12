@@ -175,17 +175,18 @@ export default function ApiKeysPage() {
             <div className="absolute inset-x-0 -top-20 h-64 bg-purple-glow/5 blur-[120px] pointer-events-none" />
 
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                 <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
                     <h1 className="text-3xl font-bold bg-gradient-to-r from-text-primary to-text-secondary bg-clip-text text-transparent mb-2">
                         API Credentials
                     </h1>
                     <p className="text-text-muted text-sm">Issue secure keys to authenticate your backend infrastructure.</p>
                 </motion.div>
-                <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
+                <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="mt-4 lg:mt-0">
                     <GlowButton
                         onClick={() => { setNewKeyData(null); setCreateModalOpen(true); }}
                         disabled={!org}
+                        className="w-full sm:w-auto"
                     >
                         <Plus className="w-4 h-4 mr-2" />
                         Create Secret Key
@@ -207,7 +208,8 @@ export default function ApiKeysPage() {
 
             {/* Keys Table */}
             <PurpleCard className="p-0 border-bg-border/50">
-                <PurpleTable headers={["Key Name", "Prefix", "Scope", "Status", "Created", ""]}>
+                <div className="overflow-x-auto">
+                    <PurpleTable headers={["Key Name", "Prefix", "Scope", "Status", "Created", ""]}>
                     {loading ? (
                         Array.from({ length: 3 }).map((_, i) => (
                             <tr key={i}>
@@ -222,11 +224,11 @@ export default function ApiKeysPage() {
                         keys.map((row) => (
                             <PurpleTableRow key={row.id}>
                                 <td className="px-5 py-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-1.5 rounded-md bg-purple-vivid/10 text-purple-vivid">
+                                    <div className="flex items-center gap-3 max-w-[150px] sm:max-w-none">
+                                        <div className="p-1.5 rounded-md bg-purple-vivid/10 text-purple-vivid shrink-0">
                                             <Zap className="w-3.5 h-3.5" />
                                         </div>
-                                        <span className="font-bold text-sm text-text-primary">{row.name}</span>
+                                        <span className="font-bold text-sm text-text-primary truncate">{row.name}</span>
                                     </div>
                                 </td>
                                 <td className="px-5 py-4">
@@ -253,23 +255,21 @@ export default function ApiKeysPage() {
                                     </span>
                                 </td>
                                 <td className="px-5 py-4 text-right">
-                                    <div className="flex gap-2 justify-end">
-                                        {/* Copy button — opens paste-your-key modal */}
+                                    <div className="flex gap-2 justify-end items-center">
                                         <GlowButton
                                             variant="ghost"
                                             onClick={() => { setRevealKeyInput(''); setRevealCopied(false); setRevealModalOpen(true); }}
-                                            className="!px-3 !py-1.5 min-h-0 text-xs"
+                                            className="px-3 py-2 text-xs min-h-[44px] min-w-[44px]"
                                             title="Copy key"
                                         >
                                             <Copy className="w-3.5 h-3.5" />
                                         </GlowButton>
 
-                                        {/* If key was just created this session, show direct copy */}
                                         {(row._newKey || sessionKeys[row.id]) && (
                                             <GlowButton
                                                 variant="ghost"
                                                 onClick={() => handleCopy(row._newKey || sessionKeys[row.id])}
-                                                className="!px-3 !py-1.5 min-h-0 text-xs text-success"
+                                                className="px-3 py-2 text-xs text-success min-h-[44px] min-w-[44px]"
                                                 title="Copy new key"
                                             >
                                                 <Check className="w-3.5 h-3.5" />
@@ -278,7 +278,7 @@ export default function ApiKeysPage() {
                                         <GlowButton
                                             variant={deleteConfirmId === row.id ? 'danger' : 'ghost'}
                                             onClick={() => handleDelete(row.id)}
-                                            className="!px-3 !py-1.5 min-h-0 text-xs"
+                                            className="px-3 py-2 text-xs min-h-[44px]"
                                             title={deleteConfirmId === row.id ? 'Click again to confirm' : 'Revoke key'}
                                         >
                                             <Trash2 className="w-3.5 h-3.5" />
@@ -310,6 +310,7 @@ export default function ApiKeysPage() {
                         </tr>
                     )}
                 </PurpleTable>
+                </div>
             </PurpleCard>
 
             {/* Create Modal */}

@@ -109,7 +109,7 @@ export default function WebhooksPage() {
     return (
         <div className="space-y-8 pb-32">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
                 <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
                     <h1 className="text-3xl font-bold bg-gradient-to-r from-text-primary to-text-secondary bg-clip-text text-transparent mb-2 flex items-center gap-4">
                         <Webhook className="w-8 h-8 text-purple-vivid" />
@@ -120,47 +120,49 @@ export default function WebhooksPage() {
                     </p>
                 </motion.div>
 
-                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}>
-                    <GlowButton onClick={() => setIsCreateModalOpen(true)} icon={Plus} className="px-8 py-4">PROVISION ENDPOINT</GlowButton>
+                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="mt-4 lg:mt-0">
+                    <GlowButton onClick={() => setIsCreateModalOpen(true)} icon={Plus} className="w-full sm:w-auto px-8 py-4 min-h-[44px]">PROVISION ENDPOINT</GlowButton>
                 </motion.div>
             </div>
 
             {/* Main Table */}
-            <PurpleCard className="p-0 overflow-hidden border-bg-border/50">
-                <PurpleTable headers={["Endpoint Configuration", "Subscribed Events", "Network Status", "Signal Performance", "Actions"]}>
-                    {loading ? (
-                        <TableSkeleton rows={3} />
-                    ) : webhooks.length > 0 ? (
-                        webhooks.map((webhook) => (
-                            <WebhookRow
-                                key={webhook.id}
-                                webhook={webhook}
-                                onDelete={handleDelete}
-                                onTest={handleTest}
-                                isTesting={testingId === webhook.id}
-                                testResult={testResults[webhook.id]}
-                                isSelected={selectedWebhook === webhook.id}
-                                onToggleLogs={toggleLogs}
-                                logs={logs[webhook.id] || []}
-                                logsLoading={logsLoading[webhook.id]}
-                            />
-                        ))
-                    ) : (
-                        <tr>
-                            <td colSpan="5">
-                                <div className="py-24 text-center">
-                                    <div className="w-20 h-20 bg-purple-dim/10 border border-purple-vivid/20 rounded-full flex items-center justify-center mx-auto mb-6 relative">
-                                        <Zap className="w-10 h-10 text-purple-glow/20" />
-                                        <div className="absolute inset-0 rounded-full border border-purple-vivid/20 animate-ping opacity-20" />
+            <PurpleCard id="webhooks-table" className="p-0 overflow-hidden border-bg-border/50">
+                <div className="overflow-x-auto">
+                    <PurpleTable headers={["Endpoint Configuration", "Subscribed Events", "Network Status", "Signal Performance", "Actions"]}>
+                        {loading ? (
+                            <TableSkeleton rows={3} />
+                        ) : webhooks.length > 0 ? (
+                            webhooks.map((webhook) => (
+                                <WebhookRow
+                                    key={webhook.id}
+                                    webhook={webhook}
+                                    onDelete={handleDelete}
+                                    onTest={handleTest}
+                                    isTesting={testingId === webhook.id}
+                                    testResult={testResults[webhook.id]}
+                                    isSelected={selectedWebhook === webhook.id}
+                                    onToggleLogs={toggleLogs}
+                                    logs={logs[webhook.id] || []}
+                                    logsLoading={logsLoading[webhook.id]}
+                                />
+                            ))
+                        ) : (
+                            <tr>
+                                <td colSpan="5">
+                                    <div className="py-24 text-center">
+                                        <div className="w-20 h-20 bg-purple-dim/10 border border-purple-vivid/20 rounded-full flex items-center justify-center mx-auto mb-6 relative">
+                                            <Zap className="w-10 h-10 text-purple-glow/20" />
+                                            <div className="absolute inset-0 rounded-full border border-purple-vivid/20 animate-ping opacity-20" />
+                                        </div>
+                                        <h3 className="text-xl font-bold text-white mb-2">No active endpoints</h3>
+                                        <p className="text-text-muted text-sm max-w-sm mx-auto mb-8">Provision a webhook endpoint to receive real-time cryptographic registry updates.</p>
+                                        <GlowButton onClick={() => setIsCreateModalOpen(true)} icon={Plus} variant="ghost" className="min-h-[44px]">ADD YOUR FIRST ENDPOINT</GlowButton>
                                     </div>
-                                    <h3 className="text-xl font-bold text-white mb-2">No active endpoints</h3>
-                                    <p className="text-text-muted text-sm max-w-sm mx-auto mb-8">Provision a webhook endpoint to receive real-time cryptographic registry updates.</p>
-                                    <GlowButton onClick={() => setIsCreateModalOpen(true)} icon={Plus} variant="ghost">ADD YOUR FIRST ENDPOINT</GlowButton>
-                                </div>
-                            </td>
-                        </tr>
-                    )}
-                </PurpleTable>
+                                </td>
+                            </tr>
+                        )}
+                    </PurpleTable>
+                </div>
             </PurpleCard>
 
             <CreateWebhookModal
@@ -203,7 +205,7 @@ function WebhookRow({ webhook, onDelete, onTest, isTesting, testResult, isSelect
                     <div className="flex flex-col gap-1.5 min-w-0">
                         <div className="flex items-center gap-2 group">
                             <Globe className="w-3.5 h-3.5 text-purple-glow shrink-0" />
-                            <span className="text-text-primary font-mono text-xs truncate max-w-[280px]">
+                            <span className="text-text-primary font-mono text-xs truncate max-w-[150px] sm:max-w-[280px]">
                                 {webhook.url}
                             </span>
                         </div>
@@ -253,21 +255,21 @@ function WebhookRow({ webhook, onDelete, onTest, isTesting, testResult, isSelect
                         <button
                             onClick={() => onTest(webhook.id)}
                             disabled={isTesting}
-                            className="p-3 rounded-2xl bg-purple-dim/10 border border-bg-border text-purple-glow hover:text-white hover:border-purple-vivid/40 transition-all disabled:opacity-50"
+                            className="p-3 rounded-2xl bg-purple-dim/10 border border-bg-border text-purple-glow hover:text-white hover:border-purple-vivid/40 transition-all disabled:opacity-50 min-h-[44px] min-w-[44px]"
                             title="Trigger Test Delivery"
                         >
                             {isTesting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                         </button>
                         <button
                             onClick={() => onToggleLogs(webhook.id)}
-                            className={`p-3 rounded-2xl border transition-all ${isSelected ? 'bg-purple-vivid/20 border-purple-vivid/40 text-purple-glow' : 'bg-purple-dim/10 border-bg-border text-text-muted hover:text-white hover:border-purple-vivid/40'}`}
+                            className={`p-3 rounded-2xl border transition-all min-h-[44px] min-w-[44px] ${isSelected ? 'bg-purple-vivid/20 border-purple-vivid/40 text-purple-glow' : 'bg-purple-dim/10 border-bg-border text-text-muted hover:text-white hover:border-purple-vivid/40'}`}
                             title="Inspect Telemetry Logs"
                         >
                             <Activity className="w-4 h-4" />
                         </button>
                         <button
                             onClick={() => onDelete(webhook.id)}
-                            className="p-3 rounded-2xl bg-danger/5 border border-bg-border text-text-muted hover:text-danger hover:border-danger/30 transition-all"
+                            className="p-3 rounded-2xl bg-danger/5 border border-bg-border text-text-muted hover:text-danger hover:border-danger/30 transition-all min-h-[44px] min-w-[44px]"
                             title="Remove Configuration"
                         >
                             <Trash2 className="w-4 h-4" />
@@ -304,32 +306,34 @@ function WebhookRow({ webhook, onDelete, onTest, isTesting, testResult, isSelect
                                         </div>
                                     ) : logs.length > 0 ? (
                                         <div className="rounded-3xl border border-bg-border overflow-hidden bg-black/20 backdrop-blur-md">
-                                            <PurpleTable headers={["Timestamp (UTC)", "Event Context", "Execution Status", "Latency", "Server Response"]} density="tight">
-                                                {logs.map((log, i) => (
-                                                    <PurpleTableRow key={i}>
-                                                        <td className="px-6 py-4 text-[10px] font-mono text-text-muted">
-                                                            {new Date(log.createdAt).toLocaleString().toUpperCase()}
-                                                        </td>
-                                                        <td className="px-6 py-4">
-                                                            <PurpleBadge variant="purple" className="text-[9px] uppercase">{log.event.replace('_', ' ')}</PurpleBadge>
-                                                        </td>
-                                                        <td className="px-6 py-4">
-                                                            <div className="flex items-center gap-2">
-                                                                <div className={`w-1.5 h-1.5 rounded-full ${log.statusCode >= 200 && log.statusCode < 300 ? 'bg-success shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-danger shadow-[0_0_8px_rgba(239,68,68,0.5)]'}`} />
-                                                                <span className={`text-[11px] font-bold ${log.statusCode >= 200 && log.statusCode < 300 ? 'text-success' : 'text-danger'}`}>
-                                                                    {log.statusCode || 'NETWORK ERROR'}
-                                                                </span>
-                                                            </div>
-                                                        </td>
-                                                        <td className="px-6 py-4 text-[11px] font-mono text-purple-glow">{log.durationMs}ms</td>
-                                                        <td className="px-6 py-4 text-right">
-                                                            <code className="text-[10px] text-text-muted italic bg-white/[0.02] px-2 py-1 rounded truncate max-w-[150px] inline-block">
-                                                                {log.responseSummary || "// N/A"}
-                                                            </code>
-                                                        </td>
-                                                    </PurpleTableRow>
-                                                ))}
-                                            </PurpleTable>
+                                            <div className="overflow-x-auto">
+                                                <PurpleTable headers={["Timestamp (UTC)", "Event Context", "Execution Status", "Latency", "Server Response"]} density="tight">
+                                                    {logs.map((log, i) => (
+                                                        <PurpleTableRow key={i}>
+                                                            <td className="px-6 py-4 text-[10px] font-mono text-text-muted">
+                                                                {new Date(log.createdAt).toLocaleString().toUpperCase()}
+                                                            </td>
+                                                            <td className="px-6 py-4">
+                                                                <PurpleBadge variant="purple" className="text-[9px] uppercase">{log.event.replace('_', ' ')}</PurpleBadge>
+                                                            </td>
+                                                            <td className="px-6 py-4">
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className={`w-1.5 h-1.5 rounded-full ${log.statusCode >= 200 && log.statusCode < 300 ? 'bg-success shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-danger shadow-[0_0_8px_rgba(239,68,68,0.5)]'}`} />
+                                                                    <span className={`text-[11px] font-bold ${log.statusCode >= 200 && log.statusCode < 300 ? 'text-success' : 'text-danger'}`}>
+                                                                        {log.statusCode || 'NETWORK ERROR'}
+                                                                    </span>
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-6 py-4 text-[11px] font-mono text-purple-glow">{log.durationMs}ms</td>
+                                                            <td className="px-6 py-4 text-right">
+                                                                <code className="text-[10px] text-text-muted italic bg-white/[0.02] px-2 py-1 rounded truncate max-w-[150px] inline-block">
+                                                                    {log.responseSummary || "// N/A"}
+                                                                </code>
+                                                            </td>
+                                                        </PurpleTableRow>
+                                                    ))}
+                                                </PurpleTable>
+                                            </div>
                                         </div>
                                     ) : (
                                         <div className="py-12 text-center bg-white/[0.01] rounded-3xl border border-bg-border/30 border-dashed">
