@@ -32,10 +32,17 @@ export default function EmbedPage() {
 
     useEffect(() => {
         api.get('/api/hashes').then(res => {
-            const list = res.data?.hashes || res.data?.records || res.data || [];
+            // Correctly handle the paginated response structure from the backend
+            const list = res.data?.data || res.data?.hashes || res.data?.records || (Array.isArray(res.data) ? res.data : []);
             setHashes(list);
-            if (list.length > 0) setSelectedHash(list[0].hash);
-        }).catch(() => {}).finally(() => setLoading(false));
+            
+            // Set first hash as selected if available
+            if (list.length > 0 && list[0]?.hash) {
+                setSelectedHash(list[0].hash);
+            }
+        }).catch(err => {
+            console.error('Registry sync failure:', err);
+        }).finally(() => setLoading(false));
     }, []);
 
     const verifyUrl = `${BASE_URL}/verify/${selectedHash}`;
@@ -144,8 +151,8 @@ export default function EmbedPage() {
                                     className="w-full bg-black/40 border border-bg-border rounded-xl px-4 py-3 text-sm text-text-primary focus:outline-none focus:border-purple-vivid transition-all font-medium"
                                 >
                                     {hashes.map(h => (
-                                        <option key={h.hash} value={h.hash}>
-                                            {h.metadata || h.hash.slice(0, 16) + '...'}
+                                        <option key={h.hash || Math.random().toString()} value={h.hash || ''}>
+                                            {h.metadata || (h.hash ? h.hash.slice(0, 16) + '...' : 'Unknown Signal')}
                                         </option>
                                     ))}
                                 </select>
