@@ -21,7 +21,7 @@ import { TermsPage } from '@/pages/legal/TermsPage';
 import { PrivacyPage } from '@/pages/legal/PrivacyPage';
 
 // Docs
-import { DocsPage } from '@/pages/docs/DocsPage';
+import { DocsPage, DocsLayout, QuickStartPage, CliReferencePage, ApiReferencePage } from '@/pages/docs';
 
 // Dashboard
 import { DashboardLayout } from '@/components/dashboard';
@@ -97,7 +97,12 @@ const AppRoutes: FC = () => {
       <Route path="/privacy" element={<PrivacyPage />} />
       
       {/* Docs */}
-      <Route path="/docs/*" element={<DocsPage />} />
+      <Route path="/docs" element={<DocsLayout />}>
+        <Route index element={<DocsPage />} />
+        <Route path="quickstart" element={<QuickStartPage />} />
+        <Route path="cli" element={<CliReferencePage />} />
+        <Route path="api" element={<ApiReferencePage />} />
+      </Route>
       
       {/* Auth Routes - redirect to dashboard if already logged in */}
       <Route path="/auth/login" element={<PublicOnlyRoute><LoginPage /></PublicOnlyRoute>} />

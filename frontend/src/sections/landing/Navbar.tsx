@@ -59,8 +59,8 @@ const navItems = [
     ]
   },
   {
-    label: 'Docs',
-    dropdown: 'docs',
+    label: 'Resources',
+    dropdown: 'resources',
     sections: [
       {
         title: 'GET STARTED',
