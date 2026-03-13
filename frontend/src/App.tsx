@@ -1,0 +1,138 @@
+import type { FC } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from '@/contexts/AuthContext';
+import { Toaster } from 'sonner';
+
+// Public Pages
+import { LandingPage } from '@/pages/LandingPage';
+import { VerifyPage } from '@/pages/public/VerifyPage';
+import { InviteAcceptPage } from '@/pages/public/InviteAcceptPage';
+import { PricingPage } from '@/pages/public/PricingPage';
+
+// Auth Pages
+import { LoginPage } from '@/pages/auth/LoginPage';
+import { RegisterPage } from '@/pages/auth/RegisterPage';
+import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage';
+import { ResetPasswordPage } from '@/pages/auth/ResetPasswordPage';
+
+// Legal Pages
+import { TermsPage } from '@/pages/legal/TermsPage';
+import { PrivacyPage } from '@/pages/legal/PrivacyPage';
+
+// Docs
+import { DocsPage } from '@/pages/docs/DocsPage';
+
+// Dashboard
+import { DashboardLayout } from '@/components/dashboard';
+import {
+  DashboardHome,
+  HashesPage,
+  AnalyticsPage,
+  ApiKeysPage,
+  TeamPage,
+  SettingsPage,
+  BillingPage,
+  PlaceholderPage,
+} from '@/pages/dashboard';
+
+import './App.css';
+
+// Protected Route - redirects to login if not authenticated
+const ProtectedRoute: FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user, loading } = useAuth();
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#020208] flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-[#6C63FF] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+  
+  if (!user) {
+    return <Navigate to="/auth/login" replace />;
+  }
+  
+  return <>{children}</>;
+};
+
+// Public Only Route - redirects to dashboard if already authenticated
+const PublicOnlyRoute: FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user, loading } = useAuth();
+  
+  if (loading) return null;
+  if (user) return <Navigate to="/dashboard" replace />;
+  
+  return <>{children}</>;
+};
+
+const AppRoutes: FC = () => {
+  return (
+    <Routes>
+      {/* Landing Page */}
+      <Route path="/" element={<LandingPage />} />
+      
+      {/* Public Pages */}
+      <Route path="/verify/:hash" element={<VerifyPage />} />
+      <Route path="/invite/:token" element={<InviteAcceptPage />} />
+      <Route path="/pricing" element={<PricingPage />} />
+      
+      {/* Legal Pages */}
+      <Route path="/terms" element={<TermsPage />} />
+      <Route path="/privacy" element={<PrivacyPage />} />
+      
+      {/* Docs */}
+      <Route path="/docs/*" element={<DocsPage />} />
+      
+      {/* Auth Routes - redirect to dashboard if already logged in */}
+      <Route path="/auth/login" element={<PublicOnlyRoute><LoginPage /></PublicOnlyRoute>} />
+      <Route path="/auth/register" element={<PublicOnlyRoute><RegisterPage /></PublicOnlyRoute>} />
+      <Route path="/auth/forgot-password" element={<PublicOnlyRoute><ForgotPasswordPage /></PublicOnlyRoute>} />
+      <Route path="/auth/reset-password" element={<PublicOnlyRoute><ResetPasswordPage /></PublicOnlyRoute>} />
+      
+      {/* Dashboard Routes - require authentication */}
+      <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
+        <Route index element={<DashboardHome />} />
+        <Route path="hashes" element={<HashesPage />} />
+        <Route path="bulk-verify" element={<PlaceholderPage title="Bulk Verify" />} />
+        <Route path="analytics" element={<AnalyticsPage />} />
+        <Route path="keys" element={<ApiKeysPage />} />
+        <Route path="team" element={<TeamPage />} />
+        <Route path="webhooks" element={<PlaceholderPage title="Webhooks" />} />
+        <Route path="audit" element={<PlaceholderPage title="Audit Log" />} />
+        <Route path="playground" element={<PlaceholderPage title="API Playground" />} />
+        <Route path="embed" element={<PlaceholderPage title="Embed & Share" />} />
+        <Route path="usage" element={<PlaceholderPage title="Usage" />} />
+        <Route path="settings" element={<SettingsPage />} />
+        <Route path="billing" element={<BillingPage />} />
+        <Route path="notifications" element={<PlaceholderPage title="Notifications" />} />
+      </Route>
+      
+      {/* Catch-all - redirect to landing */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+};
+
+const App: FC = () => {
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <Toaster 
+          position="bottom-right" 
+          theme="dark"
+          toastOptions={{
+            style: {
+              background: '#0a0a0f',
+              border: '1px solid rgba(255,255,255,0.06)',
+              color: '#f0f0f5',
+            },
+          }}
+        />
+        <AppRoutes />
+      </BrowserRouter>
+    </AuthProvider>
+  );
+};
+
+export default App;
