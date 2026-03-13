@@ -51,7 +51,7 @@ export const TableOfContents: React.FC = () => {
   if (toc.length === 0) return null;
 
   return (
-    <div className="hidden xl:block w-56 flex-shrink-0 sticky top-24 h-fit max-h-[calc(100vh-120px)] overflow-y-auto pr-4 scrollbar-hide">
+    <div className="hidden xl:block w-48 flex-shrink-0 sticky top-24 h-fit max-h-[calc(100vh-120px)] overflow-y-auto pr-4 scrollbar-hide">
       <div className="space-y-4">
         <h4 className="text-[11px] uppercase tracking-[0.15em] text-[#555] font-bold">
           On this page
