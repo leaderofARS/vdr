@@ -54,7 +54,7 @@ const ApiAuthPage: React.FC = () => {
       </p>
 
       <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg p-6 mb-12">
-        <h3 className="text-lg font-semibold text-white mb-2">Base URL</h3>
+        <h3 id="base-url" className="text-lg font-semibold text-white mb-2 scroll-mt-24">Base URL</h3>
         <CodeBlock code="https://api.sipheron.io/v1" />
       </div>
 
@@ -68,15 +68,15 @@ const ApiAuthPage: React.FC = () => {
         under Settings → API Keys.
       </p>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Header Format</h3>
+      <h3 id="bearer-header-format" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Header Format</h3>
       <CodeBlock code="Authorization: Bearer {YOUR_API_KEY}" />
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Example Request</h3>
+      <h3 id="bearer-example-request" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Example Request</h3>
       <CodeBlock code={`curl -X GET https://api.sipheron.io/v1/hashes \\
   -H "Authorization: Bearer {'{token}'}" \\
   -H "Content-Type: application/json"`} />
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">TypeScript Interface</h3>
+      <h3 id="bearer-typescript" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">TypeScript Interface</h3>
       <CodeBlock code={`interface AuthHeaders {
   'Authorization': string;  // Bearer {token}
   'Content-Type': 'application/json';
@@ -99,10 +99,10 @@ const headers: AuthHeaders = {
         for legacy integrations and services that have difficulty with Bearer tokens.
       </p>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Header Format</h3>
+      <h3 id="api-key-header-format" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Header Format</h3>
       <CodeBlock code="X-API-Key: {YOUR_API_KEY}" />
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Example Request</h3>
+      <h3 id="api-key-example-request" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Example Request</h3>
       <CodeBlock code={`curl -X GET https://api.sipheron.io/v1/hashes \\
   -H "X-API-Key: {'{your_api_key}'}" \\
   -H "Content-Type: application/json"`} />
@@ -128,7 +128,7 @@ const headers: AuthHeaders = {
         <code className="text-purple-300 font-mono text-sm">/auth/refresh</code>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">Request Headers</h3>
+      <h3 id="refresh-headers" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Request Headers</h3>
       <div className="overflow-x-auto mb-6">
         <table className="w-full text-sm">
           <thead>
@@ -156,13 +156,13 @@ const headers: AuthHeaders = {
         </table>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">Request Example</h3>
+      <h3 id="refresh-example" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Request Example</h3>
       <CodeBlock code={`curl -X POST https://api.sipheron.io/v1/auth/refresh \\
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." \\
   -H "X-Refresh-Token: rt_abc123xyz789..." \\
   -H "Content-Type: application/json"`} />
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">Response</h3>
+      <h3 id="response" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Response</h3>
       <CodeBlock code={`{
   "success": true,
   "data": {
@@ -174,7 +174,7 @@ const headers: AuthHeaders = {
   }
 }`} language="json" />
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">Response Fields</h3>
+      <h3 id="response-fields" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Response Fields</h3>
       <div className="overflow-x-auto mb-6">
         <table className="w-full text-sm">
           <thead>
@@ -228,7 +228,7 @@ const headers: AuthHeaders = {
         <code className="text-purple-300 font-mono text-sm">/auth/revoke</code>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">Request Body</h3>
+      <h3 id="request-body" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Request Body</h3>
       <div className="overflow-x-auto mb-6">
         <table className="w-full text-sm">
           <thead>
@@ -256,7 +256,7 @@ const headers: AuthHeaders = {
         </table>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">Request Example</h3>
+      <h3 id="request-example" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Request Example</h3>
       <CodeBlock code={`curl -X POST https://api.sipheron.io/v1/auth/revoke \\
   -H "Authorization: Bearer sk_live_51HYs2jK8QJ4mP2v9..." \\
   -H "Content-Type: application/json" \\
@@ -265,7 +265,7 @@ const headers: AuthHeaders = {
     "token_type_hint": "access_token"
   }'`} />
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">Response</h3>
+      <h3 id="response" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Response</h3>
       <CodeBlock code={`{
   "success": true,
   "data": {
@@ -327,7 +327,7 @@ const headers: AuthHeaders = {
         </table>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Error Response Example</h3>
+      <h3 id="error-response-example" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Error Response Example</h3>
       <CodeBlock code={`{
   "success": false,
   "error": {
@@ -456,7 +456,7 @@ const headers: AuthHeaders = {
       </div>
 
       <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-white mb-2">Rate Limit Headers</h3>
+        <h3 id="rate-limit-headers" className="text-lg font-semibold text-white mb-2 scroll-mt-24">Rate Limit Headers</h3>
         <p className="text-gray-400 text-sm mb-4">All responses include rate limit information:</p>
         <CodeBlock code={`X-RateLimit-Limit: 1000
 X-RateLimit-Remaining: 999

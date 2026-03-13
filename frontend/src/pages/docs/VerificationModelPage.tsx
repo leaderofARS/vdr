@@ -45,21 +45,21 @@ const VerificationModelPage: React.FC = () => {
           <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center mb-3">
             <Shield className="w-5 h-5 text-purple-400" />
           </div>
-          <h3 className="font-bold text-white mb-1">Self-Verification</h3>
+          <h3 id="self-verification" className="font-bold text-white mb-1 scroll-mt-24">Self-Verification</h3>
           <p className="text-sm text-gray-400">Verify your own documents without third parties</p>
         </div>
         <div className="p-5 rounded-xl border border-white/10 bg-white/5">
           <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center mb-3">
             <Users className="w-5 h-5 text-purple-400" />
           </div>
-          <h3 className="font-bold text-white mb-1">Third-Party</h3>
+          <h3 id="third-party" className="font-bold text-white mb-1 scroll-mt-24">Third-Party</h3>
           <p className="text-sm text-gray-400">Allow auditors to verify without account</p>
         </div>
         <div className="p-5 rounded-xl border border-white/10 bg-white/5">
           <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center mb-3">
             <EyeOff className="w-5 h-5 text-purple-400" />
           </div>
-          <h3 className="font-bold text-white mb-1">Zero-Knowledge</h3>
+          <h3 id="zero-knowledge" className="font-bold text-white mb-1 scroll-mt-24">Zero-Knowledge</h3>
           <p className="text-sm text-gray-400">Prove integrity without revealing content</p>
         </div>
       </div>
@@ -129,7 +129,7 @@ const VerificationModelPage: React.FC = () => {
         </div>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Hash Comparison Security</h3>
+      <h3 id="hash-comparison-security" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Hash Comparison Security</h3>
       <p className="text-gray-300 leading-relaxed mb-4">
         SipHeron uses constant-time comparison to prevent timing attacks. In a standard string 
         comparison, the function returns as soon as it finds a mismatch—an attacker could measure 
@@ -206,7 +206,7 @@ function unsafeVerify(computed: string, anchored: string): boolean {
         </div>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Selective Disclosure</h3>
+      <h3 id="selective-disclosure" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Selective Disclosure</h3>
       <p className="text-gray-300 leading-relaxed mb-4">
         Beyond simple existence proofs, SipHeron supports selective disclosure—revealing only 
         specific portions of a document while keeping the rest private. This is achieved using 
@@ -239,7 +239,7 @@ function unsafeVerify(computed: string, anchored: string): boolean {
         Different verification scenarios require different trust models and access patterns.
       </p>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Self-Verification</h3>
+      <h3 id="self-verification" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Self-Verification</h3>
       <p className="text-gray-300 leading-relaxed mb-4">
         As the document owner, you can verify your own anchors using your SipHeron account. 
         This provides full access to metadata, history, and detailed verification reports.
@@ -271,7 +271,7 @@ Authorization: Bearer YOUR_API_KEY
   }
 }`} language="json" />
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Third-Party Verification</h3>
+      <h3 id="third-party-verification" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Third-Party Verification</h3>
       <p className="text-gray-300 leading-relaxed mb-4">
         Third parties can verify documents without a SipHeron account using public verification 
         links. This enables trustless verification where anyone can confirm document integrity 
@@ -364,7 +364,7 @@ Authorization: Bearer YOUR_API_KEY
         </div>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Link Security Features</h3>
+      <h3 id="link-security-features" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Link Security Features</h3>
       <ul className="text-gray-300 space-y-2 mb-6">
         <li className="flex items-start gap-2">
           <Lock className="w-4 h-4 text-purple-400 mt-1 shrink-0" />
@@ -459,7 +459,7 @@ POST /v1/anchors/anchor_abc123/links
         </div>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Offline Verification Mode</h3>
+      <h3 id="offline-verification-mode" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Offline Verification Mode</h3>
       <p className="text-gray-300 leading-relaxed mb-4">
         QR codes can include enough information for offline verification. By embedding the 
         Solana transaction signature and block details, verifiers can cross-reference directly 
@@ -583,7 +583,7 @@ POST /v1/anchors/batch_xyz789/verify
         Verification APIs and SDK Methods
       </h2>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">REST API</h3>
+      <h3 id="rest-api" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">REST API</h3>
       <CodeBlock code={`// Basic verification
 GET /v1/anchors/:id/verify
 
@@ -614,7 +614,7 @@ GET /v1/verify?hash=0x7f83b165...
   }
 }`} language="json" />
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">JavaScript SDK</h3>
+      <h3 id="javascript-sdk" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">JavaScript SDK</h3>
       <CodeBlock code={`import { SipHeronVDR } from '@sipheron/vdr-sdk';
 
 const vdr = new SipHeronVDR({ apiKey: 'YOUR_API_KEY' });
@@ -641,7 +641,7 @@ const batchResults = await vdr.anchors.verifyBatch([
 const onChainProof = await vdr.anchors.getOnChainProof('anchor_abc123');
 const isValid = await vdr.solana.verifyOnChain(onChainProof);`} language="javascript" />
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Python SDK</h3>
+      <h3 id="python-sdk" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Python SDK</h3>
       <CodeBlock code={`from sipheron import SipHeronVDR
 
 vdr = SipHeronVDR(api_key='YOUR_API_KEY')
@@ -728,7 +728,7 @@ with open('./large-file.zip', 'rb') as f:
         </div>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Security Properties</h3>
+      <h3 id="security-properties" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Security Properties</h3>
 
       <div className="my-6 overflow-x-auto">
         <table className="w-full text-sm">
@@ -764,7 +764,7 @@ with open('./large-file.zip', 'rb') as f:
         </table>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Threat Model</h3>
+      <h3 id="threat-model" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Threat Model</h3>
 
       <div className="space-y-4">
         <div className="p-4 rounded-lg border border-green-500/20 bg-green-500/5">

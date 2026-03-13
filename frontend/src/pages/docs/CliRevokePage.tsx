@@ -129,7 +129,7 @@ sipheron-vdr history --status revoked
 # Show revocation details
 sipheron-vdr status anchor_abc123`} />
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Revocation Output</h3>
+      <h3 id="revocation-output" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Revocation Output</h3>
       <CodeBlock code={`⚠ Anchor Revoked: anchor_abc123
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 

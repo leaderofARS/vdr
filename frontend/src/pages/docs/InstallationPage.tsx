@@ -46,7 +46,7 @@ const InstallationPage: React.FC = () => {
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
         <div className="p-4 rounded-lg bg-white/5 border border-white/10">
-          <h3 className="font-semibold text-white mb-3 flex items-center gap-2">
+          <h3 id="node-js" className="font-semibold text-white mb-3 flex items-center gap-2 scroll-mt-24">
             <Terminal className="w-4 h-4 text-purple-400" />
             Node.js
           </h3>
@@ -66,7 +66,7 @@ const InstallationPage: React.FC = () => {
           </ul>
         </div>
         <div className="p-4 rounded-lg bg-white/5 border border-white/10">
-          <h3 className="font-semibold text-white mb-3 flex items-center gap-2">
+          <h3 id="operating-systems" className="font-semibold text-white mb-3 flex items-center gap-2 scroll-mt-24">
             <Package className="w-4 h-4 text-purple-400" />
             Operating Systems
           </h3>
@@ -107,7 +107,7 @@ const InstallationPage: React.FC = () => {
         updates and cross-platform compatibility.
       </p>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">
+      <h3 id="standard-installation" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">
         Standard Installation
       </h3>
       <CodeBlock code={`# Install globally with npm
@@ -119,7 +119,7 @@ yarn global add @sipheron/vdr-cli
 # Or with pnpm
 pnpm add -g @sipheron/vdr-cli`} />
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">
+      <h3 id="installation-with-specific-version" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">
         Installation with Specific Version
       </h3>
       <p className="text-gray-300 leading-relaxed mb-4">
@@ -207,7 +207,7 @@ sipheron-vdr --version`} language="powershell" />
         </div>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">
+      <h3 id="pull-and-run" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">
         Pull and Run
       </h3>
       <CodeBlock code={`# Pull the latest image
@@ -222,7 +222,7 @@ docker run --rm -v $(pwd):/docs sipheron/vdr-cli:latest anchor /docs/contract.pd
 # Run with environment variables
 docker run --rm -e SIPHERON_API_KEY=your_key sipheron/vdr-cli:latest auth whoami`} />
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">
+      <h3 id="docker-compose-setup" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">
         Docker Compose Setup
       </h3>
       <p className="text-gray-300 leading-relaxed mb-4">
@@ -254,7 +254,7 @@ volumes:
         After installation, verify that the CLI is properly installed and accessible:
       </p>
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">
+      <h3 id="basic-verification" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">
         Basic Verification
       </h3>
       <CodeBlock code={`# Check CLI version
@@ -269,7 +269,7 @@ sipheron-vdr auth --help
 sipheron-vdr anchor --help
 sipheron-vdr verify --help`} />
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">
+      <h3 id="diagnostic-command" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">
         Diagnostic Command
       </h3>
       <p className="text-gray-300 leading-relaxed mb-4">
@@ -293,7 +293,7 @@ sipheron-vdr doctor
         Keep your CLI up to date to access new features and security patches.
       </p>
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">
+      <h3 id="check-for-updates" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">
         Check for Updates
       </h3>
       <CodeBlock code={`# Check current version
@@ -302,7 +302,7 @@ sipheron-vdr --version
 # Check for available updates
 sipheron-vdr update check`} />
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">
+      <h3 id="update-commands" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">
         Update Commands
       </h3>
       <CodeBlock code={`# Update via npm
@@ -325,7 +325,7 @@ docker pull sipheron/vdr-cli:latest`} />
         To completely remove SipHeron VDR CLI from your system:
       </p>
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">
+      <h3 id="npm-uninstall" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">
         NPM Uninstall
       </h3>
       <CodeBlock code={`# Uninstall globally
@@ -335,7 +335,7 @@ npm uninstall -g @sipheron/vdr-cli
 which sipheron-vdr
 # Should return: sipheron-vdr not found`} />
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">
+      <h3 id="clean-up-configuration" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">
         Clean Up Configuration
       </h3>
       <p className="text-gray-300 leading-relaxed mb-4">
@@ -360,7 +360,7 @@ docker volume rm vdr-config`} />
 
       <div className="space-y-6">
         <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20">
-          <h3 className="font-semibold text-red-300 mb-2">Error: command not found</h3>
+          <h3 id="error-command-not-found" className="font-semibold text-red-300 mb-2 scroll-mt-24">Error: command not found</h3>
           <p className="text-sm text-gray-400 mb-3">
             The CLI binary is not in your system PATH.
           </p>
@@ -376,7 +376,7 @@ setx PATH "%APPDATA%\\npm;%PATH%"`} />
         </div>
 
         <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20">
-          <h3 className="font-semibold text-red-300 mb-2">Error: EACCES: permission denied</h3>
+          <h3 id="error-eacces-permission-denied" className="font-semibold text-red-300 mb-2 scroll-mt-24">Error: EACCES: permission denied</h3>
           <p className="text-sm text-gray-400 mb-3">
             npm doesn't have permission to write to the global directory.
           </p>
@@ -391,7 +391,7 @@ npm install -g @sipheron/vdr-cli`} />
         </div>
 
         <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20">
-          <h3 className="font-semibold text-red-300 mb-2">Error: Unsupported Node.js version</h3>
+          <h3 id="error-unsupported-node-js-version" className="font-semibold text-red-300 mb-2 scroll-mt-24">Error: Unsupported Node.js version</h3>
           <p className="text-sm text-gray-400 mb-3">
             Your Node.js version is too old or incompatible.
           </p>
@@ -407,7 +407,7 @@ nvm use 18
         </div>
 
         <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20">
-          <h3 className="font-semibold text-red-300 mb-2">Error: Self-signed certificate</h3>
+          <h3 id="error-self-signed-certificate" className="font-semibold text-red-300 mb-2 scroll-mt-24">Error: Self-signed certificate</h3>
           <p className="text-sm text-gray-400 mb-3">
             Corporate proxies or antivirus software may interfere with SSL connections.
           </p>

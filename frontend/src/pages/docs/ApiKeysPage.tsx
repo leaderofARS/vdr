@@ -116,7 +116,7 @@ const ApiKeysPage: React.FC = () => {
         </table>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">TypeScript Interfaces</h3>
+      <h3 id="typescript-interfaces" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">TypeScript Interfaces</h3>
       <CodeBlock code={`// API Key entity
 interface ApiKey {
   id: string;
@@ -158,7 +158,7 @@ type Permission =
         <code className="text-purple-300 font-mono text-sm">/keys</code>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">Request Body</h3>
+      <h3 id="request-body" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Request Body</h3>
       <div className="overflow-x-auto mb-6">
         <table className="w-full text-sm">
           <thead>
@@ -204,7 +204,7 @@ type Permission =
         </table>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">Request Example</h3>
+      <h3 id="request-example" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Request Example</h3>
       <CodeBlock code={`curl -X POST https://api.sipheron.io/v1/keys \\
   -H "Authorization: Bearer {your_admin_key}" \\
   -H "Content-Type: application/json" \\
@@ -216,7 +216,7 @@ type Permission =
     "rate_limit": 500
   }'`} />
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">Response (201 Created)</h3>
+      <h3 id="response-201-created" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Response (201 Created)</h3>
       <CodeBlock code={`{
   "success": true,
   "data": {
@@ -256,7 +256,7 @@ type Permission =
         <code className="text-purple-300 font-mono text-sm">/keys</code>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">Query Parameters</h3>
+      <h3 id="query-parameters" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Query Parameters</h3>
       <div className="overflow-x-auto mb-6">
         <table className="w-full text-sm">
           <thead>
@@ -296,11 +296,11 @@ type Permission =
         </table>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">Request Example</h3>
+      <h3 id="request-example" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Request Example</h3>
       <CodeBlock code={`curl -X GET "https://api.sipheron.io/v1/keys?status=active&limit=50" \\
   -H "Authorization: Bearer {your_admin_key}"`} />
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">Response</h3>
+      <h3 id="response" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Response</h3>
       <CodeBlock code={`{
   "success": true,
   "data": {
@@ -340,7 +340,7 @@ type Permission =
         <code className="text-purple-300 font-mono text-sm">/keys/:id</code>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">URL Parameters</h3>
+      <h3 id="url-parameters" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">URL Parameters</h3>
       <div className="overflow-x-auto mb-6">
         <table className="w-full text-sm">
           <thead>
@@ -362,7 +362,7 @@ type Permission =
         </table>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">Response</h3>
+      <h3 id="response" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Response</h3>
       <CodeBlock code={`{
   "success": true,
   "data": {
@@ -399,7 +399,7 @@ type Permission =
         <code className="text-purple-300 font-mono text-sm">/keys/:id</code>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">URL Parameters</h3>
+      <h3 id="url-parameters" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">URL Parameters</h3>
       <div className="overflow-x-auto mb-6">
         <table className="w-full text-sm">
           <thead>
@@ -421,7 +421,7 @@ type Permission =
         </table>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">Request Body</h3>
+      <h3 id="request-body" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Request Body</h3>
       <div className="overflow-x-auto mb-6">
         <table className="w-full text-sm">
           <thead>
@@ -461,7 +461,7 @@ type Permission =
         </table>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">Request Example</h3>
+      <h3 id="request-example" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Request Example</h3>
       <CodeBlock code={`curl -X PATCH https://api.sipheron.io/v1/keys/key_abc123xyz789 \\
   -H "Authorization: Bearer {your_admin_key}" \\
   -H "Content-Type: application/json" \\
@@ -472,7 +472,7 @@ type Permission =
     "rate_limit": 1000
   }'`} />
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">Response</h3>
+      <h3 id="response" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Response</h3>
       <CodeBlock code={`{
   "success": true,
   "data": {
@@ -501,7 +501,7 @@ type Permission =
         <code className="text-purple-300 font-mono text-sm">/keys/:id</code>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">Request Example</h3>
+      <h3 id="request-example" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Request Example</h3>
       <CodeBlock code={`curl -X DELETE https://api.sipheron.io/v1/keys/key_abc123xyz789 \\
   -H "Authorization: Bearer {your_admin_key}" \\
   -H "Content-Type: application/json" \\
@@ -509,7 +509,7 @@ type Permission =
     "reason": "Key compromised - rotating credentials"
   }'`} />
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">Response</h3>
+      <h3 id="response" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Response</h3>
       <CodeBlock code={`{
   "success": true,
   "data": {
@@ -530,7 +530,7 @@ type Permission =
       </p>
 
       <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg p-6 mb-8">
-        <h3 className="text-lg font-semibold text-white mb-4">Step-by-Step Rotation</h3>
+        <h3 id="step-by-step-rotation" className="text-lg font-semibold text-white mb-4 scroll-mt-24">Step-by-Step Rotation</h3>
         <ol className="space-y-4 text-gray-300 text-sm">
           <li className="flex gap-3">
             <span className="flex-shrink-0 w-6 h-6 bg-green-500/20 text-green-400 rounded-full flex items-center justify-center text-xs font-bold">1</span>
@@ -555,7 +555,7 @@ type Permission =
         </ol>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Automated Rotation Script</h3>
+      <h3 id="automated-rotation-script" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Automated Rotation Script</h3>
       <CodeBlock code={`#!/bin/bash
 # API Key Rotation Script
 

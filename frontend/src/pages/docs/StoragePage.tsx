@@ -44,21 +44,21 @@ const StoragePage: React.FC = () => {
           <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center mb-3">
             <Database className="w-5 h-5 text-purple-400" />
           </div>
-          <h3 className="font-bold text-white mb-1">On-Chain</h3>
+          <h3 id="on-chain" className="font-bold text-white mb-1 scroll-mt-24">On-Chain</h3>
           <p className="text-sm text-gray-400">Hash, timestamp, and proof</p>
         </div>
         <div className="p-5 rounded-xl border border-white/10 bg-white/5">
           <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center mb-3">
             <HardDrive className="w-5 h-5 text-purple-400" />
           </div>
-          <h3 className="font-bold text-white mb-1">Off-Chain</h3>
+          <h3 id="off-chain" className="font-bold text-white mb-1 scroll-mt-24">Off-Chain</h3>
           <p className="text-sm text-gray-400">Document content and metadata</p>
         </div>
         <div className="p-5 rounded-xl border border-white/10 bg-white/5">
           <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center mb-3">
             <Lock className="w-5 h-5 text-purple-400" />
           </div>
-          <h3 className="font-bold text-white mb-1">Immutable</h3>
+          <h3 id="immutable" className="font-bold text-white mb-1 scroll-mt-24">Immutable</h3>
           <p className="text-sm text-gray-400">Permanent, tamper-proof records</p>
         </div>
       </div>
@@ -134,7 +134,7 @@ const StoragePage: React.FC = () => {
         </div>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">On-Chain Data Structure</h3>
+      <h3 id="on-chain-data-structure" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">On-Chain Data Structure</h3>
       <CodeBlock code={`// SipHeron Anchor Account (Solana)
 use anchor_lang::prelude::*;
 
@@ -291,7 +291,7 @@ impl DocumentAnchor {
         </div>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Program Derived Addresses (PDAs)</h3>
+      <h3 id="program-derived-addresses-pdas" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Program Derived Addresses (PDAs)</h3>
       <p className="text-gray-300 leading-relaxed mb-4">
         SipHeron uses PDAs to create deterministic, collision-resistant addresses for anchors. 
         PDAs have special properties: they don't have a private key, ensuring only the program 
@@ -381,7 +381,7 @@ console.log('Anchor account:', pda.toBase58());`} language="javascript" />
         </div>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Current Pricing (Approximate)</h3>
+      <h3 id="current-pricing-approximate" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Current Pricing (Approximate)</h3>
       <div className="my-6 overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
@@ -420,7 +420,7 @@ console.log('Anchor account:', pda.toBase58());`} language="javascript" />
         itself—not by SipHeron. This is a fundamental shift from traditional cloud storage.
       </p>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Blockchain Persistence</h3>
+      <h3 id="blockchain-persistence" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Blockchain Persistence</h3>
       <ul className="text-gray-300 space-y-2 mb-6">
         <li className="flex items-start gap-2">
           <Database className="w-4 h-4 text-purple-400 mt-1 shrink-0" />
@@ -472,7 +472,7 @@ console.log('Anchor account:', pda.toBase58());`} language="javascript" />
         a document's proof cannot be altered, backdated, or deleted.
       </p>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">How Immutability Works</h3>
+      <h3 id="how-immutability-works" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">How Immutability Works</h3>
 
       {/* Immutability Diagram */}
       <div className="my-6 p-5 bg-[#0D0D0D] border border-[#2A2A2A] rounded-lg font-mono text-sm overflow-x-auto">
@@ -517,7 +517,7 @@ console.log('Anchor account:', pda.toBase58());`} language="javascript" />
         </div>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Fork Resistance</h3>
+      <h3 id="fork-resistance" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Fork Resistance</h3>
       <p className="text-gray-300 leading-relaxed mb-4">
         Solana's proof-of-stake consensus makes historical rewriting computationally infeasible. 
         An attacker would need to control 1/3 of the staked SOL to even attempt a reorganization 
@@ -567,7 +567,7 @@ console.log('Anchor account:', pda.toBase58());`} language="javascript" />
         architectures for redundancy and interoperability.
       </p>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Multi-Chain Anchoring</h3>
+      <h3 id="multi-chain-anchoring" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Multi-Chain Anchoring</h3>
       <CodeBlock code={`// Cross-chain anchor record
 {
   "document_hash": "0x7f83b165...",
@@ -595,7 +595,7 @@ console.log('Anchor account:', pda.toBase58());`} language="javascript" />
   }
 }`} language="json" />
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Chain Selection Trade-offs</h3>
+      <h3 id="chain-selection-trade-offs" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Chain Selection Trade-offs</h3>
       <div className="my-6 overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
@@ -683,7 +683,7 @@ console.log('Anchor account:', pda.toBase58());`} language="javascript" />
         </div>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Personal Data Considerations</h3>
+      <h3 id="personal-data-considerations" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Personal Data Considerations</h3>
       <div className="space-y-4">
         <div className="p-4 rounded-lg border border-green-500/20 bg-green-500/5">
           <h4 className="text-green-400 font-medium mb-2 flex items-center gap-2">
@@ -716,7 +716,7 @@ console.log('Anchor account:', pda.toBase58());`} language="javascript" />
         </div>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Data Processing Agreement</h3>
+      <h3 id="data-processing-agreement" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Data Processing Agreement</h3>
       <p className="text-gray-300 leading-relaxed mb-4">
         SipHeron acts as a data processor for off-chain metadata and as a technical facilitator 
         for on-chain data. Users (data controllers) retain control over what metadata is stored. 

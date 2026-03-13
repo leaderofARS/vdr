@@ -198,7 +198,7 @@ sipheron-vdr anchor ./contracts/ --recursive --dry-run
         Advanced Examples
       </h2>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">CI/CD Integration</h3>
+      <h3 id="ci-cd-integration" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">CI/CD Integration</h3>
       <CodeBlock code={`# Anchor build artifacts in CI pipeline
 sipheron-vdr anchor ./dist/artifacts.zip \\
   --note "Build ${'{{ github.run_number }}'} - ${'{{ github.sha }}'}" \\
@@ -209,7 +209,7 @@ sipheron-vdr anchor ./dist/artifacts.zip \\
 export VERIFY_URL=$(cat anchor-result.json | jq -r '.publicUrl')
 echo "Anchor verification: $VERIFY_URL"`} />
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Automated Backup Anchoring</h3>
+      <h3 id="automated-backup-anchoring" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Automated Backup Anchoring</h3>
       <CodeBlock code={`#!/bin/bash
 # backup-anchor.sh - Run via cron daily
 

@@ -63,7 +63,7 @@ sipheron-vdr link generate 0x7f83b165... --one-time
 # Combined: password + expiration
 sipheron-vdr link generate 0x7f83b165... --password "secret" --expires 30d`} />
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Options</h3>
+      <h3 id="options" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Options</h3>
       <div className="overflow-x-auto mb-8">
         <table className="w-full text-sm">
           <thead>
@@ -130,14 +130,14 @@ sipheron-vdr link revoke --hash 0x7f83b165... --all`} />
         Common Use Cases
       </h2>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Client Contract Verification</h3>
+      <h3 id="client-contract-verification" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Client Contract Verification</h3>
       <CodeBlock code={`# Create a 30-day verification link for client
 LINK=$(sipheron-vdr link generate 0x7f83b165... --expires 30d --json | jq -r '.url')
 echo "Share this link with your client: $LINK"
 
 # Output: https://app.sipheron.io/verify/abc123-def456`} />
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Secure Board Document</h3>
+      <h3 id="secure-board-document" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Secure Board Document</h3>
       <CodeBlock code={`# Password-protected link for sensitive board materials
 sipheron-vdr link generate 0x7f83b165... \\
   --password "Board2024!" \\

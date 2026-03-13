@@ -32,7 +32,7 @@ const DocsIntroduction: React.FC = () => {
           <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center mb-4">
             <span className="text-purple-400 font-bold">1</span>
           </div>
-          <h3 className="text-lg font-bold text-white mb-2">Hash</h3>
+          <h3 id="hash" className="text-lg font-bold text-white mb-2 scroll-mt-24">Hash</h3>
           <p className="text-sm text-gray-400">
             Your document is hashed locally using SHA-256, creating a unique digital fingerprint. The original file never leaves your device.
           </p>
@@ -41,7 +41,7 @@ const DocsIntroduction: React.FC = () => {
           <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center mb-4">
             <span className="text-purple-400 font-bold">2</span>
           </div>
-          <h3 className="text-lg font-bold text-white mb-2">Anchor</h3>
+          <h3 id="anchor" className="text-lg font-bold text-white mb-2 scroll-mt-24">Anchor</h3>
           <p className="text-sm text-gray-400">
             The hash is anchored to the Solana blockchain with a timestamp, creating an immutable proof of existence that lasts forever.
           </p>
@@ -50,7 +50,7 @@ const DocsIntroduction: React.FC = () => {
           <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center mb-4">
             <span className="text-purple-400 font-bold">3</span>
           </div>
-          <h3 className="text-lg font-bold text-white mb-2">Verify</h3>
+          <h3 id="verify" className="text-lg font-bold text-white mb-2 scroll-mt-24">Verify</h3>
           <p className="text-sm text-gray-400">
             Anyone can verify the document's authenticity by re-hashing it and comparing with the blockchain record—instantly and for free.
           </p>

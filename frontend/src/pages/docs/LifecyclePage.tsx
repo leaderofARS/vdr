@@ -142,7 +142,7 @@ const LifecyclePage: React.FC = () => {
         prepared, but no blockchain transaction has been initiated yet.
       </p>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Technical Details</h3>
+      <h3 id="technical-details" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Technical Details</h3>
       <ul className="text-gray-300 space-y-2 mb-6">
         <li className="flex items-start gap-2">
           <Circle className="w-4 h-4 text-purple-400 mt-1 shrink-0" />
@@ -195,7 +195,7 @@ POST /v1/anchors
         together for more efficient on-chain submission.
       </p>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Why Staging Matters</h3>
+      <h3 id="why-staging-matters" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Why Staging Matters</h3>
       <p className="text-gray-300 leading-relaxed mb-4">
         Solana transaction costs are low but not zero. By staging multiple anchors and committing 
         them in batches, you can amortize the base transaction fee across many anchors. This is 
@@ -228,7 +228,7 @@ POST /v1/anchors
         </div>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Staging Configuration</h3>
+      <h3 id="staging-configuration" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Staging Configuration</h3>
       <CodeBlock code={`// Stage multiple anchors
 POST /v1/anchors/stage
 {
@@ -270,7 +270,7 @@ POST /v1/anchors/stage
         At this point, the anchor is "in flight" and awaiting confirmation.
       </p>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Transaction Flow on Solana</h3>
+      <h3 id="transaction-flow-on-solana" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Transaction Flow on Solana</h3>
 
       {/* Transaction Flow Diagram */}
       <div className="my-6 p-5 bg-[#0D0D0D] border border-[#2A2A2A] rounded-lg font-mono text-sm overflow-x-auto">
@@ -314,7 +314,7 @@ POST /v1/anchors/stage
         </div>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Anchor Instruction Structure</h3>
+      <h3 id="anchor-instruction-structure" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Anchor Instruction Structure</h3>
       <CodeBlock code={`// Solana anchor instruction (simplified)
 {
   "program_id": "VDR111111111111111111111111111111111111111",
@@ -348,7 +348,7 @@ POST /v1/anchors/stage
         level. The anchor is now permanently recorded on the blockchain.
       </p>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Solana Commitment Levels</h3>
+      <h3 id="solana-commitment-levels" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Solana Commitment Levels</h3>
       
       <p className="text-gray-300 leading-relaxed mb-4">
         Solana offers different commitment levels that trade speed for finality:
@@ -416,7 +416,7 @@ POST /v1/anchors/stage
         </div>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">SipHeron Commitment Strategy</h3>
+      <h3 id="sipheron-commitment-strategy" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">SipHeron Commitment Strategy</h3>
       <CodeBlock code={`// Default: confirmed (recommended for most use cases)
 {
   "anchor_id": "anchor_abc123",
@@ -489,7 +489,7 @@ POST /v1/anchors/stage
         you build resilient systems.
       </p>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Common Error States</h3>
+      <h3 id="common-error-states" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Common Error States</h3>
 
       <div className="space-y-6">
         <div className="p-4 rounded-lg border border-red-500/20 bg-red-500/5">
@@ -563,7 +563,7 @@ POST /v1/anchors/stage
         </div>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Retry Strategies</h3>
+      <h3 id="retry-strategies" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Retry Strategies</h3>
       <CodeBlock code={`// Exponential backoff retry
 async function retryWithBackoff<T>(
   operation: () => Promise<T>,

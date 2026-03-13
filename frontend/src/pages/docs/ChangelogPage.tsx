@@ -18,10 +18,10 @@ const ChangelogPage: React.FC = () => {
 
       <div className="space-y-12">
         <div className="border-l-2 border-purple-500/50 pl-6">
-          <h2 className="text-2xl font-bold text-white mb-2">v2.5.0</h2>
+          <h2 id="v2-5-0" className="text-2xl font-bold text-white mb-2 scroll-mt-24">v2.5.0</h2>
           <p className="text-sm text-gray-500 mb-4">Released January 15, 2024</p>
           
-          <h3 className="text-lg font-semibold text-white mb-3">New Features</h3>
+          <h3 id="new-features" className="text-lg font-semibold text-white mb-3 scroll-mt-24">New Features</h3>
           <ul className="space-y-2 text-gray-300 mb-6">
             <li className="flex items-start gap-2">
               <span className="text-green-400 mt-1">+</span>
@@ -41,7 +41,7 @@ const ChangelogPage: React.FC = () => {
             </li>
           </ul>
 
-          <h3 className="text-lg font-semibold text-white mb-3">Improvements</h3>
+          <h3 id="improvements" className="text-lg font-semibold text-white mb-3 scroll-mt-24">Improvements</h3>
           <ul className="space-y-2 text-gray-300 mb-6">
             <li className="flex items-start gap-2">
               <span className="text-blue-400 mt-1">•</span>
@@ -59,10 +59,10 @@ const ChangelogPage: React.FC = () => {
         </div>
 
         <div className="border-l-2 border-gray-700 pl-6">
-          <h2 className="text-2xl font-bold text-white mb-2">v2.4.0</h2>
+          <h2 id="v2-4-0" className="text-2xl font-bold text-white mb-2 scroll-mt-24">v2.4.0</h2>
           <p className="text-sm text-gray-500 mb-4">Released December 1, 2023</p>
           
-          <h3 className="text-lg font-semibold text-white mb-3">New Features</h3>
+          <h3 id="new-features" className="text-lg font-semibold text-white mb-3 scroll-mt-24">New Features</h3>
           <ul className="space-y-2 text-gray-300 mb-6">
             <li className="flex items-start gap-2">
               <span className="text-green-400 mt-1">+</span>
@@ -80,10 +80,10 @@ const ChangelogPage: React.FC = () => {
         </div>
 
         <div className="border-l-2 border-gray-700 pl-6">
-          <h2 className="text-2xl font-bold text-white mb-2">v2.3.0</h2>
+          <h2 id="v2-3-0" className="text-2xl font-bold text-white mb-2 scroll-mt-24">v2.3.0</h2>
           <p className="text-sm text-gray-500 mb-4">Released October 15, 2023</p>
           
-          <h3 className="text-lg font-semibold text-white mb-3">New Features</h3>
+          <h3 id="new-features" className="text-lg font-semibold text-white mb-3 scroll-mt-24">New Features</h3>
           <ul className="space-y-2 text-gray-300 mb-6">
             <li className="flex items-start gap-2">
               <span className="text-green-400 mt-1">+</span>
@@ -101,10 +101,10 @@ const ChangelogPage: React.FC = () => {
         </div>
 
         <div className="border-l-2 border-gray-700 pl-6">
-          <h2 className="text-2xl font-bold text-white mb-2">v2.2.0</h2>
+          <h2 id="v2-2-0" className="text-2xl font-bold text-white mb-2 scroll-mt-24">v2.2.0</h2>
           <p className="text-sm text-gray-500 mb-4">Released September 1, 2023</p>
           
-          <h3 className="text-lg font-semibold text-white mb-3">New Features</h3>
+          <h3 id="new-features" className="text-lg font-semibold text-white mb-3 scroll-mt-24">New Features</h3>
           <ul className="space-y-2 text-gray-300 mb-6">
             <li className="flex items-start gap-2">
               <span className="text-green-400 mt-1">+</span>

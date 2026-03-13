@@ -40,19 +40,19 @@ const SupportPage: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
         <a href="mailto:support@sipheron.io" className="p-6 rounded-xl border border-white/10 bg-white/5 hover:border-purple-500/30 hover:bg-white/[0.07] transition-all group">
           <Mail className="w-8 h-8 text-purple-400 mb-4 group-hover:scale-110 transition-transform" />
-          <h3 className="text-lg font-bold text-white mb-2">Email Support</h3>
+          <h3 id="email-support" className="text-lg font-bold text-white mb-2 scroll-mt-24">Email Support</h3>
           <p className="text-sm text-gray-400">support@sipheron.io</p>
           <p className="text-xs text-gray-500 mt-2">Response within 24 hours</p>
         </a>
         <a href="https://discord.gg/sipheron" target="_blank" rel="noopener noreferrer" className="p-6 rounded-xl border border-white/10 bg-white/5 hover:border-purple-500/30 hover:bg-white/[0.07] transition-all group">
           <MessageCircle className="w-8 h-8 text-purple-400 mb-4 group-hover:scale-110 transition-transform" />
-          <h3 className="text-lg font-bold text-white mb-2">Community Discord</h3>
+          <h3 id="community-discord" className="text-lg font-bold text-white mb-2 scroll-mt-24">Community Discord</h3>
           <p className="text-sm text-gray-400">Join our Discord</p>
           <p className="text-xs text-gray-500 mt-2">Community help & discussion</p>
         </a>
         <a href="https://github.com/leaderofARS/vdr/issues" target="_blank" rel="noopener noreferrer" className="p-6 rounded-xl border border-white/10 bg-white/5 hover:border-purple-500/30 hover:bg-white/[0.07] transition-all group">
           <Github className="w-8 h-8 text-purple-400 mb-4 group-hover:scale-110 transition-transform" />
-          <h3 className="text-lg font-bold text-white mb-2">GitHub Issues</h3>
+          <h3 id="github-issues" className="text-lg font-bold text-white mb-2 scroll-mt-24">GitHub Issues</h3>
           <p className="text-sm text-gray-400">Report bugs & request features</p>
           <p className="text-xs text-gray-500 mt-2">Public issue tracking</p>
         </a>
@@ -126,7 +126,7 @@ const SupportPage: React.FC = () => {
         Debugging Guide
       </h2>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Enable Debug Mode</h3>
+      <h3 id="enable-debug-mode" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Enable Debug Mode</h3>
       <CodeBlock code={`# Enable verbose output
 sipheron-vdr anchor ./file.pdf --verbose
 
@@ -140,7 +140,7 @@ sipheron-vdr config show
 # Test API connectivity
 sipheron-vdr status network`} />
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Common Debug Commands</h3>
+      <h3 id="common-debug-commands" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Common Debug Commands</h3>
       <CodeBlock code={`# Check authentication
 sipheron-vdr auth whoami
 

@@ -63,7 +63,7 @@ sipheron-vdr stage add ./file1.pdf ./file2.pdf ./file3.pdf
 # Stage with note
 sipheron-vdr stage add ./report.pdf --note "Q4 Financial Report"`} />
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Options</h3>
+      <h3 id="options" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Options</h3>
       <div className="overflow-x-auto mb-8">
         <table className="w-full text-sm">
           <thead>
@@ -167,7 +167,7 @@ sipheron-vdr stage commit --progress`} />
         Common Workflows
       </h2>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Monthly Document Batch</h3>
+      <h3 id="monthly-document-batch" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Monthly Document Batch</h3>
       <CodeBlock code={`#!/bin/bash
 # monthly-anchor.sh - Run at end of month
 
@@ -186,7 +186,7 @@ sipheron-vdr stage list --json > "anchored-$(date +%Y-%m).json"
 # Clear for next month
 sipheron-vdr stage clear`} />
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Contract Package Anchoring</h3>
+      <h3 id="contract-package-anchoring" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Contract Package Anchoring</h3>
       <CodeBlock code={`# Stage main contract and all appendices
 sipheron-vdr stage add ./contract-main.pdf --tag "client-xyz" --category "master"
 sipheron-vdr stage add ./appendices/ --recursive --tag "client-xyz" --category "appendix"

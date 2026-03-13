@@ -262,7 +262,7 @@ sipheron-vdr stage commit --note "January 2024 contracts batch"`} />
         Common Workflows
       </h2>
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">Contract Lifecycle</h3>
+      <h3 id="contract-lifecycle" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Contract Lifecycle</h3>
       <CodeBlock code={`# 1. Anchor the signed contract
 sipheron-vdr anchor ./contract-signed.pdf --note "Client ABC - Signed Contract"
 
@@ -272,7 +272,7 @@ sipheron-vdr link generate 0xHASH --expires 30d
 # 3. Verify before archiving
 sipheron-vdr verify ./contract-signed.pdf`} />
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">Batch Document Processing</h3>
+      <h3 id="batch-document-processing" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Batch Document Processing</h3>
       <CodeBlock code={`# Stage all legal documents
 sipheron-vdr stage ./legal-documents/ --recursive --tag "legal-2024"
 

@@ -58,6 +58,9 @@ import {
   SupportPage,
 } from '@/pages/docs';
 
+// Shared Layout
+import { MainLayout } from '@/components/shared/MainLayout';
+
 // Dashboard
 import { DashboardLayout } from '@/components/dashboard';
 import {
@@ -118,18 +121,20 @@ const PublicOnlyRoute: FC<{ children: React.ReactNode }> = ({ children }) => {
 const AppRoutes: FC = () => {
   return (
     <Routes>
-      {/* Landing Page */}
-      <Route path="/" element={<LandingPage />} />
-      
-      {/* Public Pages */}
-      <Route path="/verify" element={<VerifyLandingPage />} />
-      <Route path="/verify/:hash" element={<VerifyPage />} />
-      <Route path="/invite/:token" element={<InviteAcceptPage />} />
-      <Route path="/pricing" element={<PricingPage />} />
-      
-      {/* Legal Pages */}
-      <Route path="/terms" element={<TermsPage />} />
-      <Route path="/privacy" element={<PrivacyPage />} />
+      <Route element={<MainLayout />}>
+        {/* Landing Page */}
+        <Route path="/" element={<LandingPage />} />
+        
+        {/* Public Pages */}
+        <Route path="/verify" element={<VerifyLandingPage />} />
+        <Route path="/verify/:hash" element={<VerifyPage />} />
+        <Route path="/invite/:token" element={<InviteAcceptPage />} />
+        <Route path="/pricing" element={<PricingPage />} />
+        
+        {/* Legal Pages */}
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
+      </Route>
       
       {/* Docs */}
       <Route path="/docs" element={<DocsLayout />}>
@@ -182,10 +187,12 @@ const AppRoutes: FC = () => {
       </Route>
       
       {/* Auth Routes - redirect to dashboard if already logged in */}
-      <Route path="/auth/login" element={<PublicOnlyRoute><LoginPage /></PublicOnlyRoute>} />
-      <Route path="/auth/register" element={<PublicOnlyRoute><RegisterPage /></PublicOnlyRoute>} />
-      <Route path="/auth/forgot-password" element={<PublicOnlyRoute><ForgotPasswordPage /></PublicOnlyRoute>} />
-      <Route path="/auth/reset-password" element={<PublicOnlyRoute><ResetPasswordPage /></PublicOnlyRoute>} />
+      <Route element={<MainLayout />}>
+        <Route path="/auth/login" element={<PublicOnlyRoute><LoginPage /></PublicOnlyRoute>} />
+        <Route path="/auth/register" element={<PublicOnlyRoute><RegisterPage /></PublicOnlyRoute>} />
+        <Route path="/auth/forgot-password" element={<PublicOnlyRoute><ForgotPasswordPage /></PublicOnlyRoute>} />
+        <Route path="/auth/reset-password" element={<PublicOnlyRoute><ResetPasswordPage /></PublicOnlyRoute>} />
+      </Route>
       
       {/* Dashboard Routes - require authentication */}
       <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>

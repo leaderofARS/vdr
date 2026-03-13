@@ -176,7 +176,7 @@ sipheron-vdr verify ./contract.pdf --json
 # Quiet mode (just exit code)
 sipheron-vdr verify ./contract.pdf --quiet`} />
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">JSON Output Example</h3>
+      <h3 id="json-output-example" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">JSON Output Example</h3>
       <CodeBlock code={`{
   "verified": true,
   "file": "./contract.pdf",

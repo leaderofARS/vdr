@@ -102,7 +102,7 @@ interface OrganizationMember {
         <code className="text-purple-300 font-mono text-sm">/organizations/:id</code>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">URL Parameters</h3>
+      <h3 id="url-parameters" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">URL Parameters</h3>
       <div className="overflow-x-auto mb-6">
         <table className="w-full text-sm">
           <thead>
@@ -127,7 +127,7 @@ interface OrganizationMember {
       <CodeBlock code={`curl -X GET https://api.sipheron.io/v1/organizations/org_acme_corp \\
   -H "Authorization: Bearer sk_live_admin_51HYs2jK8QJ4mP2v9..."`} />
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">Response</h3>
+      <h3 id="response" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Response</h3>
       <CodeBlock code={`{
   "success": true,
   "data": {
@@ -164,7 +164,7 @@ interface OrganizationMember {
         <code className="text-purple-300 font-mono text-sm">/organizations/:id</code>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">Request Body</h3>
+      <h3 id="request-body" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Request Body</h3>
       <div className="overflow-x-auto mb-6">
         <table className="w-full text-sm">
           <thead>
@@ -225,7 +225,7 @@ interface OrganizationMember {
         <code className="text-purple-300 font-mono text-sm">/organizations/:id/usage</code>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">Query Parameters</h3>
+      <h3 id="query-parameters" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Query Parameters</h3>
       <div className="overflow-x-auto mb-6">
         <table className="w-full text-sm">
           <thead>
@@ -250,7 +250,7 @@ interface OrganizationMember {
       <CodeBlock code={`curl -X GET "https://api.sipheron.io/v1/organizations/org_acme_corp/usage?period=current" \\
   -H "Authorization: Bearer sk_live_admin_51HYs2jK8QJ4mP2v9..."`} />
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">Response</h3>
+      <h3 id="response" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Response</h3>
       <CodeBlock code={`{
   "success": true,
   "data": {
@@ -294,7 +294,7 @@ interface OrganizationMember {
         <code className="text-purple-300 font-mono text-sm">/organizations/:id/members</code>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">Query Parameters</h3>
+      <h3 id="query-parameters" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Query Parameters</h3>
       <div className="overflow-x-auto mb-6">
         <table className="w-full text-sm">
           <thead>
@@ -325,7 +325,7 @@ interface OrganizationMember {
       <CodeBlock code={`curl -X GET "https://api.sipheron.io/v1/organizations/org_acme_corp/members?limit=50" \\
   -H "Authorization: Bearer sk_live_admin_51HYs2jK8QJ4mP2v9..."`} />
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">Response</h3>
+      <h3 id="response" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Response</h3>
       <CodeBlock code={`{
   "success": true,
   "data": {
@@ -365,7 +365,7 @@ interface OrganizationMember {
         <code className="text-purple-300 font-mono text-sm">/organizations/:id/invites</code>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">Request Body</h3>
+      <h3 id="request-body" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Request Body</h3>
       <div className="overflow-x-auto mb-6">
         <table className="w-full text-sm">
           <thead>
@@ -415,7 +415,7 @@ interface OrganizationMember {
     "expires_in_days": 7
   }'`} />
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">Response (201 Created)</h3>
+      <h3 id="response-201-created" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Response (201 Created)</h3>
       <CodeBlock code={`{
   "success": true,
   "data": {
@@ -499,7 +499,7 @@ interface OrganizationMember {
         to manage subscriptions and payment methods.
       </p>
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">Billing Endpoints</h3>
+      <h3 id="billing-endpoints" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Billing Endpoints</h3>
       <div className="overflow-x-auto mb-6">
         <table className="w-full text-sm">
           <thead>
@@ -536,7 +536,7 @@ interface OrganizationMember {
     "return_url": "https://app.sipheron.io/settings/billing"
   }'`} />
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">Response</h3>
+      <h3 id="response" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Response</h3>
       <CodeBlock code={`{
   "success": true,
   "data": {

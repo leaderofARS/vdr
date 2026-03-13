@@ -104,7 +104,7 @@ interface VerificationResult {
         <code className="text-purple-300 font-mono text-sm">/hashes</code>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">Request Body</h3>
+      <h3 id="request-body" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Request Body</h3>
       <div className="overflow-x-auto mb-6">
         <table className="w-full text-sm">
           <thead>
@@ -156,7 +156,7 @@ interface VerificationResult {
         </table>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">Request Example</h3>
+      <h3 id="request-example" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Request Example</h3>
       <CodeBlock code={`curl -X POST https://api.sipheron.io/v1/hashes \\
   -H "Authorization: Bearer sk_live_51HYs2jK8QJ4mP2v9..." \\
   -H "Content-Type: application/json" \\
@@ -174,7 +174,7 @@ interface VerificationResult {
     "webhook_url": "https://myapp.com/webhooks/hash-events"
   }'`} />
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">Response (201 Created)</h3>
+      <h3 id="response-201-created" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Response (201 Created)</h3>
       <CodeBlock code={`{
   "success": true,
   "data": {
@@ -222,7 +222,7 @@ interface VerificationResult {
         <code className="text-purple-300 font-mono text-sm">/hashes</code>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">Query Parameters</h3>
+      <h3 id="query-parameters" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Query Parameters</h3>
       <div className="overflow-x-auto mb-6">
         <table className="w-full text-sm">
           <thead>
@@ -298,11 +298,11 @@ interface VerificationResult {
         </table>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">Request Example</h3>
+      <h3 id="request-example" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Request Example</h3>
       <CodeBlock code={`curl -X GET "https://api.sipheron.io/v1/hashes?limit=10&network=mainnet&status=confirmed&sort_by=created_at&sort_order=desc" \\
   -H "Authorization: Bearer sk_live_51HYs2jK8QJ4mP2v9..."`} />
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">Response</h3>
+      <h3 id="response" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Response</h3>
       <CodeBlock code={`{
   "success": true,
   "data": {
@@ -340,7 +340,7 @@ interface VerificationResult {
         <code className="text-purple-300 font-mono text-sm">/hashes/:id</code>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">URL Parameters</h3>
+      <h3 id="url-parameters" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">URL Parameters</h3>
       <div className="overflow-x-auto mb-6">
         <table className="w-full text-sm">
           <thead>
@@ -362,11 +362,11 @@ interface VerificationResult {
         </table>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">Request Example</h3>
+      <h3 id="request-example" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Request Example</h3>
       <CodeBlock code={`curl -X GET https://api.sipheron.io/v1/hashes/hash_2vN8mKpQr5StUvWxYzAbCdEfGhIjKlMnOp \\
   -H "Authorization: Bearer sk_live_51HYs2jK8QJ4mP2v9..."`} />
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">Response</h3>
+      <h3 id="response" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Response</h3>
       <CodeBlock code={`{
   "success": true,
   "data": {
@@ -405,7 +405,7 @@ interface VerificationResult {
         <code className="text-purple-300 font-mono text-sm">/hashes/:id/verify</code>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">URL Parameters</h3>
+      <h3 id="url-parameters" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">URL Parameters</h3>
       <div className="overflow-x-auto mb-6">
         <table className="w-full text-sm">
           <thead>
@@ -427,7 +427,7 @@ interface VerificationResult {
         </table>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">Query Parameters</h3>
+      <h3 id="query-parameters" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Query Parameters</h3>
       <div className="overflow-x-auto mb-6">
         <table className="w-full text-sm">
           <thead>
@@ -449,11 +449,11 @@ interface VerificationResult {
         </table>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">Request Example</h3>
+      <h3 id="request-example" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Request Example</h3>
       <CodeBlock code={`curl -X GET "https://api.sipheron.io/v1/hashes/hash_2vN8mKpQr5StUvWxYzAbCdEfGhIjKlMnOp/verify?hash=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" \\
   -H "Authorization: Bearer sk_live_51HYs2jK8QJ4mP2v9..."`} />
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">Response</h3>
+      <h3 id="response" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Response</h3>
       <CodeBlock code={`{
   "success": true,
   "data": {
@@ -484,7 +484,7 @@ interface VerificationResult {
         <code className="text-purple-300 font-mono text-sm">/hashes/:id</code>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">URL Parameters</h3>
+      <h3 id="url-parameters" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">URL Parameters</h3>
       <div className="overflow-x-auto mb-6">
         <table className="w-full text-sm">
           <thead>
@@ -506,7 +506,7 @@ interface VerificationResult {
         </table>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">Request Body</h3>
+      <h3 id="request-body" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Request Body</h3>
       <div className="overflow-x-auto mb-6">
         <table className="w-full text-sm">
           <thead>
@@ -528,7 +528,7 @@ interface VerificationResult {
         </table>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">Request Example</h3>
+      <h3 id="request-example" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Request Example</h3>
       <CodeBlock code={`curl -X DELETE https://api.sipheron.io/v1/hashes/hash_2vN8mKpQr5StUvWxYzAbCdEfGhIjKlMnOp \\
   -H "Authorization: Bearer sk_live_51HYs2jK8QJ4mP2v9..." \\
   -H "Content-Type: application/json" \\
@@ -536,7 +536,7 @@ interface VerificationResult {
     "reason": "Document superseded by version 2.0"
   }'`} />
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">Response</h3>
+      <h3 id="response" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Response</h3>
       <CodeBlock code={`{
   "success": true,
   "data": {
@@ -557,7 +557,7 @@ interface VerificationResult {
         Subscribe to webhook events to receive real-time notifications about hash lifecycle changes.
       </p>
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">Available Events</h3>
+      <h3 id="available-events" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Available Events</h3>
       <div className="overflow-x-auto mb-6">
         <table className="w-full text-sm">
           <thead>
@@ -591,7 +591,7 @@ interface VerificationResult {
         </table>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3">Webhook Payload Example</h3>
+      <h3 id="webhook-payload-example" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Webhook Payload Example</h3>
       <CodeBlock code={`{
   "id": "evt_abc123xyz",
   "type": "hash.confirmed",

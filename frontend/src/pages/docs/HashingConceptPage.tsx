@@ -44,21 +44,21 @@ const HashingConceptPage: React.FC = () => {
           <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center mb-3">
             <Shield className="w-5 h-5 text-purple-400" />
           </div>
-          <h3 className="font-bold text-white mb-1">Deterministic</h3>
+          <h3 id="deterministic" className="font-bold text-white mb-1 scroll-mt-24">Deterministic</h3>
           <p className="text-sm text-gray-400">Same input always produces identical output</p>
         </div>
         <div className="p-5 rounded-xl border border-white/10 bg-white/5">
           <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center mb-3">
             <Zap className="w-5 h-5 text-purple-400" />
           </div>
-          <h3 className="font-bold text-white mb-1">Avalanche Effect</h3>
+          <h3 id="avalanche-effect" className="font-bold text-white mb-1 scroll-mt-24">Avalanche Effect</h3>
           <p className="text-sm text-gray-400">Tiny changes produce completely different hashes</p>
         </div>
         <div className="p-5 rounded-xl border border-white/10 bg-white/5">
           <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center mb-3">
             <Lock className="w-5 h-5 text-purple-400" />
           </div>
-          <h3 className="font-bold text-white mb-1">Collision Resistant</h3>
+          <h3 id="collision-resistant" className="font-bold text-white mb-1 scroll-mt-24">Collision Resistant</h3>
           <p className="text-sm text-gray-400">Practically impossible to find two identical hashes</p>
         </div>
       </div>
@@ -73,7 +73,7 @@ const HashingConceptPage: React.FC = () => {
         systems, and now SipHeron VDR.
       </p>
       
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Mathematical Foundation</h3>
+      <h3 id="mathematical-foundation" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Mathematical Foundation</h3>
       <p className="text-gray-300 leading-relaxed mb-4">
         SHA-256 operates on 512-bit message blocks and uses a Merkle-Damgård structure with a 
         Davies-Meyer compression function. The algorithm processes data in 64 rounds of bit 
@@ -91,7 +91,7 @@ Maj(x, y, z)  = (x AND y) XOR (x AND z) XOR (y AND z)
         </pre>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">The Hashing Process</h3>
+      <h3 id="the-hashing-process" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">The Hashing Process</h3>
       
       {/* ASCII Diagram for Hashing Process */}
       <div className="my-6 p-5 bg-[#0D0D0D] border border-[#2A2A2A] rounded-lg font-mono text-sm">
@@ -139,7 +139,7 @@ Maj(x, y, z)  = (x AND y) XOR (x AND z) XOR (y AND z)
         Core Hash Properties
       </h2>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">1. Deterministic</h3>
+      <h3 id="1-deterministic" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">1. Deterministic</h3>
       <p className="text-gray-300 leading-relaxed mb-4">
         Given the same input, SHA-256 always produces the exact same output hash. This property 
         is essential for verification—you can re-compute the hash of a document at any time and 
@@ -156,7 +156,7 @@ console.log(hash1 === hash2); // Always true: true
 console.log(hash1); 
 // Output: 8d5e5f0e3b5c3d8f9e4a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f0a9b8c7d6`} language="javascript" />
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">2. Avalanche Effect</h3>
+      <h3 id="2-avalanche-effect" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">2. Avalanche Effect</h3>
       <p className="text-gray-300 leading-relaxed mb-4">
         A tiny change in the input—even a single bit—results in a completely different hash. 
         On average, 50% of the output bits change. This ensures that any tampering with a document 
@@ -187,7 +187,7 @@ console.log(hash1);
         </table>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">3. Collision Resistance</h3>
+      <h3 id="3-collision-resistance" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">3. Collision Resistance</h3>
       <p className="text-gray-300 leading-relaxed mb-4">
         A collision occurs when two different inputs produce the same hash. For SHA-256, finding 
         a collision requires approximately 2¹²⁸ operations (birthday paradox bound). At current 
@@ -210,7 +210,7 @@ console.log(hash1);
         Why Hash Before Anchoring?
       </h2>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Privacy Preservation</h3>
+      <h3 id="privacy-preservation" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Privacy Preservation</h3>
       <p className="text-gray-300 leading-relaxed mb-4">
         By anchoring only the hash (not the actual file), you maintain complete privacy. Anyone 
         examining the blockchain sees only a meaningless 64-character string—not your contracts, 
@@ -239,7 +239,7 @@ console.log(hash1);
         </div>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Storage Efficiency</h3>
+      <h3 id="storage-efficiency" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Storage Efficiency</h3>
       <p className="text-gray-300 leading-relaxed mb-4">
         Blockchains have limited storage capacity and high storage costs. Anchoring a 64-byte hash 
         instead of a 10MB PDF is approximately 160,000x more efficient. This cost savings makes 
@@ -284,7 +284,7 @@ console.log(hash1);
         privacy and performance implications.
       </p>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Local Hashing (Recommended)</h3>
+      <h3 id="local-hashing-recommended" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Local Hashing (Recommended)</h3>
       <p className="text-gray-300 leading-relaxed mb-4">
         The document is hashed on your device before any data is transmitted. Only the hash (not 
         the document) is sent to SipHeron servers. This is the most private option—SipHeron never 
@@ -299,7 +299,7 @@ sipheron-vdr anchor ./contract.pdf --local-hash
 // 3. Sends ONLY the hash to API
 // 4. File content never leaves your machine`} language="bash" />
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Server-Side Hashing</h3>
+      <h3 id="server-side-hashing" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Server-Side Hashing</h3>
       <p className="text-gray-300 leading-relaxed mb-4">
         The document is uploaded to SipHeron servers, hashed there, and then the file is discarded. 
         This option is useful when client-side hashing libraries aren't available, but requires 
@@ -399,7 +399,7 @@ sipheron-vdr anchor ./contract.pdf --server-hash
         </div>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Step-by-Step Verification</h3>
+      <h3 id="step-by-step-verification" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Step-by-Step Verification</h3>
       <CodeBlock code={`# Example: Verifying a document
 $ sipheron-vdr verify ./contract-signed.pdf
 
@@ -482,7 +482,7 @@ Comparing hashes... ✓ MATCH
         Implementation Examples
       </h2>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">JavaScript/Node.js</h3>
+      <h3 id="javascript-node-js" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">JavaScript/Node.js</h3>
       <CodeBlock code={`const crypto = require('crypto');
 const fs = require('fs');
 
@@ -513,7 +513,7 @@ async function main() {
 
 main();`} language="javascript" />
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Python</h3>
+      <h3 id="python" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Python</h3>
       <CodeBlock code={`import hashlib
 
 # Hash a string
@@ -533,7 +533,7 @@ if __name__ == '__main__':
     file_hash = hash_file('./document.pdf')
     print(f'SHA-256: {file_hash}')`} language="python" />
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Go</h3>
+      <h3 id="go" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Go</h3>
       <CodeBlock code={`package main
 
 import (
@@ -574,7 +574,7 @@ func main() {
 	fmt.Println("SHA-256:", hash)
 }`} language="go" />
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Rust</h3>
+      <h3 id="rust" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Rust</h3>
       <CodeBlock code={`use sha2::{Sha256, Digest};
 use std::fs::File;
 use std::io::{self, Read};
@@ -615,7 +615,7 @@ fn main() {
         Edge Cases and Special Scenarios
       </h2>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Empty Files</h3>
+      <h3 id="empty-files" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Empty Files</h3>
       <p className="text-gray-300 leading-relaxed mb-4">
         An empty file (0 bytes) still produces a valid SHA-256 hash. This is the hash of the empty string:
       </p>
@@ -623,7 +623,7 @@ fn main() {
 echo -n "" | sha256sum
 # Output: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`} language="bash" />
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Binary Files</h3>
+      <h3 id="binary-files" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Binary Files</h3>
       <p className="text-gray-300 leading-relaxed mb-4">
         SHA-256 treats all data as binary—it doesn't interpret content. Images, executables, 
         compiled code, and encrypted files are hashed the same way as text files.
@@ -634,7 +634,7 @@ sipheron-vdr anchor ./app.exe        # Executable
 sipheron-vdr anchor ./data.enc       # Encrypted file
 sipheron-vdr anchor ./video.mp4      # Large binary`} language="bash" />
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Very Large Files</h3>
+      <h3 id="very-large-files" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Very Large Files</h3>
       <p className="text-gray-300 leading-relaxed mb-4">
         For files larger than available RAM, use streaming (chunked) hashing. This processes 
         the file in small segments without loading it entirely into memory.
@@ -660,7 +660,7 @@ const hashLargeFile = (filePath) => {
 
 // Works for any file size - tested up to 100GB+`} language="javascript" />
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Encoding Considerations</h3>
+      <h3 id="encoding-considerations" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Encoding Considerations</h3>
       <p className="text-gray-300 leading-relaxed mb-4">
         Text encoding matters! The same text in UTF-8 vs UTF-16 produces different hashes. 
         Always use consistent encoding.

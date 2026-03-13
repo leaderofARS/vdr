@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Search, Menu, X, ExternalLink, ChevronRight } from 'lucide-react';
-import { Input } from '@/components/ui/input';
+import { ExternalLink, ChevronRight } from 'lucide-react';
+import { Navbar, Footer } from '@/sections/landing';
+import { TableOfContents } from '@/components/docs/TableOfContents';
 
 // Sidebar navigation structure
 const SIDEBAR_ITEMS = [
@@ -206,64 +207,30 @@ export const DocsLayout: React.FC = () => {
   const currentPath = location.pathname;
 
   return (
-    <div className="min-h-screen bg-[#050505]">
-      {/* Docs Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 h-12 flex items-center bg-[#08080F]/95 backdrop-blur-xl border-b border-[#2A2A2A]">
-        <div className="max-w-7xl mx-auto px-4 w-full flex items-center justify-between">
-          {/* Left: Logo & Mobile Menu */}
-          <div className="flex items-center gap-4">
-            <button
-              className="lg:hidden p-2 -ml-2 text-[#888] hover:text-white"
-              onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-            >
-              {mobileSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
-            <Link to="/" className="flex items-center gap-2">
-              <div className="w-7 h-7">
-                <img
-                  src="/sipheron_vdap_logo.png"
-                  alt="SipHeron"
-                  className="w-full h-full object-contain"
-                />
-              </div>
-              <span className="text-[15px] font-bold text-white">Resources</span>
-            </Link>
-          </div>
+    <div className="min-h-screen bg-[#050505] flex flex-col">
+      <Navbar />
 
-          {/* Center: Search */}
-          <div className="hidden md:flex flex-1 max-w-md mx-8">
-            <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#555]" />
-              <Input
-                type="text"
-                placeholder="Search documentation..."
-                className="w-full pl-10 pr-4 py-1.5 bg-[#111] border-[#2A2A2A] text-[#EDEDED] text-sm rounded-lg placeholder:text-[#555]"
-              />
+      <div className="flex-1 flex pt-12">
+        {/* Sidebar */}
+        <DocsSidebar currentPath={currentPath} />
+        <MobileSidebar isOpen={mobileSidebarOpen} onClose={() => setMobileSidebarOpen(false)} currentPath={currentPath} />
+
+        {/* Main Content Area */}
+        <main className="flex-1 lg:ml-[240px] flex">
+          <div className="flex-1 max-w-5xl mx-auto px-6 py-12 flex gap-12">
+            <div className="flex-1 min-w-0">
+              <Outlet />
             </div>
+            
+            {/* Table of Contents - Right Side */}
+            <TableOfContents />
           </div>
+        </main>
+      </div>
 
-          {/* Right: Nav Links */}
-          <div className="flex items-center gap-4">
-            <Link to="/" className="text-[13px] text-[#888] hover:text-white hidden sm:block">
-              Home
-            </Link>
-            <Link to="/dashboard" className="text-[13px] text-[#888] hover:text-white">
-              Dashboard
-            </Link>
-          </div>
-        </div>
-      </header>
-
-      {/* Sidebar */}
-      <DocsSidebar currentPath={currentPath} />
-      <MobileSidebar isOpen={mobileSidebarOpen} onClose={() => setMobileSidebarOpen(false)} currentPath={currentPath} />
-
-      {/* Main Content */}
-      <main className="lg:ml-[240px] pt-12 min-h-screen">
-        <div className="max-w-4xl mx-auto px-6 py-12">
-          <Outlet />
-        </div>
-      </main>
+      <div className="lg:ml-[240px]">
+        <Footer />
+      </div>
     </div>
   );
 };

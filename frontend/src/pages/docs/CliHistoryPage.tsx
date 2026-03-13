@@ -82,7 +82,7 @@ sipheron-vdr history --csv > anchors.csv
 # Compact format
 sipheron-vdr history --compact`} />
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Sample Table Output</h3>
+      <h3 id="sample-table-output" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Sample Table Output</h3>
       <CodeBlock code={`TIMESTAMP            HASH                                      NETWORK   NOTE
 ─────────────────────────────────────────────────────────────────────────────────────────────
 2024-01-15 09:23:45  0x7f83b1...a4d9  mainnet   Client ABC Contract

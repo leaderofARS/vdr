@@ -50,7 +50,7 @@ const ApiWebhooksPage: React.FC = () => {
     "description": "Production webhook"
   }'`} />
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Event Types</h3>
+      <h3 id="event-types" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Event Types</h3>
       <div className="overflow-x-auto mb-8">
         <table className="w-full text-sm">
           <thead>

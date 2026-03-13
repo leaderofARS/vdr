@@ -48,7 +48,7 @@ sipheron-vdr status --hash 0x7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa5d007f1bfa
 # JSON output for scripting
 sipheron-vdr status anchor_abc123 --json`} />
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Sample Output</h3>
+      <h3 id="sample-output" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Sample Output</h3>
       <CodeBlock code={`Anchor Status: anchor_abc123
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -138,7 +138,7 @@ sipheron-vdr status slot
 # Check current epoch
 sipheron-vdr status epoch`} />
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Network Status Output</h3>
+      <h3 id="network-status-output" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Network Status Output</h3>
       <CodeBlock code={`Network Status: mainnet
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -165,7 +165,7 @@ sipheron-vdr status quota
 # JSON output
 sipheron-vdr status quota --json`} />
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Quota Output</h3>
+      <h3 id="quota-output" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Quota Output</h3>
       <CodeBlock code={`Organization Quota Status
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 

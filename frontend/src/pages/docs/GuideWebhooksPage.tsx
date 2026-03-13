@@ -282,7 +282,7 @@ ngrok http 3000
       </div>
 
       <div className="p-6 rounded-xl border border-pink-500/20 bg-pink-500/5 mb-12">
-        <h3 className="text-lg font-bold text-white mb-2">Webhook Support</h3>
+        <h3 id="webhook-support" className="text-lg font-bold text-white mb-2 scroll-mt-24">Webhook Support</h3>
         <p className="text-gray-300 mb-4">
           Need help building webhook integrations? Our team can assist with custom integrations.
         </p>

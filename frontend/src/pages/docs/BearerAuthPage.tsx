@@ -61,7 +61,7 @@ const BearerAuthPage: React.FC = () => {
         ensures the token hasn't been tampered with.
       </p>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">
+      <h3 id="token-structure" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">
         Token Structure
       </h3>
       <CodeBlock code={`# Example JWT Token (decoded)
@@ -116,7 +116,7 @@ eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4
         </div>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">
+      <h3 id="token-expiration" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">
         Token Expiration
       </h3>
       <p className="text-gray-300 leading-relaxed mb-4">
@@ -156,7 +156,7 @@ eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4
         How to Get Tokens
       </h2>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">
+      <h3 id="via-cli-login" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">
         Via CLI Login
       </h3>
       <p className="text-gray-300 leading-relaxed mb-4">
@@ -179,7 +179,7 @@ sipheron-vdr auth login --email user@example.com --password YourPassword123 --js
 #   "token_type": "Bearer"
 # }`} />
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">
+      <h3 id="via-api" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">
         Via API
       </h3>
       <p className="text-gray-300 leading-relaxed mb-4">
@@ -204,7 +204,7 @@ curl -X POST https://api.sipheron.io/v1/auth/token \\
   "scope": "read write"
 }`} />
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">
+      <h3 id="via-dashboard" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">
         Via Dashboard
       </h3>
       <p className="text-gray-300 leading-relaxed mb-4">
@@ -223,7 +223,7 @@ curl -X POST https://api.sipheron.io/v1/auth/token \\
         Using Tokens in API Requests
       </h2>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">
+      <h3 id="authorization-header" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">
         Authorization Header
       </h3>
       <p className="text-gray-300 leading-relaxed mb-4">
@@ -247,7 +247,7 @@ curl -X POST https://api.sipheron.io/v1/anchors \\
     }
   }'`} />
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">
+      <h3 id="javascript-typescript-example" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">
         JavaScript/TypeScript Example
       </h3>
       <CodeBlock code={`// Using native fetch
@@ -280,7 +280,7 @@ anchorDocument('sha256:abc123...', token)
   .then(result => console.log('Anchored:', result))
   .catch(err => console.error('Error:', err));`} language="typescript" />
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">
+      <h3 id="python-example" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">
         Python Example
       </h3>
       <CodeBlock code={`import requests
@@ -330,7 +330,7 @@ print(f"Anchor created: {result['anchor_id']}")`} language="python" />
         </div>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">
+      <h3 id="manual-token-refresh" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">
         Manual Token Refresh
       </h3>
       <CodeBlock code={`# Exchange refresh token for new access token
@@ -349,7 +349,7 @@ curl -X POST https://api.sipheron.io/v1/auth/refresh \\
   "expires_in": 900
 }`} />
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">
+      <h3 id="refresh-implementation-pattern" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">
         Refresh Implementation Pattern
       </h3>
       <CodeBlock code={`class TokenManager {
@@ -436,7 +436,7 @@ curl -X POST https://api.sipheron.io/v1/auth/refresh \\
         </div>
       </div>
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">
+      <h3 id="environment-variable-management" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">
         Environment Variable Management
       </h3>
       <CodeBlock code={`# .env file (never commit this!)
@@ -462,7 +462,7 @@ access_token = os.environ.get('SIPHERON_ACCESS_TOKEN')`} />
         Revoke tokens immediately if you suspect compromise or when an employee leaves:
       </p>
 
-      <h3 className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">
+      <h3 id="revoke-via-api" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">
         Revoke via API
       </h3>
       <CodeBlock code={`# Revoke a specific token
@@ -480,7 +480,7 @@ curl -X POST https://api.sipheron.io/v1/auth/revoke-all \\
   -H "Content-Type: application/json" \\
   -d '{"user_id": "user_abc123"}'`} />
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">
+      <h3 id="revoke-via-cli" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">
         Revoke via CLI
       </h3>
       <CodeBlock code={`# Logout and revoke current session token
@@ -499,7 +499,7 @@ sipheron-vdr auth revoke --all`} />
 
       <div className="space-y-6">
         <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20">
-          <h3 className="font-semibold text-red-300 mb-2">401 Unauthorized - Token Expired</h3>
+          <h3 id="401-unauthorized-token-expired" className="font-semibold text-red-300 mb-2 scroll-mt-24">401 Unauthorized - Token Expired</h3>
           <p className="text-sm text-gray-400 mb-3">
             The access token has expired. Use the refresh token to get a new one.
           </p>
@@ -510,7 +510,7 @@ curl -X POST https://api.sipheron.io/v1/auth/refresh \\
         </div>
 
         <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20">
-          <h3 className="font-semibold text-red-300 mb-2">401 Unauthorized - Invalid Token</h3>
+          <h3 id="401-unauthorized-invalid-token" className="font-semibold text-red-300 mb-2 scroll-mt-24">401 Unauthorized - Invalid Token</h3>
           <p className="text-sm text-gray-400 mb-3">
             Token signature is invalid or token has been revoked.
           </p>
@@ -524,7 +524,7 @@ curl -X POST https://api.sipheron.io/v1/auth/token \\
         </div>
 
         <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20">
-          <h3 className="font-semibold text-red-300 mb-2">403 Forbidden - Insufficient Scope</h3>
+          <h3 id="403-forbidden-insufficient-scope" className="font-semibold text-red-300 mb-2 scroll-mt-24">403 Forbidden - Insufficient Scope</h3>
           <p className="text-sm text-gray-400 mb-3">
             The token doesn't have permission for the requested operation.
           </p>
@@ -540,7 +540,7 @@ curl -X POST https://api.sipheron.io/v1/auth/token \\
         </div>
 
         <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20">
-          <h3 className="font-semibold text-red-300 mb-2">400 Bad Request - Malformed Header</h3>
+          <h3 id="400-bad-request-malformed-header" className="font-semibold text-red-300 mb-2 scroll-mt-24">400 Bad Request - Malformed Header</h3>
           <p className="text-sm text-gray-400 mb-3">
             The Authorization header format is incorrect.
           </p>

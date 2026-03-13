@@ -6,7 +6,6 @@
  */
 
 import React, { useState, useCallback } from 'react';
-import { Link } from 'react-router-dom';
 import { 
   ShieldCheck, 
   ShieldAlert, 
@@ -107,29 +106,7 @@ export const VerifyLandingPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-sipheron-base text-white flex flex-col">
-      {/* Header */}
-      <header className="border-b border-white/[0.06] bg-sipheron-surface/50 backdrop-blur-xl">
-        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-sipheron-purple to-sipheron-teal flex items-center justify-center">
-              <span className="text-white font-bold text-sm">S</span>
-            </div>
-            <span className="font-bold text-white">SipHeron VDR</span>
-          </Link>
-          <nav className="flex items-center gap-4">
-            <Link to="/" className="text-sm text-sipheron-text-muted hover:text-sipheron-text-primary transition-colors">
-              Home
-            </Link>
-            <Link to="/pricing" className="text-sm text-sipheron-text-muted hover:text-sipheron-text-primary transition-colors">
-              Pricing
-            </Link>
-            <Link to="/docs" className="text-sm text-sipheron-text-muted hover:text-sipheron-text-primary transition-colors">
-              Docs
-            </Link>
-          </nav>
-        </div>
-      </header>
+<div className="min-h-screen bg-sipheron-base text-white flex flex-col">
 
       <main className="flex-grow flex flex-col items-center justify-center p-6 sm:p-8">
         <div className="w-full max-w-3xl">
@@ -309,22 +286,6 @@ export const VerifyLandingPage: React.FC = () => {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-white/[0.06] py-6">
-        <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-sipheron-text-muted">
-            © 2025 SipHeron VDR. All rights reserved.
-          </p>
-          <div className="flex items-center gap-4">
-            <Link to="/terms" className="text-xs text-sipheron-text-muted hover:text-sipheron-text-primary transition-colors">
-              Terms
-            </Link>
-            <Link to="/privacy" className="text-xs text-sipheron-text-muted hover:text-sipheron-text-primary transition-colors">
-              Privacy
-            </Link>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 };

@@ -46,7 +46,7 @@ const ApiUsagePage: React.FC = () => {
       <CodeBlock code={`curl https://api.sipheron.io/v1/usage \\
   -H "Authorization: Bearer YOUR_API_KEY"`} />
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Response</h3>
+      <h3 id="response" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Response</h3>
       <CodeBlock code={`{
   "period": {
     "start": "2024-01-01T00:00:00Z",
@@ -96,7 +96,7 @@ curl "https://api.sipheron.io/v1/usage/history?from=2024-01-01&to=2024-01-31" \\
 curl "https://api.sipheron.io/v1/usage/history?aggregation=week" \\
   -H "Authorization: Bearer YOUR_API_KEY"`} />
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Query Parameters</h3>
+      <h3 id="query-parameters" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Query Parameters</h3>
       <div className="overflow-x-auto mb-8">
         <table className="w-full text-sm">
           <thead>
@@ -136,7 +136,7 @@ curl "https://api.sipheron.io/v1/usage/history?aggregation=week" \\
       <CodeBlock code={`curl https://api.sipheron.io/v1/analytics/anchors \\
   -H "Authorization: Bearer YOUR_API_KEY"`} />
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Response</h3>
+      <h3 id="response" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Response</h3>
       <CodeBlock code={`{
   "total_anchors": 45678,
   "by_network": {
