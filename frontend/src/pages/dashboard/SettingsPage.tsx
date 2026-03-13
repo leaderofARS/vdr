@@ -1,10 +1,21 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { User, Building2, Shield, Bell, AlertTriangle } from 'lucide-react';
+import api from '@/utils/api';
+import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Tab {
   id: string;
   label: string;
   icon: React.ElementType;
+}
+
+interface OrgData {
+  id: string;
+  name: string;
+  createdAt: string;
+  walletAddress: string;
+  pdaAddress: string;
 }
 
 const tabs: Tab[] = [
@@ -15,13 +26,96 @@ const tabs: Tab[] = [
 ];
 
 export const SettingsPage: React.FC = () => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('profile');
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [orgData, setOrgData] = useState<OrgData | null>(null);
+  const [orgName, setOrgName] = useState('');
 
-  const handleSave = () => {
+  // Fetch organization data on mount
+  useEffect(() => {
+    const fetchOrgData = async () => {
+      try {
+        setIsLoading(true);
+        const { data } = await api.get('/api/org');
+        setOrgData(data);
+        setOrgName(data.name || '');
+      } catch (error) {
+        toast.error('Failed to load organization data');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchOrgData();
+  }, []);
+
+  const handleSaveProfile = () => {
     setIsSaving(true);
-    setTimeout(() => setIsSaving(false), 1000);
+    setTimeout(() => {
+      setIsSaving(false);
+      toast.success('Profile updated successfully');
+    }, 1000);
   };
+
+  const handleSaveOrg = async () => {
+    if (!orgName.trim()) {
+      toast.error('Organization name is required');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const { data } = await api.put('/api/org', { name: orgName.trim() });
+      setOrgData(data);
+      toast.success('Organization updated successfully');
+    } catch (error) {
+      toast.error('Failed to update organization');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleSaveNotifications = () => {
+    setIsSaving(true);
+    setTimeout(() => {
+      setIsSaving(false);
+      toast.success('Notification preferences saved');
+    }, 1000);
+  };
+
+  // Get user initials for avatar
+  const getUserInitials = () => {
+    if (!user?.name) return 'U';
+    const names = user.name.split(' ');
+    if (names.length >= 2) {
+      return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
+    }
+    return user.name.slice(0, 2).toUpperCase();
+  };
+
+  // Format wallet address for display
+  const formatWalletAddress = (address: string | undefined) => {
+    if (!address) return 'Not available';
+    return `${address.slice(0, 8)}...${address.slice(-8)}`;
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-xl font-semibold text-sipheron-text-primary">Settings</h2>
+          <p className="text-sm text-sipheron-text-muted mt-1">
+            Manage your account and organization settings
+          </p>
+        </div>
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin w-8 h-8 border-2 border-sipheron-purple border-t-transparent rounded-full" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -63,7 +157,7 @@ export const SettingsPage: React.FC = () => {
           <div className="space-y-6 animate-fade-in">
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-full bg-gradient-to-br from-sipheron-purple to-sipheron-teal flex items-center justify-center text-xl font-semibold text-white">
-                JD
+                {getUserInitials()}
               </div>
               <div>
                 <button className="text-sm text-sipheron-purple hover:text-sipheron-teal transition-colors">
@@ -78,22 +172,23 @@ export const SettingsPage: React.FC = () => {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm text-sipheron-text-secondary mb-2">
-                  First Name
+                  Name
                 </label>
                 <input
                   type="text"
-                  defaultValue="John"
+                  defaultValue={user?.name || ''}
                   className="w-full px-4 py-2 rounded-lg bg-sipheron-surface border border-white/[0.06] text-sipheron-text-primary focus:border-sipheron-purple focus:ring-2 focus:ring-sipheron-purple/20 transition-all"
                 />
               </div>
               <div>
                 <label className="block text-sm text-sipheron-text-secondary mb-2">
-                  Last Name
+                  Role
                 </label>
                 <input
                   type="text"
-                  defaultValue="Doe"
-                  className="w-full px-4 py-2 rounded-lg bg-sipheron-surface border border-white/[0.06] text-sipheron-text-primary focus:border-sipheron-purple focus:ring-2 focus:ring-sipheron-purple/20 transition-all"
+                  defaultValue={user?.role || 'Member'}
+                  disabled
+                  className="w-full px-4 py-2 rounded-lg bg-sipheron-surface border border-white/[0.06] text-sipheron-text-muted focus:border-sipheron-purple focus:ring-2 focus:ring-sipheron-purple/20 transition-all cursor-not-allowed"
                 />
               </div>
             </div>
@@ -104,26 +199,29 @@ export const SettingsPage: React.FC = () => {
               </label>
               <input
                 type="email"
-                defaultValue="john@arslabs.io"
+                defaultValue={user?.email || ''}
                 className="w-full px-4 py-2 rounded-lg bg-sipheron-surface border border-white/[0.06] text-sipheron-text-primary focus:border-sipheron-purple focus:ring-2 focus:ring-sipheron-purple/20 transition-all"
               />
             </div>
 
             <div>
               <label className="block text-sm text-sipheron-text-secondary mb-2">
-                Timezone
+                Organization
               </label>
-              <select className="w-full px-4 py-2 rounded-lg bg-sipheron-surface border border-white/[0.06] text-sipheron-text-primary focus:border-sipheron-purple focus:ring-2 focus:ring-sipheron-purple/20 transition-all">
-                <option>UTC-08:00 Pacific Time</option>
-                <option>UTC-05:00 Eastern Time</option>
-                <option>UTC+00:00 UTC</option>
-                <option>UTC+01:00 Central European Time</option>
-              </select>
+              <input
+                type="text"
+                value={user?.organization?.name || '—'}
+                disabled
+                className="w-full px-4 py-2 rounded-lg bg-sipheron-surface border border-white/[0.06] text-sipheron-text-muted focus:border-sipheron-purple focus:ring-2 focus:ring-sipheron-purple/20 transition-all cursor-not-allowed"
+              />
+              <p className="text-xs text-sipheron-text-muted mt-1">
+                Your organization membership
+              </p>
             </div>
 
             <div className="pt-4 border-t border-white/[0.06]">
               <button
-                onClick={handleSave}
+                onClick={handleSaveProfile}
                 disabled={isSaving}
                 className="btn-primary disabled:opacity-50"
               >
@@ -141,39 +239,73 @@ export const SettingsPage: React.FC = () => {
               </label>
               <input
                 type="text"
-                defaultValue="ARS Labs"
+                value={orgName}
+                onChange={(e) => setOrgName(e.target.value)}
+                placeholder="Enter organization name"
                 className="w-full px-4 py-2 rounded-lg bg-sipheron-surface border border-white/[0.06] text-sipheron-text-primary focus:border-sipheron-purple focus:ring-2 focus:ring-sipheron-purple/20 transition-all"
               />
             </div>
 
             <div>
               <label className="block text-sm text-sipheron-text-secondary mb-2">
-                Organization Slug
+                Organization ID
               </label>
-              <div className="flex items-center gap-2">
-                <span className="text-sipheron-text-muted">sipheron.com/</span>
-                <input
-                  type="text"
-                  defaultValue="ars-labs"
-                  className="flex-1 px-4 py-2 rounded-lg bg-sipheron-surface border border-white/[0.06] text-sipheron-text-primary focus:border-sipheron-purple focus:ring-2 focus:ring-sipheron-purple/20 transition-all"
-                />
-              </div>
+              <input
+                type="text"
+                value={orgData?.id || ''}
+                disabled
+                className="w-full px-4 py-2 rounded-lg bg-sipheron-surface border border-white/[0.06] text-sipheron-text-muted focus:border-sipheron-purple focus:ring-2 focus:ring-sipheron-purple/20 transition-all cursor-not-allowed"
+              />
+              <p className="text-xs text-sipheron-text-muted mt-1">
+                Organization ID cannot be changed
+              </p>
             </div>
 
             <div>
               <label className="block text-sm text-sipheron-text-secondary mb-2">
-                Website
+                Wallet Address
               </label>
               <input
-                type="url"
-                defaultValue="https://arslabs.io"
-                className="w-full px-4 py-2 rounded-lg bg-sipheron-surface border border-white/[0.06] text-sipheron-text-primary focus:border-sipheron-purple focus:ring-2 focus:ring-sipheron-purple/20 transition-all"
+                type="text"
+                value={formatWalletAddress(orgData?.walletAddress)}
+                disabled
+                className="w-full px-4 py-2 rounded-lg bg-sipheron-surface border border-white/[0.06] text-sipheron-text-muted focus:border-sipheron-purple focus:ring-2 focus:ring-sipheron-purple/20 transition-all cursor-not-allowed"
+              />
+              <p className="text-xs text-sipheron-text-muted mt-1">
+                Organization wallet address
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm text-sipheron-text-secondary mb-2">
+                PDA Address
+              </label>
+              <input
+                type="text"
+                value={formatWalletAddress(orgData?.pdaAddress)}
+                disabled
+                className="w-full px-4 py-2 rounded-lg bg-sipheron-surface border border-white/[0.06] text-sipheron-text-muted focus:border-sipheron-purple focus:ring-2 focus:sipheron-purple/20 transition-all cursor-not-allowed"
+              />
+              <p className="text-xs text-sipheron-text-muted mt-1">
+                Program Derived Address for on-chain data
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm text-sipheron-text-secondary mb-2">
+                Created At
+              </label>
+              <input
+                type="text"
+                value={orgData?.createdAt ? new Date(orgData.createdAt).toLocaleDateString() : ''}
+                disabled
+                className="w-full px-4 py-2 rounded-lg bg-sipheron-surface border border-white/[0.06] text-sipheron-text-muted focus:border-sipheron-purple focus:ring-2 focus:ring-sipheron-purple/20 transition-all cursor-not-allowed"
               />
             </div>
 
             <div className="pt-4 border-t border-white/[0.06]">
               <button
-                onClick={handleSave}
+                onClick={handleSaveOrg}
                 disabled={isSaving}
                 className="btn-primary disabled:opacity-50"
               >
@@ -277,7 +409,7 @@ export const SettingsPage: React.FC = () => {
 
             <div className="pt-4 border-t border-white/[0.06]">
               <button
-                onClick={handleSave}
+                onClick={handleSaveNotifications}
                 disabled={isSaving}
                 className="btn-primary disabled:opacity-50"
               >

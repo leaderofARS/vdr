@@ -27,6 +27,7 @@ import { DashboardLayout } from '@/components/dashboard';
 import {
   DashboardHome,
   HashesPage,
+  BulkVerifyPage,
   AnalyticsPage,
   ApiKeysPage,
   TeamPage,
@@ -94,7 +95,7 @@ const AppRoutes: FC = () => {
       <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
         <Route index element={<DashboardHome />} />
         <Route path="hashes" element={<HashesPage />} />
-        <Route path="bulk-verify" element={<PlaceholderPage title="Bulk Verify" />} />
+        <Route path="bulk-verify" element={<BulkVerifyPage />} />
         <Route path="analytics" element={<AnalyticsPage />} />
         <Route path="keys" element={<ApiKeysPage />} />
         <Route path="team" element={<TeamPage />} />

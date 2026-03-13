@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { Plus, Mail, MoreHorizontal, Clock, UserX } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Plus, Mail, MoreHorizontal, Clock, UserX, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -7,71 +8,27 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import api from '@/utils/api';
 
 interface TeamMember {
   id: string;
   name: string;
   email: string;
   role: 'owner' | 'admin' | 'member' | 'viewer';
-  avatar: string;
+  avatar?: string;
   joinedAt: string;
-  lastActive: string;
+  isOwner?: boolean;
+  lastActive?: string;
 }
 
 interface PendingInvite {
   id: string;
   email: string;
   role: string;
-  expiresIn: string;
+  expiresAt: string;
+  status: string;
+  expiresIn?: string;
 }
-
-const mockMembers: TeamMember[] = [
-  {
-    id: '1',
-    name: 'John Doe',
-    email: 'john@arslabs.io',
-    role: 'owner',
-    avatar: 'JD',
-    joinedAt: '2024-01-15',
-    lastActive: 'Just now',
-  },
-  {
-    id: '2',
-    name: 'Sarah Kim',
-    email: 'sarah@arslabs.io',
-    role: 'admin',
-    avatar: 'SK',
-    joinedAt: '2024-02-01',
-    lastActive: '5 minutes ago',
-  },
-  {
-    id: '3',
-    name: 'Mike Chen',
-    email: 'mike@arslabs.io',
-    role: 'member',
-    avatar: 'MC',
-    joinedAt: '2024-03-10',
-    lastActive: '2 hours ago',
-  },
-  {
-    id: '4',
-    name: 'Lisa Wang',
-    email: 'lisa@arslabs.io',
-    role: 'viewer',
-    avatar: 'LW',
-    joinedAt: '2024-04-05',
-    lastActive: '1 day ago',
-  },
-];
-
-const mockPending: PendingInvite[] = [
-  {
-    id: '1',
-    email: 'tom@arslabs.io',
-    role: 'member',
-    expiresIn: '6 days',
-  },
-];
 
 const roleColors: Record<string, string> = {
   owner: 'bg-sipheron-gold/10 text-sipheron-gold border-sipheron-gold/20',
@@ -80,10 +37,168 @@ const roleColors: Record<string, string> = {
   viewer: 'bg-sipheron-text-muted/10 text-sipheron-text-muted border-sipheron-text-muted/20',
 };
 
+// Generate avatar initials from name
+const getInitials = (name: string): string => {
+  return name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+};
+
+// Calculate time ago from date
+const getTimeAgo = (dateString: string): string => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (diffInSeconds < 60) return 'Just now';
+  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
+  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+  if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} days ago`;
+  return date.toLocaleDateString();
+};
+
+// Calculate expires in from expiresAt
+const getExpiresIn = (expiresAt: string): string => {
+  const date = new Date(expiresAt);
+  const now = new Date();
+  const diffInSeconds = Math.floor((date.getTime() - now.getTime()) / 1000);
+
+  if (diffInSeconds <= 0) return 'Expired';
+  if (diffInSeconds < 86400) return `${Math.ceil(diffInSeconds / 3600)} hours`;
+  return `${Math.ceil(diffInSeconds / 86400)} days`;
+};
+
 export const TeamPage: React.FC = () => {
+  const [members, setMembers] = useState<TeamMember[]>([]);
+  const [pendingInvites, setPendingInvites] = useState<PendingInvite[]>([]);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState('member');
   const [showInviteForm, setShowInviteForm] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isInviting, setIsInviting] = useState(false);
+  const [isCancelling, setIsCancelling] = useState<string | null>(null);
+  const [isRemoving, setIsRemoving] = useState<string | null>(null);
+
+  // Fetch members and invites
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const [membersRes, invitesRes] = await Promise.all([
+        api.get('/api/members'),
+        api.get('/api/members/invites'),
+      ]);
+
+      const fetchedMembers = membersRes.data.members || [];
+      const fetchedInvites = invitesRes.data.invites || [];
+
+      // Process members to add avatar and lastActive
+      const processedMembers = fetchedMembers.map((member: TeamMember) => ({
+        ...member,
+        avatar: getInitials(member.name || member.email),
+        lastActive: getTimeAgo(member.joinedAt),
+      }));
+
+      // Process invites to add expiresIn
+      const processedInvites = fetchedInvites.map((invite: PendingInvite) => ({
+        ...invite,
+        expiresIn: getExpiresIn(invite.expiresAt),
+      }));
+
+      setMembers(processedMembers);
+      setPendingInvites(processedInvites);
+    } catch (error) {
+      toast.error('Failed to load team data');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Fetch data on mount
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // Invite member
+  const handleInvite = async () => {
+    if (!inviteEmail.trim()) {
+      toast.error('Please enter an email address');
+      return;
+    }
+
+    setIsInviting(true);
+    try {
+      const response = await api.post('/api/members/invite', {
+        email: inviteEmail.trim(),
+        role: inviteRole,
+      });
+
+      const newInvite = response.data.invite;
+      setPendingInvites((prev) => [
+        ...prev,
+        {
+          ...newInvite,
+          expiresIn: getExpiresIn(newInvite.expiresAt),
+        },
+      ]);
+
+      toast.success('Invitation sent successfully');
+      setInviteEmail('');
+      setInviteRole('member');
+      setShowInviteForm(false);
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Failed to send invitation';
+      toast.error(message);
+    } finally {
+      setIsInviting(false);
+    }
+  };
+
+  // Cancel invite
+  const handleCancelInvite = async (inviteId: string) => {
+    setIsCancelling(inviteId);
+    try {
+      await api.delete(`/api/members/invites/${inviteId}`);
+      setPendingInvites((prev) => prev.filter((invite) => invite.id !== inviteId));
+      toast.success('Invitation cancelled');
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Failed to cancel invitation';
+      toast.error(message);
+    } finally {
+      setIsCancelling(null);
+    }
+  };
+
+  // Remove member
+  const handleRemoveMember = async (memberId: string) => {
+    const member = members.find((m) => m.id === memberId);
+    if (member?.isOwner) {
+      toast.error('Cannot remove the owner');
+      return;
+    }
+
+    setIsRemoving(memberId);
+    try {
+      await api.delete(`/api/members/${memberId}`);
+      setMembers((prev) => prev.filter((m) => m.id !== memberId));
+      toast.success('Member removed successfully');
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Failed to remove member';
+      toast.error(message);
+    } finally {
+      setIsRemoving(null);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-sipheron-purple" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -115,25 +230,30 @@ export const TeamPage: React.FC = () => {
                 value={inviteEmail}
                 onChange={(e) => setInviteEmail(e.target.value)}
                 placeholder="Enter email address"
-                className="w-full pl-10 pr-4 py-2 rounded-lg bg-sipheron-base border border-white/[0.06] text-sipheron-text-primary placeholder:text-sipheron-text-muted focus:border-sipheron-purple focus:ring-2 focus:ring-sipheron-purple/20 transition-all"
+                disabled={isInviting}
+                className="w-full pl-10 pr-4 py-2 rounded-lg bg-sipheron-base border border-white/[0.06] text-sipheron-text-primary placeholder:text-sipheron-text-muted focus:border-sipheron-purple focus:ring-2 focus:ring-sipheron-purple/20 transition-all disabled:opacity-50"
               />
             </div>
             <select
               value={inviteRole}
               onChange={(e) => setInviteRole(e.target.value)}
-              className="px-4 py-2 rounded-lg bg-sipheron-base border border-white/[0.06] text-sipheron-text-primary focus:border-sipheron-purple focus:ring-2 focus:ring-sipheron-purple/20 transition-all"
+              disabled={isInviting}
+              className="px-4 py-2 rounded-lg bg-sipheron-base border border-white/[0.06] text-sipheron-text-primary focus:border-sipheron-purple focus:ring-2 focus:ring-sipheron-purple/20 transition-all disabled:opacity-50"
             >
               <option value="admin">Admin</option>
               <option value="member">Member</option>
               <option value="viewer">Viewer</option>
             </select>
             <button
-              onClick={() => {
-                setInviteEmail('');
-                setShowInviteForm(false);
-              }}
-              className="btn-primary"
+              onClick={handleInvite}
+              disabled={isInviting}
+              className="btn-primary flex items-center gap-2 disabled:opacity-50"
             >
+              {isInviting ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Plus className="w-4 h-4" />
+              )}
               Send Invite
             </button>
           </div>
@@ -141,13 +261,13 @@ export const TeamPage: React.FC = () => {
       )}
 
       {/* Pending Invites */}
-      {mockPending.length > 0 && (
+      {pendingInvites.length > 0 && (
         <div>
           <h3 className="text-sm font-medium text-sipheron-text-muted mb-3">
-            Pending Invites ({mockPending.length})
+            Pending Invites ({pendingInvites.length})
           </h3>
           <div className="space-y-2">
-            {mockPending.map((invite) => (
+            {pendingInvites.map((invite) => (
               <div
                 key={invite.id}
                 className="flex items-center justify-between p-3 rounded-lg bg-sipheron-surface/50 border border-white/[0.06] border-dashed"
@@ -168,8 +288,16 @@ export const TeamPage: React.FC = () => {
                   <span className={`text-[10px] px-1.5 py-0.5 rounded border ${roleColors[invite.role]}`}>
                     {invite.role.toUpperCase()}
                   </span>
-                  <button className="p-1.5 rounded hover:bg-white/[0.05] text-sipheron-text-muted hover:text-sipheron-red transition-colors">
-                    <UserX className="w-4 h-4" />
+                  <button
+                    onClick={() => handleCancelInvite(invite.id)}
+                    disabled={isCancelling === invite.id}
+                    className="p-1.5 rounded hover:bg-white/[0.05] text-sipheron-text-muted hover:text-sipheron-red transition-colors disabled:opacity-50"
+                  >
+                    {isCancelling === invite.id ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <UserX className="w-4 h-4" />
+                    )}
                   </button>
                 </div>
               </div>
@@ -180,7 +308,7 @@ export const TeamPage: React.FC = () => {
 
       {/* Team Members Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {mockMembers.map((member) => (
+        {members.map((member) => (
           <div
             key={member.id}
             className="bg-sipheron-surface rounded-xl p-5 border border-white/[0.06] hover:border-sipheron-purple/20 transition-colors"
@@ -204,8 +332,15 @@ export const TeamPage: React.FC = () => {
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="p-1.5 rounded hover:bg-white/[0.05] text-sipheron-text-muted">
-                    <MoreHorizontal className="w-4 h-4" />
+                  <button
+                    disabled={isRemoving === member.id}
+                    className="p-1.5 rounded hover:bg-white/[0.05] text-sipheron-text-muted disabled:opacity-50"
+                  >
+                    {isRemoving === member.id ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <MoreHorizontal className="w-4 h-4" />
+                    )}
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="bg-sipheron-surface border-white/[0.06]">
@@ -216,8 +351,12 @@ export const TeamPage: React.FC = () => {
                     View Activity
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className="bg-white/[0.06]" />
-                  <DropdownMenuItem className="cursor-pointer text-sipheron-red focus:bg-white/[0.03]">
-                    Remove Member
+                  <DropdownMenuItem
+                    onClick={() => handleRemoveMember(member.id)}
+                    disabled={member.isOwner}
+                    className="cursor-pointer text-sipheron-red focus:bg-white/[0.03] disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {member.isOwner ? 'Cannot Remove Owner' : 'Remove Member'}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
