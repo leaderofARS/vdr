@@ -63,10 +63,7 @@ export const DashboardLayout: React.FC = () => {
           transition: 'margin-left 0.3s ease',
         }}
       >
-        <Topbar 
-          onSearchClick={() => setIsCommandPaletteOpen(true)} 
-          user={user}
-        />
+        <Topbar />
       </div>
 
       {/* Main Content */}

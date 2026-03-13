@@ -7,3 +7,6 @@ export { TeamPage } from './TeamPage';
 export { SettingsPage } from './SettingsPage';
 export { BillingPage } from './BillingPage';
 export { PlaceholderPage } from './PlaceholderPage';
+export { NotificationsPage } from './NotificationsPage';
+export { WebhooksPage } from './WebhooksPage';
+export { AuditPage } from './AuditPage';

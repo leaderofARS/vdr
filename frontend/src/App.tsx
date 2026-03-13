@@ -6,6 +6,7 @@ import { Toaster } from 'sonner';
 // Public Pages
 import { LandingPage } from '@/pages/LandingPage';
 import { VerifyPage } from '@/pages/public/VerifyPage';
+import { VerifyLandingPage } from '@/pages/public/VerifyLandingPage';
 import { InviteAcceptPage } from '@/pages/public/InviteAcceptPage';
 import { PricingPage } from '@/pages/public/PricingPage';
 
@@ -34,6 +35,9 @@ import {
   SettingsPage,
   BillingPage,
   PlaceholderPage,
+  NotificationsPage,
+  WebhooksPage,
+  AuditPage,
 } from '@/pages/dashboard';
 
 import './App.css';
@@ -74,6 +78,7 @@ const AppRoutes: FC = () => {
       <Route path="/" element={<LandingPage />} />
       
       {/* Public Pages */}
+      <Route path="/verify" element={<VerifyLandingPage />} />
       <Route path="/verify/:hash" element={<VerifyPage />} />
       <Route path="/invite/:token" element={<InviteAcceptPage />} />
       <Route path="/pricing" element={<PricingPage />} />
@@ -99,14 +104,14 @@ const AppRoutes: FC = () => {
         <Route path="analytics" element={<AnalyticsPage />} />
         <Route path="keys" element={<ApiKeysPage />} />
         <Route path="team" element={<TeamPage />} />
-        <Route path="webhooks" element={<PlaceholderPage title="Webhooks" />} />
-        <Route path="audit" element={<PlaceholderPage title="Audit Log" />} />
+        <Route path="webhooks" element={<WebhooksPage />} />
+        <Route path="audit" element={<AuditPage />} />
         <Route path="playground" element={<PlaceholderPage title="API Playground" />} />
         <Route path="embed" element={<PlaceholderPage title="Embed & Share" />} />
         <Route path="usage" element={<PlaceholderPage title="Usage" />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="billing" element={<BillingPage />} />
-        <Route path="notifications" element={<PlaceholderPage title="Notifications" />} />
+        <Route path="notifications" element={<NotificationsPage />} />
       </Route>
       
       {/* Catch-all - redirect to landing */}
