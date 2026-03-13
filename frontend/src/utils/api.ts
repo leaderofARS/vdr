@@ -107,15 +107,18 @@ export const isAuthenticated = async () => {
     if (error.response?.status === 401 || error.response?.status === 403) {
       return false;
     }
-    // On network errors (no response), we can't confirm auth status
-    // Return false to be safe - ProtectedRoute will handle redirect
-    if (!error.response) {
-      return false;
-    }
-    // On other errors (500, etc), try to check if we have a CSRF token
-    // as a hint that we might have been logged in
+    
+    // Check if we have a CSRF token - this indicates we likely have a valid session
     const hasCsrfToken = typeof window !== 'undefined' && !!localStorage.getItem('sipheron_csrf_token');
-    return hasCsrfToken;
+    
+    // On network errors or other errors, if we have a CSRF token,
+    // assume we're authenticated and let the actual API call handle any 401
+    if (hasCsrfToken) {
+      return true;
+    }
+    
+    // No CSRF token and error response means definitely not authenticated
+    return false;
   }
 };
 
