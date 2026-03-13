@@ -42,22 +42,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshUser = async () => {
     try {
-      // Try to get user data from /api/org which returns org + user info
-      const { data } = await api.get('/api/org');
+      // Try to get org stats which includes user info
+      const { data } = await api.get('/api/org/stats');
       if (data.user) {
-        setUser(data.user);
-      } else if (data.organization) {
-        // Fallback: construct user from org data if available
         setUser({
-          id: data.user?.id || 'unknown',
+          id: data.user.id || 'unknown',
+          email: data.user.email || 'unknown',
+          name: data.user.name || data.user.email?.split('@')[0] || 'User',
+          role: data.user.role,
+          organization: data.org ? {
+            id: data.org.id,
+            name: data.org.name,
+            plan: 'standard'
+          } : undefined,
+        });
+      } else if (data.org) {
+        // Fallback: construct minimal user from org context
+        setUser({
+          id: 'unknown',
           email: data.user?.email || 'unknown',
           name: data.user?.name || 'User',
-          organization: data.organization,
-          orgRole: data.user?.role || 'member',
+          organization: {
+            id: data.org.id,
+            name: data.org.name,
+            plan: 'standard'
+          },
         });
       }
-    } catch {
-      setUser(null);
+    } catch (err: any) {
+      // If we get a 401/403, definitely not authenticated
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        setUser(null);
+      }
+      // For other errors, keep current user state (don't null it)
+      // The API interceptor will handle token refresh
     }
   };
 

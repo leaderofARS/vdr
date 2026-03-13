@@ -99,26 +99,18 @@ export const register = async (name: string, email: string, password: string, or
 
 export const isAuthenticated = async () => {
   try {
-    // Hit the health-like endpoint that requires auth; any 2xx means valid session
-    await api.get('/api/org');
+    // Hit an endpoint that requires auth; any 2xx means valid session
+    await api.get('/api/org/stats');
     return true;
   } catch (error: any) {
     // On 401/403, user is definitely not authenticated
     if (error.response?.status === 401 || error.response?.status === 403) {
       return false;
     }
-    
-    // Check if we have a CSRF token - this indicates we likely have a valid session
-    const hasCsrfToken = typeof window !== 'undefined' && !!localStorage.getItem('sipheron_csrf_token');
-    
-    // On network errors or other errors, if we have a CSRF token,
-    // assume we're authenticated and let the actual API call handle any 401
-    if (hasCsrfToken) {
-      return true;
-    }
-    
-    // No CSRF token and error response means definitely not authenticated
-    return false;
+    // On 500/Timeout/network errors, assume backend is struggling 
+    // but session might still be valid. Return true to avoid redirect loops.
+    // The actual API calls will fail with 401 if truly not authenticated.
+    return true;
   }
 };
 
