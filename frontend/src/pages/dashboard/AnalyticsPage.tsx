@@ -31,7 +31,7 @@ import { LoadingSkeleton } from '@/components/shared/LoadingSkeleton';
 import api from '@/utils/api';
 import { toast } from 'sonner';
 
-// API Response Types
+// API Response Types matching backend exactly
 interface AnalyticsStats {
   totalHashes: number;
   revokedHashes: number;
@@ -40,11 +40,20 @@ interface AnalyticsStats {
   organizationName?: string;
 }
 
-interface UsageAnalytics {
-  date: string;
-  count: number;
-  success?: number;
-  error?: number;
+interface BackendEndpoint {
+  endpoint: string;
+  method: string;
+  total: number;
+  avgDuration: number;
+  successRate: string;
+}
+
+interface BackendApiKey {
+  id: string;
+  name: string;
+  total: number;
+  successRate: string;
+  lastUsed: string;
 }
 
 interface UsageSummary {
@@ -56,6 +65,32 @@ interface UsageSummary {
   requestsThisWeek: number;
 }
 
+interface ChartDataPoint {
+  date: string;
+  success: number;
+  error: number;
+}
+
+interface UsageData {
+  period: string;
+  summary: UsageSummary;
+  endpoints: BackendEndpoint[];
+  apiKeys: BackendApiKey[];
+  chartData: ChartDataPoint[];
+  analytics: Array<{ date: string; count: number }>;
+}
+
+interface HashData {
+  hash: string;
+  metadata?: {
+    name?: string;
+    filename?: string;
+  };
+  status: 'active' | 'revoked' | 'expired';
+  registeredAt: string;
+}
+
+// Frontend mapped types
 interface ApiEndpoint {
   path: string;
   method: string;
@@ -70,36 +105,6 @@ interface ApiKeyUsage {
   requests: number;
   successRate: string;
   lastUsed: string;
-}
-
-interface UsageData {
-  analytics: UsageAnalytics[];
-  summary: UsageSummary;
-  endpoints: ApiEndpoint[];
-  apiKeys: ApiKeyUsage[];
-  chartData: Array<{ date: string; success: number; error: number }>;
-}
-
-interface HashData {
-  hash: string;
-  metadata?: {
-    name?: string;
-    filename?: string;
-  };
-  status: 'active' | 'revoked' | 'expired';
-  registeredAt: string;
-  verificationCount?: number;
-  lastVerifiedAt?: string;
-}
-
-interface HashesResponse {
-  data: HashData[];
-  pagination: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
 }
 
 // Stat Card Component
@@ -216,7 +221,6 @@ const generateHourlyDistribution = (logs: Array<{ createdAt: string }>): Array<{
   const labels = ['12am', '1am', '2am', '3am', '4am', '5am', '6am', '7am', '8am', '9am', '10am', '11am',
                   '12pm', '1pm', '2pm', '3pm', '4pm', '5pm', '6pm', '7pm', '8pm', '9pm', '10pm', '11pm'];
   
-  // Group into 2-hour intervals for cleaner display
   const grouped = [];
   for (let i = 0; i < 24; i += 2) {
     grouped.push({
@@ -229,11 +233,10 @@ const generateHourlyDistribution = (logs: Array<{ createdAt: string }>): Array<{
 };
 
 // Generate weekly comparison data
-const generateWeeklyComparison = (currentData: UsageAnalytics[]): Array<{ day: string; thisWeek: number; lastWeek: number }> => {
+const generateWeeklyComparison = (currentData: Array<{ date: string; count: number }>): Array<{ day: string; thisWeek: number; lastWeek: number }> => {
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   
   if (currentData.length < 7) {
-    // Return default if not enough data
     return days.map(day => ({ day, thisWeek: 0, lastWeek: 0 }));
   }
 
@@ -254,7 +257,7 @@ const generateWeeklyComparison = (currentData: UsageAnalytics[]): Array<{ day: s
 };
 
 export const AnalyticsPage: React.FC = () => {
-  const [dateRange, setDateRange] = useState('7d');
+  const [dateRange, setDateRange] = useState('7');
   const [loading, setLoading] = useState(true);
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
@@ -282,45 +285,52 @@ export const AnalyticsPage: React.FC = () => {
     if (!isBackground) setLoading(true);
     
     try {
-      // Calculate previous period for trends
       const days = parseInt(dateRange) || 7;
-      const prevPeriodRange = `${days * 2}d`;
+      const prevPeriodRange = `${days * 2}`;
       
       // Fetch all data in parallel
       const [statsRes, usageRes, hashesRes, prevUsageRes] = await Promise.all([
         api.get('/api/analytics/stats'),
         api.get(`/api/usage?period=${dateRange}`),
         api.get('/api/hashes?limit=10'),
-        api.get(`/api/usage?period=${prevPeriodRange}`).catch(() => null) // Optional
+        api.get(`/api/usage?period=${prevPeriodRange}`).catch(() => null)
       ]);
 
       const statsData: AnalyticsStats = statsRes.data;
       const usage: UsageData = usageRes.data;
-      const hashesData: HashesResponse = hashesRes.data;
+      const hashesData = hashesRes.data;
 
       setStats(statsData);
       setUsageData(usage);
-      setTopDocuments(hashesData.data || []);
+      
+      // Map backend hash data to frontend format
+      const mappedHashes: HashData[] = (hashesData.data || hashesData.records || []).map((record: any) => ({
+        hash: record.hash,
+        metadata: record.metadata,
+        status: record.status || (record.isRevoked ? 'revoked' : 'active'),
+        registeredAt: record.registeredAt || record.createdAt || new Date(record.timestamp * 1000).toISOString(),
+      }));
+      setTopDocuments(mappedHashes);
       setLastUpdated(new Date());
 
       // Calculate previous period stats for trends
       if (prevUsageRes?.data) {
         const prevAnalytics = prevUsageRes.data.analytics || [];
-        const prevTotal = prevAnalytics.reduce((sum: number, item: UsageAnalytics) => sum + item.count, 0);
+        const prevTotal = prevAnalytics.reduce((sum: number, item: { count: number }) => sum + item.count, 0);
         const prevAvgDaily = prevAnalytics.length > 0 ? Math.round(prevTotal / prevAnalytics.length) : 0;
-        const prevPeak = prevAnalytics.length > 0 ? Math.max(...prevAnalytics.map((item: UsageAnalytics) => item.count)) : 0;
+        const prevPeak = prevAnalytics.length > 0 ? Math.max(...prevAnalytics.map((item: { count: number }) => item.count)) : 0;
         
         setPreviousPeriodStats({
-          totalHashes: Math.floor(statsData.totalHashes * 0.9), // Estimate if not available
+          totalHashes: Math.floor(statsData.totalHashes * 0.9),
           monthlyAnchors: prevTotal,
           avgDaily: prevAvgDaily,
           peakDay: prevPeak
         });
       }
 
-      // Process volume data with success/error breakdown
+      // Process volume data from chartData
       if (usage.chartData && usage.chartData.length > 0) {
-        const processedVolumeData = usage.chartData.map(item => ({
+        const processedVolumeData = usage.chartData.map((item: ChartDataPoint) => ({
           date: formatDate(item.date),
           count: item.success + item.error,
           success: item.success,
@@ -328,7 +338,7 @@ export const AnalyticsPage: React.FC = () => {
         }));
         setVolumeData(processedVolumeData);
       } else if (usage.analytics && usage.analytics.length > 0) {
-        const processedVolumeData = usage.analytics.map(item => ({
+        const processedVolumeData = usage.analytics.map((item: { date: string; count: number }) => ({
           date: formatDate(item.date),
           count: item.count,
         }));
@@ -337,10 +347,9 @@ export const AnalyticsPage: React.FC = () => {
         setVolumeData([]);
       }
 
-      // Generate hourly distribution from real data
-      // We'll use the API logs if available, otherwise use analytics
+      // Generate hourly distribution
       const hourlyDistribution = generateHourlyDistribution(
-        usage.analytics?.map(a => ({ createdAt: a.date })) || []
+        usage.analytics?.map((a: { date: string }) => ({ createdAt: a.date })) || []
       );
       setHourlyData(hourlyDistribution.some(h => h.anchors > 0) ? hourlyDistribution : getDefaultHourlyData());
 
@@ -352,22 +361,24 @@ export const AnalyticsPage: React.FC = () => {
         { stage: 'Confirmed', count: statsData.totalHashes - statsData.revokedHashes, color: '#00D97E' },
       ]);
 
-      // Process API key data with real percentages
+      // Process API key data - map backend format to frontend
       if (usage.apiKeys && usage.apiKeys.length > 0) {
-        const totalRequests = usage.apiKeys.reduce((sum, key) => sum + (key.requests || 0), 0);
+        const totalRequests = usage.apiKeys.reduce((sum: number, key: BackendApiKey) => sum + (key.total || 0), 0);
         const colors = ['#6C63FF', '#4ECDC4', '#FFD93D', '#FF6B35', '#44445A', '#00D97E', '#FF4757'];
-        const processedApiKeyData = usage.apiKeys.map((key, index) => ({
-          name: key.name || `Key ${index + 1}`,
-          value: totalRequests > 0 ? Math.round((key.requests / totalRequests) * 100) : 0,
-          color: colors[index % colors.length],
-        })).filter(k => k.value > 0); // Only show keys with usage
+        const processedApiKeyData = usage.apiKeys
+          .filter((key: BackendApiKey) => key.total > 0)
+          .map((key: BackendApiKey, index: number) => ({
+            name: key.name || `Key ${index + 1}`,
+            value: totalRequests > 0 ? Math.round((key.total / totalRequests) * 100) : 0,
+            color: colors[index % colors.length],
+          }));
         
         setApiKeyData(processedApiKeyData.length > 0 ? processedApiKeyData : getDefaultApiKeyData());
       } else {
         setApiKeyData(getDefaultApiKeyData());
       }
 
-      // Generate weekly comparison from real data
+      // Generate weekly comparison
       const weeklyComparison = generateWeeklyComparison(usage.analytics || []);
       setWeeklyData(weeklyComparison);
 
@@ -409,7 +420,7 @@ export const AnalyticsPage: React.FC = () => {
   // Auto-refresh interval
   useEffect(() => {
     if (!autoRefresh) return;
-    const interval = setInterval(() => fetchData(true), 30000); // Refresh every 30s
+    const interval = setInterval(() => fetchData(true), 30000);
     return () => clearInterval(interval);
   }, [autoRefresh, fetchData]);
 
@@ -430,7 +441,25 @@ export const AnalyticsPage: React.FC = () => {
   const avgDailyTrend = calculateTrend(avgDaily, previousPeriodStats?.avgDaily || 0);
   const peakDayTrend = calculateTrend(peakDay, previousPeriodStats?.peakDay || 0);
 
-  // Export data to CSV
+  // Map backend endpoints to frontend format
+  const mappedEndpoints: ApiEndpoint[] = (usageData?.endpoints || []).map((ep: BackendEndpoint) => ({
+    path: ep.endpoint,
+    method: ep.method,
+    count: ep.total,
+    avgDuration: ep.avgDuration,
+    successRate: ep.successRate,
+  }));
+
+  // Map backend API keys to frontend format
+  const mappedApiKeys: ApiKeyUsage[] = (usageData?.apiKeys || []).map((key: BackendApiKey) => ({
+    keyId: key.id,
+    name: key.name,
+    requests: key.total,
+    successRate: key.successRate,
+    lastUsed: key.lastUsed,
+  }));
+
+  // Export data to JSON
   const exportData = () => {
     if (!usageData) {
       toast.error('No data to export');
@@ -449,8 +478,8 @@ export const AnalyticsPage: React.FC = () => {
         'Avg Response Time': `${usageData.summary?.avgResponseTime || 0}ms`,
       },
       dailyBreakdown: usageData.analytics || [],
-      topEndpoints: usageData.endpoints?.slice(0, 10) || [],
-      apiKeyUsage: usageData.apiKeys || [],
+      topEndpoints: mappedEndpoints.slice(0, 10),
+      apiKeyUsage: mappedApiKeys,
     };
 
     const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: 'application/json' });
@@ -520,9 +549,9 @@ export const AnalyticsPage: React.FC = () => {
             disabled={loading}
             className="px-4 py-2 rounded-lg bg-sipheron-surface border border-white/[0.06] text-sipheron-text-primary text-sm focus:border-sipheron-purple focus:ring-2 focus:ring-sipheron-purple/20 transition-all disabled:opacity-50"
           >
-            <option value="7d">Last 7 days</option>
-            <option value="30d">Last 30 days</option>
-            <option value="90d">Last 90 days</option>
+            <option value="7">Last 7 days</option>
+            <option value="30">Last 30 days</option>
+            <option value="90">Last 90 days</option>
           </select>
 
           <button 
@@ -562,7 +591,7 @@ export const AnalyticsPage: React.FC = () => {
           icon={<Layers className="w-4 h-4" />}
         />
         <StatCard 
-          title="Monthly Anchors" 
+          title="Period Anchors" 
           value={monthlyAnchors} 
           trend={monthlyAnchorsTrend} 
           trendLabel="vs last period" 
@@ -605,9 +634,9 @@ export const AnalyticsPage: React.FC = () => {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h3 className="text-sm font-semibold text-sipheron-text-primary">
-              Anchoring Volume Over Time
+              API Usage Volume
             </h3>
-            <p className="text-xs text-sipheron-text-muted">Document registration activity</p>
+            <p className="text-xs text-sipheron-text-muted">Requests over time</p>
           </div>
           <div className="flex items-center gap-4">
             {volumeData[0]?.success !== undefined && (
@@ -800,11 +829,11 @@ export const AnalyticsPage: React.FC = () => {
               <LoadingSkeleton variant="text-line" className="h-4" />
               <LoadingSkeleton variant="text-line" className="h-4" />
             </div>
-          ) : usageData?.endpoints && usageData.endpoints.length > 0 ? (
+          ) : mappedEndpoints.length > 0 ? (
             <div className="space-y-3">
-              {usageData.endpoints.slice(0, 5).map((endpoint, index) => {
+              {mappedEndpoints.slice(0, 5).map((endpoint, index) => {
                 const colors = ['#6C63FF', '#4ECDC4', '#FFD93D', '#FF6B35', '#44445A'];
-                const maxCount = Math.max(...usageData.endpoints.map(e => e.count));
+                const maxCount = Math.max(...mappedEndpoints.map(e => e.count));
                 return (
                   <div key={endpoint.path}>
                     <div className="flex items-center gap-3 mb-1">
