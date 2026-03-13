@@ -217,7 +217,7 @@ export const DocsLayout: React.FC = () => {
 
         {/* Main Content Area */}
         <main className="flex-1 lg:ml-[240px] flex">
-          <div className="flex-1 max-w-5xl mx-auto px-6 py-12 flex gap-12">
+          <div className="flex-1 max-w-4xl mx-auto px-6 py-12 flex gap-12">
             <div className="flex-1 min-w-0">
               <Outlet />
             </div>
