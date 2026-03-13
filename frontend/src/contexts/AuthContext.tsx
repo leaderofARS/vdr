@@ -77,11 +77,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setLoading(false);
         setAuthChecked(true);
       }
-      // Suppress unused warning - authChecked is for future auth state persistence
-      void setAuthChecked;
     };
     checkAuth();
   }, []);
+
+  // Add event listener for storage changes (for multi-tab support)
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'sipheron_csrf_token') {
+        if (!e.newValue) {
+          // Token was removed in another tab
+          setUser(null);
+        } else if (e.oldValue !== e.newValue && !user) {
+          // Token was added in another tab, refresh user
+          refreshUser();
+        }
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [user]);
 
   const login = async (email: string, password: string) => {
     const data = await apiLogin(email, password);

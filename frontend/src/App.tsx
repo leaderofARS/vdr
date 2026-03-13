@@ -48,8 +48,9 @@ const ProtectedRoute: FC<{ children: React.ReactNode }> = ({ children }) => {
   
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#020208] flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-[#6C63FF] border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen bg-sipheron-base flex flex-col items-center justify-center">
+        <div className="w-10 h-10 border-2 border-sipheron-purple border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="text-sipheron-text-muted text-sm">Loading...</p>
       </div>
     );
   }
@@ -65,7 +66,15 @@ const ProtectedRoute: FC<{ children: React.ReactNode }> = ({ children }) => {
 const PublicOnlyRoute: FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading } = useAuth();
   
-  if (loading) return null;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-sipheron-base flex flex-col items-center justify-center">
+        <div className="w-10 h-10 border-2 border-sipheron-purple border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="text-sipheron-text-muted text-sm">Loading...</p>
+      </div>
+    );
+  }
+  
   if (user) return <Navigate to="/dashboard" replace />;
   
   return <>{children}</>;

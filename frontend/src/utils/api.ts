@@ -102,14 +102,20 @@ export const isAuthenticated = async () => {
     // Hit the health-like endpoint that requires auth; any 2xx means valid session
     await api.get('/api/org');
     return true;
-  } catch (error) {
-    // Only invalidate session strictly on 401/403
-    if ((error as { response?: { status: number } }).response?.status === 401 || 
-        (error as { response?: { status: number } }).response?.status === 403) {
+  } catch (error: any) {
+    // On 401/403, user is definitely not authenticated
+    if (error.response?.status === 401 || error.response?.status === 403) {
       return false;
     }
-    // On 500/Timeout we assume backend is struggling but session is legally stored 
-    return true;
+    // On network errors (no response), we can't confirm auth status
+    // Return false to be safe - ProtectedRoute will handle redirect
+    if (!error.response) {
+      return false;
+    }
+    // On other errors (500, etc), try to check if we have a CSRF token
+    // as a hint that we might have been logged in
+    const hasCsrfToken = typeof window !== 'undefined' && !!localStorage.getItem('sipheron_csrf_token');
+    return hasCsrfToken;
   }
 };
 
