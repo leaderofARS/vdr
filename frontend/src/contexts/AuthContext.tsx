@@ -6,6 +6,7 @@
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import api, { login as apiLogin, register as apiRegister, logout as apiLogout, isAuthenticated } from '../utils/api';
+import { GlobalLoader } from '../components/shared/GlobalLoader';
 
 interface Organization {
   id: string;
@@ -139,6 +140,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await apiLogout();
     setUser(null);
   };
+
+  if (loading) {
+    return <GlobalLoader />;
+  }
 
   return (
     <AuthContext.Provider 
