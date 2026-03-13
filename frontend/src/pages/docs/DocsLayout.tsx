@@ -226,7 +226,7 @@ export const DocsLayout: React.FC = () => {
                   className="w-full h-full object-contain"
                 />
               </div>
-              <span className="text-[15px] font-bold text-white">Docs</span>
+              <span className="text-[15px] font-bold text-white">Resources</span>
             </Link>
           </div>
 
