@@ -7,7 +7,6 @@
 
 import React, { useState, useCallback } from 'react';
 import { 
-  ShieldCheck, 
   ShieldAlert, 
   FileSearch, 
   Activity, 
@@ -112,8 +111,10 @@ export const VerifyLandingPage: React.FC = () => {
         <div className="w-full max-w-3xl">
           {/* Header */}
           <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-sipheron-purple/10 border border-sipheron-purple/20 mb-6">
-              <ShieldCheck className="w-4 h-4 text-sipheron-green" />
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-sipheron-purple/10 border border-sipheron-purple/20 mb-6 group">
+              <div className="w-5 h-5 group-hover:scale-110 transition-transform duration-300">
+                <img src="/sipheron_vdap_logo.png" alt="Logo" className="w-full h-full object-contain" />
+              </div>
               <span className="text-xs font-semibold uppercase tracking-wider text-sipheron-green">Secure Protocol Verification</span>
             </div>
             <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4">

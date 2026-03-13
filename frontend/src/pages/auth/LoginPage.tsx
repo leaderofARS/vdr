@@ -91,6 +91,16 @@ export const LoginPage: React.FC = () => {
         />
 
         <div className="relative z-10">
+          <Link to="/" className="flex items-center gap-3 mb-16 group">
+            <div className="w-10 h-10 group-hover:scale-110 transition-transform duration-300">
+              <img
+                src="/sipheron_vdap_logo.png"
+                alt="SipHeron Logo"
+                className="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(155,110,255,0.3)]"
+              />
+            </div>
+            <span className="text-xl font-bold tracking-tight text-white">SipHeron</span>
+          </Link>
           <div className="mt-24 max-w-xl">
             <h1 className="text-5xl lg:text-6xl font-black tracking-tight text-white leading-[1.1]">
               The trust layer<br />
@@ -163,6 +173,10 @@ export const LoginPage: React.FC = () => {
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-sipheron-purple to-transparent opacity-50" />
 
             <div className="mb-8">
+              <div className="flex items-center gap-2 mb-4 lg:hidden">
+                <img src="/sipheron_vdap_logo.png" alt="Logo" className="w-8 h-8 object-contain" />
+                <span className="text-lg font-bold text-white tracking-tight">SipHeron</span>
+              </div>
               <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">Access Control</h2>
               <p className="text-sm text-sipheron-text-muted">Authenticate institutional credentials</p>
             </div>

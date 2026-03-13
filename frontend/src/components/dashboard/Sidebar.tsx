@@ -23,7 +23,6 @@ import {
   Bell,
   ChevronLeft,
   ChevronRight,
-  Shield,
   Settings2,
   LogOut,
 } from 'lucide-react';
@@ -128,9 +127,13 @@ export const Sidebar: FC<SidebarProps> = ({ isCollapsed, onToggle, user }) => {
     >
       {/* Logo Area */}
       <div className="h-16 flex items-center justify-between px-4 border-b border-white/[0.06]">
-        <Link to="/" className="flex items-center gap-2 overflow-hidden">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-sipheron-purple to-sipheron-teal flex items-center justify-center flex-shrink-0">
-            <Shield className="w-4 h-4 text-white" />
+        <Link to="/" className="flex items-center gap-2 overflow-hidden group">
+          <div className="w-8 h-8 group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
+            <img
+              src="/sipheron_vdap_logo.png"
+              alt="SipHeron Logo"
+              className="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(155,110,255,0.3)]"
+            />
           </div>
           {!isCollapsed && (
             <>

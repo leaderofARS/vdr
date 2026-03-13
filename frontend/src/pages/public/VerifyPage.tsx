@@ -7,7 +7,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Check, X, ShieldCheck } from 'lucide-react';
+import { Check, X } from 'lucide-react';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'https://api.sipheron.com';
 const APP_URL = import.meta.env.VITE_APP_URL || window.location.origin;
@@ -71,9 +71,12 @@ export const VerifyPage: React.FC = () => {
   // Error state
   if (error && !result) return (
     <div className="min-h-screen bg-sipheron-base flex flex-col items-center justify-center gap-4">
-      <div className="w-16 h-16 rounded-full bg-sipheron-red/20 flex items-center justify-center">
-        <X className="w-8 h-8 text-sipheron-red" />
-      </div>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-sipheron-purple/10 border border-sipheron-purple/20 mb-6 group">
+              <div className="w-5 h-5 group-hover:scale-110 transition-transform duration-300">
+                <img src="/sipheron_vdap_logo.png" alt="Logo" className="w-full h-full object-contain" />
+              </div>
+              <span className="text-xs font-semibold uppercase tracking-wider text-sipheron-green">Secure Protocol Verification</span>
+            </div>
       <p className="text-white font-bold text-xl">Verification Failed</p>
       <p className="text-sipheron-text-muted text-sm">{error}</p>
       <Link to="/" className="text-sipheron-purple text-sm hover:text-sipheron-teal mt-4">
@@ -84,40 +87,13 @@ export const VerifyPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-sipheron-base text-white flex flex-col">
-      {/* Header */}
-      <header className="border-b border-white/[0.06] bg-sipheron-surface/50 backdrop-blur-xl">
-        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-sipheron-purple to-sipheron-teal flex items-center justify-center">
-              <span className="text-white font-bold text-sm">S</span>
-            </div>
-            <span className="font-bold text-white">SipHeron VDR</span>
-          </Link>
-          <nav className="flex items-center gap-4">
-            <Link to="/verify" className="text-sm text-sipheron-purple font-medium hover:text-sipheron-teal transition-colors flex items-center gap-1">
-              <ShieldCheck className="w-4 h-4" />
-              Verify Document
-            </Link>
-            <Link to="/" className="text-sm text-sipheron-text-muted hover:text-sipheron-text-primary transition-colors">
-              Home
-            </Link>
-            <Link to="/pricing" className="text-sm text-sipheron-text-muted hover:text-sipheron-text-primary transition-colors">
-              Pricing
-            </Link>
-            <Link to="/docs" className="text-sm text-sipheron-text-muted hover:text-sipheron-text-primary transition-colors">
-              Docs
-            </Link>
-          </nav>
-        </div>
-      </header>
-
       <main className="flex-grow flex flex-col items-center justify-center px-4 py-12">
         {/* Logo */}
-        <div className="mb-8 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-sipheron-purple to-sipheron-teal flex items-center justify-center">
-            <span className="text-white font-bold text-lg">S</span>
+        <div className="mb-8 flex items-center gap-3 group">
+          <div className="w-10 h-10 group-hover:scale-110 transition-transform duration-300">
+            <img src="/sipheron_vdap_logo.png" alt="SipHeron Logo" className="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(155,110,255,0.3)]" />
           </div>
-          <span className="text-xl font-bold text-white">SipHeron VDR</span>
+          <span className="text-xl font-bold text-white tracking-tight">SipHeron VDR</span>
         </div>
 
         {/* Status Card */}
@@ -251,22 +227,6 @@ export const VerifyPage: React.FC = () => {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-white/[0.06] py-6">
-        <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-sipheron-text-muted">
-            © 2025 SipHeron VDR. All rights reserved.
-          </p>
-          <div className="flex items-center gap-4">
-            <Link to="/terms" className="text-xs text-sipheron-text-muted hover:text-sipheron-text-primary transition-colors">
-              Terms
-            </Link>
-            <Link to="/privacy" className="text-xs text-sipheron-text-muted hover:text-sipheron-text-primary transition-colors">
-              Privacy
-            </Link>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 };

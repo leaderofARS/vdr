@@ -6,7 +6,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, Building2, User, Eye, EyeOff, ShieldCheck, Terminal, CheckCircle2, Copy, Check, Shield, AlertCircle, ChevronRight, Target } from 'lucide-react';
+import { Mail, Lock, Building2, User, Eye, EyeOff, Terminal, CheckCircle2, Copy, Check, AlertCircle, ChevronRight, Target, ShieldCheck } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 const steps = ['Install', 'Link', 'Anchor', 'Verify'];
@@ -113,6 +113,16 @@ export const RegisterPage: React.FC = () => {
         />
 
         <div className="relative z-10">
+          <Link to="/" className="flex items-center gap-3 mb-16 group">
+            <div className="w-10 h-10 group-hover:scale-110 transition-transform duration-300">
+              <img
+                src="/sipheron_vdap_logo.png"
+                alt="SipHeron Logo"
+                className="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(155,110,255,0.3)]"
+              />
+            </div>
+            <span className="text-xl font-bold tracking-tight text-white">SipHeron</span>
+          </Link>
           <div className="mt-24 max-w-xl">
             <h1 className="text-5xl lg:text-6xl font-black tracking-tight text-white leading-[1.1]">
               Start anchoring documents <br />
@@ -130,8 +140,8 @@ export const RegisterPage: React.FC = () => {
                 Fundamental Tier Free on Devnet
               </div>
               <div className="flex items-center gap-4 text-sm font-bold text-sipheron-text-secondary uppercase tracking-widest bg-white/[0.02] px-6 py-4 rounded-2xl border border-white/[0.06]">
-                <div className="w-8 h-8 rounded-full bg-sipheron-purple/10 flex items-center justify-center">
-                  <Shield className="w-4 h-4 text-sipheron-purple" />
+                <div className="w-8 h-8 group-hover:scale-110 transition-all duration-300">
+                  <img src="/sipheron_vdap_logo.png" alt="Logo" className="w-full h-full object-contain" />
                 </div>
                 No Settlement Method Required
               </div>
@@ -193,6 +203,10 @@ export const RegisterPage: React.FC = () => {
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-sipheron-purple to-transparent opacity-50" />
 
               <div className="mb-8">
+                <div className="flex items-center gap-2 mb-4 lg:hidden">
+                  <img src="/sipheron_vdap_logo.png" alt="Logo" className="w-8 h-8 object-contain" />
+                  <span className="text-lg font-bold text-white tracking-tight">SipHeron</span>
+                </div>
                 <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">Provision Identity</h2>
                 <p className="text-sm text-sipheron-text-muted">Initialize your cryptographic foundation</p>
               </div>
