@@ -42,7 +42,8 @@ function processQueue(error: unknown) {
   failedQueue = [];
 }
 
-// Global 401 handler - attempt token refresh
+// Global 401 handler - attempt token refresh, but DON'T auto-redirect
+// Let ProtectedRoute handle redirects to avoid redirecting on public pages
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -66,10 +67,8 @@ api.interceptors.response.use(
         return api(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError);
-        if (typeof window !== 'undefined' && !window.location.pathname.includes('/auth/login')) {
-          window.location.href = '/auth/login';
-        }
-        return Promise.reject(refreshError);
+        // Don't auto-redirect here - let ProtectedRoute handle it
+        // This prevents redirect loops and allows public pages to work
       } finally {
         isRefreshing = false;
       }
