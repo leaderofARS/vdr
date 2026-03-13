@@ -21,7 +21,42 @@ import { TermsPage } from '@/pages/legal/TermsPage';
 import { PrivacyPage } from '@/pages/legal/PrivacyPage';
 
 // Docs
-import { DocsPage, DocsLayout, QuickStartPage, CliReferencePage, ApiReferencePage } from '@/pages/docs';
+import { 
+  DocsPage, 
+  DocsLayout, 
+  QuickStartPage,
+  InstallationPage,
+  BearerAuthPage,
+  ApiKeysAuthPage,
+  HashingConceptPage,
+  LifecyclePage,
+  VerificationModelPage,
+  StoragePage,
+  CliReferencePage,
+  CliLinkPage,
+  CliStagePage,
+  CliAnchorPage,
+  CliVerifyPage,
+  CliStatusPage,
+  CliHistoryPage,
+  CliRevokePage,
+  ApiReferencePage,
+  ApiAuthPage,
+  ApiHashesPage,
+  ApiKeysPage,
+  ApiOrgsPage,
+  ApiWebhooksPage,
+  ApiUsagePage,
+  GuideLegalPage,
+  GuideFinancialPage,
+  GuideEnterprisePage,
+  GuideCicdPage,
+  GuideWebhooksPage,
+  SdkJavaScriptPage,
+  SdkPythonPage,
+  ChangelogPage,
+  SupportPage,
+} from '@/pages/docs';
 
 // Dashboard
 import { DashboardLayout } from '@/components/dashboard';
@@ -30,7 +65,7 @@ import {
   HashesPage,
   BulkVerifyPage,
   AnalyticsPage,
-  ApiKeysPage,
+  ApiKeysPage as DashboardApiKeysPage,
   TeamPage,
   SettingsPage,
   BillingPage,
@@ -98,10 +133,52 @@ const AppRoutes: FC = () => {
       
       {/* Docs */}
       <Route path="/docs" element={<DocsLayout />}>
+        {/* Getting Started */}
         <Route index element={<DocsPage />} />
         <Route path="quickstart" element={<QuickStartPage />} />
+        <Route path="installation" element={<InstallationPage />} />
+        <Route path="authentication/bearer" element={<BearerAuthPage />} />
+        <Route path="authentication/api-keys" element={<ApiKeysAuthPage />} />
+        
+        {/* Core Concepts */}
+        <Route path="concepts/hashing" element={<HashingConceptPage />} />
+        <Route path="concepts/lifecycle" element={<LifecyclePage />} />
+        <Route path="concepts/verification" element={<VerificationModelPage />} />
+        <Route path="concepts/storage" element={<StoragePage />} />
+        
+        {/* CLI Reference */}
         <Route path="cli" element={<CliReferencePage />} />
+        <Route path="cli/link" element={<CliLinkPage />} />
+        <Route path="cli/stage" element={<CliStagePage />} />
+        <Route path="cli/anchor" element={<CliAnchorPage />} />
+        <Route path="cli/verify" element={<CliVerifyPage />} />
+        <Route path="cli/status" element={<CliStatusPage />} />
+        <Route path="cli/history" element={<CliHistoryPage />} />
+        <Route path="cli/revoke" element={<CliRevokePage />} />
+        
+        {/* API Reference */}
         <Route path="api" element={<ApiReferencePage />} />
+        <Route path="api/auth" element={<ApiAuthPage />} />
+        <Route path="api/hashes" element={<ApiHashesPage />} />
+        <Route path="api/keys" element={<ApiKeysPage />} />
+        <Route path="api/orgs" element={<ApiOrgsPage />} />
+        <Route path="api/webhooks" element={<ApiWebhooksPage />} />
+        <Route path="api/usage" element={<ApiUsagePage />} />
+        
+        {/* Guides */}
+        <Route path="guides/legal" element={<GuideLegalPage />} />
+        <Route path="guides/financial" element={<GuideFinancialPage />} />
+        <Route path="guides/enterprise" element={<GuideEnterprisePage />} />
+        <Route path="guides/cicd" element={<GuideCicdPage />} />
+        <Route path="guides/webhooks" element={<GuideWebhooksPage />} />
+        
+        {/* SDKs */}
+        <Route path="sdks/javascript" element={<SdkJavaScriptPage />} />
+        <Route path="sdks/python" element={<SdkPythonPage />} />
+        
+        {/* Resources */}
+        <Route path="changelog" element={<ChangelogPage />} />
+        <Route path="support" element={<SupportPage />} />
       </Route>
       
       {/* Auth Routes - redirect to dashboard if already logged in */}
@@ -116,7 +193,7 @@ const AppRoutes: FC = () => {
         <Route path="hashes" element={<HashesPage />} />
         <Route path="bulk-verify" element={<BulkVerifyPage />} />
         <Route path="analytics" element={<AnalyticsPage />} />
-        <Route path="keys" element={<ApiKeysPage />} />
+        <Route path="keys" element={<DashboardApiKeysPage />} />
         <Route path="team" element={<TeamPage />} />
         <Route path="webhooks" element={<WebhooksPage />} />
         <Route path="audit" element={<AuditPage />} />
