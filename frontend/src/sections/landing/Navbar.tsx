@@ -205,37 +205,25 @@ export const Navbar: React.FC = () => {
                       Products
                     </NavigationMenuTrigger>
                     <NavigationMenuContent>
-                      <div className="w-[400px] p-4 bg-sipheron-surface border border-white/[0.06] rounded-lg">
-                        <div className="grid gap-2">
+                      <div className="w-[320px] p-2 bg-sipheron-surface border border-white/[0.06] rounded-md">
+                        <div className="grid grid-cols-2 gap-1">
                           {productsItems.map((item) => (
                             <NavigationMenuLink asChild key={item.title}>
                               <Link
                                 to={item.href}
-                                className="flex items-start gap-3 p-3 rounded-lg hover:bg-white/[0.03] transition-colors group"
+                                className="flex flex-col items-center gap-2 p-3 rounded-md hover:bg-white/[0.03] transition-colors group text-center"
                               >
-                                <div className={`p-2 rounded-lg ${item.bgColor} shrink-0`}>
-                                  <item.icon className={`w-4 h-4 ${item.color}`} />
+                                <div className={`p-2 rounded-md ${item.bgColor}`}>
+                                  <item.icon className={`w-5 h-5 ${item.color}`} />
                                 </div>
                                 <div>
-                                  <div className="text-sm font-medium text-sipheron-text-primary group-hover:text-sipheron-purple transition-colors">
+                                  <div className="text-xs font-medium text-sipheron-text-primary group-hover:text-sipheron-purple transition-colors">
                                     {item.title}
-                                  </div>
-                                  <div className="text-xs text-sipheron-text-muted mt-0.5">
-                                    {item.description}
                                   </div>
                                 </div>
                               </Link>
                             </NavigationMenuLink>
                           ))}
-                        </div>
-                        <div className="mt-3 pt-3 border-t border-white/[0.06]">
-                          <Link
-                            to="/docs"
-                            className="flex items-center justify-between text-xs text-sipheron-text-secondary hover:text-sipheron-purple transition-colors"
-                          >
-                            <span>View all products</span>
-                            <ArrowRight className="w-3 h-3" />
-                          </Link>
                         </div>
                       </div>
                     </NavigationMenuContent>
@@ -247,25 +235,20 @@ export const Navbar: React.FC = () => {
                       Solutions
                     </NavigationMenuTrigger>
                     <NavigationMenuContent>
-                      <div className="w-[360px] p-4 bg-sipheron-surface border border-white/[0.06] rounded-lg">
-                        <div className="grid gap-2">
+                      <div className="w-[280px] p-2 bg-sipheron-surface border border-white/[0.06] rounded-md">
+                        <div className="grid gap-0.5">
                           {solutionsItems.map((item) => (
                             <NavigationMenuLink asChild key={item.title}>
                               <Link
                                 to={item.href}
-                                className="flex items-start gap-3 p-3 rounded-lg hover:bg-white/[0.03] transition-colors group"
+                                className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-white/[0.03] transition-colors group"
                               >
-                                <div className="p-2 rounded-lg bg-sipheron-purple/10 shrink-0">
+                                <div className="p-1.5 rounded bg-sipheron-purple/10 shrink-0">
                                   <item.icon className="w-4 h-4 text-sipheron-purple" />
                                 </div>
-                                <div>
-                                  <div className="text-sm font-medium text-sipheron-text-primary group-hover:text-sipheron-purple transition-colors">
-                                    {item.title}
-                                  </div>
-                                  <div className="text-xs text-sipheron-text-muted mt-0.5">
-                                    {item.description}
-                                  </div>
-                                </div>
+                                <span className="text-xs font-medium text-sipheron-text-primary group-hover:text-sipheron-purple transition-colors">
+                                  {item.title}
+                                </span>
                               </Link>
                             </NavigationMenuLink>
                           ))}
@@ -312,29 +295,24 @@ export const Navbar: React.FC = () => {
                       Resources
                     </NavigationMenuTrigger>
                     <NavigationMenuContent>
-                      <div className="w-[560px] p-5 bg-sipheron-surface border border-white/[0.06] rounded-lg">
-                        <div className="grid grid-cols-2 gap-6">
+                      <div className="w-[380px] p-2 bg-sipheron-surface border border-white/[0.06] rounded-md">
+                        <div className="flex gap-2">
                           {/* Learn Section */}
-                          <div>
-                            <h4 className="text-xs font-semibold text-sipheron-text-muted uppercase tracking-wider mb-3">
+                          <div className="flex-1">
+                            <h4 className="text-[10px] font-semibold text-sipheron-text-muted uppercase tracking-wider mb-1 px-2">
                               Learn
                             </h4>
-                            <div className="space-y-1">
+                            <div className="space-y-0.5">
                               {learnItems.map((item) => (
                                 <NavigationMenuLink asChild key={item.title}>
                                   <Link
                                     to={item.href}
-                                    className="flex items-center gap-2 p-2 rounded-md hover:bg-white/[0.03] transition-colors group"
+                                    className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-white/[0.03] transition-colors group"
                                   >
-                                    <item.icon className="w-4 h-4 text-sipheron-purple shrink-0" />
-                                    <div>
-                                      <div className="text-sm text-sipheron-text-primary group-hover:text-sipheron-purple transition-colors">
-                                        {item.title}
-                                      </div>
-                                      <div className="text-[10px] text-sipheron-text-muted">
-                                        {item.description}
-                                      </div>
-                                    </div>
+                                    <item.icon className="w-3.5 h-3.5 text-sipheron-purple shrink-0" />
+                                    <span className="text-xs text-sipheron-text-primary group-hover:text-sipheron-purple transition-colors">
+                                      {item.title}
+                                    </span>
                                   </Link>
                                 </NavigationMenuLink>
                               ))}
@@ -342,20 +320,20 @@ export const Navbar: React.FC = () => {
                           </div>
 
                           {/* Company & Open Source */}
-                          <div className="space-y-5">
+                          <div className="flex-1 space-y-2">
                             <div>
-                              <h4 className="text-xs font-semibold text-sipheron-text-muted uppercase tracking-wider mb-3">
+                              <h4 className="text-[10px] font-semibold text-sipheron-text-muted uppercase tracking-wider mb-1 px-2">
                                 Company
                               </h4>
-                              <div className="space-y-1">
+                              <div className="space-y-0.5">
                                 {companyItems.map((item) => (
                                   <NavigationMenuLink asChild key={item.title}>
                                     <Link
                                       to={item.href}
-                                      className="flex items-center gap-2 p-2 rounded-md hover:bg-white/[0.03] transition-colors group"
+                                      className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-white/[0.03] transition-colors group"
                                     >
-                                      <item.icon className="w-4 h-4 text-sipheron-teal shrink-0" />
-                                      <span className="text-sm text-sipheron-text-primary group-hover:text-sipheron-teal transition-colors">
+                                      <item.icon className="w-3.5 h-3.5 text-sipheron-teal shrink-0" />
+                                      <span className="text-xs text-sipheron-text-primary group-hover:text-sipheron-teal transition-colors">
                                         {item.title}
                                       </span>
                                     </Link>
@@ -365,20 +343,20 @@ export const Navbar: React.FC = () => {
                             </div>
 
                             <div>
-                              <h4 className="text-xs font-semibold text-sipheron-text-muted uppercase tracking-wider mb-3">
+                              <h4 className="text-[10px] font-semibold text-sipheron-text-muted uppercase tracking-wider mb-1 px-2">
                                 Open Source
                               </h4>
-                              <div className="space-y-1">
+                              <div className="space-y-0.5">
                                 {openSourceItems.map((item) => (
                                   <NavigationMenuLink asChild key={item.title}>
                                     <a
                                       href={item.href}
                                       target={item.external ? '_blank' : undefined}
                                       rel={item.external ? 'noopener noreferrer' : undefined}
-                                      className="flex items-center gap-2 p-2 rounded-md hover:bg-white/[0.03] transition-colors group"
+                                      className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-white/[0.03] transition-colors group"
                                     >
-                                      <item.icon className="w-4 h-4 text-sipheron-green shrink-0" />
-                                      <span className="text-sm text-sipheron-text-primary group-hover:text-sipheron-green transition-colors">
+                                      <item.icon className="w-3.5 h-3.5 text-sipheron-green shrink-0" />
+                                      <span className="text-xs text-sipheron-text-primary group-hover:text-sipheron-green transition-colors">
                                         {item.title}
                                       </span>
                                       {item.external && (
