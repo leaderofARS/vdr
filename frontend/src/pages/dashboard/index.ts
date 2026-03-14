@@ -1,5 +1,6 @@
 export { DashboardHome } from './DashboardHome';
 export { HashesPage } from './HashesPage';
+export { HashDetailPage } from './HashDetailPage';
 export { BulkVerifyPage } from './BulkVerifyPage';
 export { AnalyticsPage } from './AnalyticsPage';
 export { ApiKeysPage } from './ApiKeysPage';
