@@ -131,6 +131,18 @@ export const HashesPage: React.FC = () => {
     if (hasPending) startPolling();
   }, [hashes, startPolling]);
 
+  // Listen for open-anchor-modal event from CommandPalette
+  useEffect(() => {
+    const handleOpenAnchor = () => {
+      setAnchorModalOpen(true);
+      // Also set a dummy fileHash to trigger the modal state
+      setFileHash('pending');
+      setFileName('New Document');
+    };
+    window.addEventListener('open-anchor-modal', handleOpenAnchor);
+    return () => window.removeEventListener('open-anchor-modal', handleOpenAnchor);
+  }, []);
+
   // Update URL when filters change
   const updateFilters = (newSearch: string, newStatus: string) => {
     const params: Record<string, string> = {};

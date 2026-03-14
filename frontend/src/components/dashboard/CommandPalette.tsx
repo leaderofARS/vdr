@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '@/utils/api';
 import {
   Search,
   LayoutDashboard,
@@ -19,6 +20,7 @@ import {
   FileText,
   User,
   ExternalLink,
+  Plus,
 } from 'lucide-react';
 
 interface CommandItem {
@@ -43,6 +45,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [recentHashes, setRecentHashes] = useState<Array<{hash: string; metadata: string}>>([]);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Reset state when opened
@@ -51,14 +54,48 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       setSearchQuery('');
       setSelectedIndex(0);
       inputRef.current?.focus();
+      fetchRecentHashes();
     }
   }, [isOpen]);
+
+  // Fetch recent hashes
+  const fetchRecentHashes = useCallback(async () => {
+    try {
+      const { data } = await api.get('/api/hashes', { params: { limit: 3 } });
+      const hashes = (data.data || []).slice(0, 3);
+      setRecentHashes(hashes);
+    } catch {
+      // Silently fail - recent hashes are optional
+      setRecentHashes([]);
+    }
+  }, []);
 
   // Navigation helper
   const goTo = (path: string) => {
     navigate(path);
     onClose();
   };
+
+  // Open anchor modal on hashes page
+  const openAnchorModal = () => {
+    window.dispatchEvent(new CustomEvent('open-anchor-modal'));
+    navigate('/dashboard/hashes');
+    onClose();
+  };
+
+  // Build dynamic recent commands
+  const recentCommands: CommandItem[] = recentHashes.length > 0 
+    ? recentHashes.map((h, i) => ({
+        id: `recent-${i}`,
+        title: h.metadata || 'Untitled Document',
+        subtitle: `Hash: ${h.hash.slice(0, 16)}...`,
+        icon: FileText,
+        section: 'Recent',
+        action: () => goTo(`/dashboard/hashes/${h.hash}`),
+      }))
+    : [
+        { id: 'recent-empty', title: 'No recent documents', icon: FileText, section: 'Recent', action: () => goTo('/dashboard/hashes') },
+      ];
 
   // Define all commands
   const allCommands: CommandItem[] = [
@@ -78,18 +115,17 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
     { id: 'billing', title: 'Billing', icon: CreditCard, section: 'Pages', action: () => goTo('/dashboard/billing') },
     { id: 'notifications', title: 'Notifications', icon: Bell, section: 'Pages', action: () => goTo('/dashboard/notifications') },
 
-    // Recent (mock data)
-    { id: 'recent-1', title: 'contract.pdf', subtitle: 'Hash: a3f4b2c1...', icon: FileText, section: 'Recent', action: () => goTo('/dashboard/hashes') },
-    { id: 'recent-2', title: 'invoice_q4.pdf', subtitle: 'Hash: d8e9f0a1...', icon: FileText, section: 'Recent', action: () => goTo('/dashboard/hashes') },
+    // Recent
+    ...recentCommands,
 
     // Actions
-    { id: 'action-anchor', title: 'Anchor New Document', icon: Zap, shortcut: 'N', section: 'Actions', action: () => { onClose(); /* Open anchor modal */ } },
+    { id: 'action-anchor', title: 'Anchor New Document', icon: Plus, shortcut: 'N', section: 'Actions', action: openAnchorModal },
     { id: 'action-verify', title: 'Verify Hash', icon: ExternalLink, section: 'Actions', action: () => goTo('/dashboard/bulk-verify') },
     { id: 'action-profile', title: 'View Profile', icon: User, section: 'Actions', action: () => goTo('/dashboard/settings') },
 
     // Docs
-    { id: 'docs-api', title: 'API Documentation', icon: ExternalLink, section: 'Documentation', action: () => window.open('#', '_blank') },
-    { id: 'docs-cli', title: 'CLI Reference', icon: ExternalLink, section: 'Documentation', action: () => window.open('#', '_blank') },
+    { id: 'docs-api', title: 'API Documentation', icon: ExternalLink, section: 'Documentation', action: () => window.open('/docs/api', '_blank') },
+    { id: 'docs-cli', title: 'CLI Reference', icon: ExternalLink, section: 'Documentation', action: () => window.open('/docs/cli', '_blank') },
   ];
 
   // Filter commands based on search

@@ -16,6 +16,11 @@ import {
   CreditCard,
   Trash2,
   ExternalLink,
+  Plus,
+  Hash,
+  HelpCircle,
+  FileText,
+  LifeBuoy,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import api from '@/utils/api';
@@ -376,6 +381,86 @@ export const Topbar: React.FC = () => {
                   <ChevronDown className="w-3 h-3 -rotate-90" />
                 </Link>
               </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Create New Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-lg bg-sipheron-purple/10 hover:bg-sipheron-purple/20 text-sipheron-purple text-sm font-medium transition-all">
+                <Plus className="w-4 h-4" />
+                <span>Create</span>
+                <ChevronDown className="w-3 h-3" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 bg-sipheron-surface border border-white/[0.06]" sideOffset={8}>
+              <div className="px-3 py-2 border-b border-white/[0.06]">
+                <p className="text-xs font-medium text-sipheron-text-muted uppercase tracking-wider">Quick Actions</p>
+              </div>
+              <DropdownMenuItem asChild className="cursor-pointer">
+                <Link to="/dashboard/hashes" onClick={() => window.dispatchEvent(new CustomEvent('open-anchor-modal'))} className="flex items-center gap-2">
+                  <Hash className="w-4 h-4 text-sipheron-purple" />
+                  Anchor Document
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className="cursor-pointer">
+                <Link to="/dashboard/keys" className="flex items-center gap-2">
+                  <Key className="w-4 h-4 text-sipheron-teal" />
+                  Create API Key
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className="cursor-pointer">
+                <Link to="/dashboard/team" className="flex items-center gap-2">
+                  <Users className="w-4 h-4 text-sipheron-gold" />
+                  Invite Team Member
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild className="cursor-pointer">
+                <Link to="/dashboard/bulk-verify" className="flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-sipheron-green" />
+                  Bulk Verify
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Help Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="p-2.5 rounded-lg hover:bg-white/[0.03] transition-colors text-sipheron-text-secondary">
+                <HelpCircle className="w-5 h-5" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 bg-sipheron-surface border border-white/[0.06]" sideOffset={8}>
+              <div className="px-3 py-2 border-b border-white/[0.06]">
+                <p className="text-xs font-medium text-sipheron-text-muted uppercase tracking-wider">Help & Resources</p>
+              </div>
+              <DropdownMenuItem asChild className="cursor-pointer">
+                <a href="/docs" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-sipheron-purple" />
+                  Documentation
+                </a>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className="cursor-pointer">
+                <a href="/docs/api" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
+                  <ExternalLink className="w-4 h-4 text-sipheron-teal" />
+                  API Reference
+                </a>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className="cursor-pointer">
+                <Link to="/docs/cli" className="flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-sipheron-gold" />
+                  CLI Guide
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild className="cursor-pointer">
+                <a href="mailto:support@sipheron.com" className="flex items-center gap-2">
+                  <LifeBuoy className="w-4 h-4 text-sipheron-green" />
+                  Contact Support
+                </a>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
