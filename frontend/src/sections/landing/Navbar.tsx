@@ -253,7 +253,10 @@ export const Navbar: React.FC = () => {
           <div className="flex items-center gap-3">
             {/* Search button - show on docs pages */}
             {location.pathname.startsWith('/docs') && (
-              <button className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-white/[0.03] border border-white/[0.1] rounded-lg text-[#888] text-[12px] hover:border-white/[0.2] transition-colors">
+              <button 
+                onClick={() => window.dispatchEvent(new CustomEvent('open-docs-search'))}
+                className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-white/[0.03] border border-white/[0.1] rounded-lg text-[#888] text-[12px] hover:border-white/[0.2] transition-colors"
+              >
                 <Search className="w-3.5 h-3.5" />
                 <span>Search...</span>
                 <kbd className="ml-2 text-[10px] opacity-30">⌘K</kbd>

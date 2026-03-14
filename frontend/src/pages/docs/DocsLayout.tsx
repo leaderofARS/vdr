@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ExternalLink, ChevronRight } from 'lucide-react';
 import { Navbar, Footer } from '@/sections/landing';
-import { TableOfContents } from '@/components/docs/TableOfContents';
+import { TableOfContents, DocSearch } from '@/components/docs';
+import { toast } from 'sonner';
 
 // Sidebar navigation structure
 const SIDEBAR_ITEMS = [
@@ -203,12 +204,94 @@ const MobileSidebar: React.FC<{ isOpen: boolean; onClose: () => void; currentPat
 
 export const DocsLayout: React.FC = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const currentPath = location.pathname;
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    let lastKey = '';
+    let lastKeyTime = 0;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // CMD/CTRL + K for search
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setIsSearchOpen(true);
+      }
+
+      // Quick navigation shortcuts: G then something
+      const now = Date.now();
+      if (e.key.toLowerCase() === 'g') {
+        lastKey = 'g';
+        lastKeyTime = now;
+      } else if (lastKey === 'g' && now - lastKeyTime < 500) {
+        if (e.key === 'h') {
+          e.preventDefault();
+          navigate('/');
+          toast.success('Navigated to Home');
+        } else if (e.key === 'd') {
+          e.preventDefault();
+          navigate('/dashboard');
+          toast.success('Navigated to Dashboard');
+        } else if (e.key === 's') {
+          e.preventDefault();
+          navigate('/stats');
+          toast.success('Navigated to Stats');
+        } else if (e.key === 'a') {
+          e.preventDefault();
+          navigate('/docs/api');
+          toast.success('Navigated to API Reference');
+        } else if (e.key === 'c') {
+          e.preventDefault();
+          navigate('/docs/cli');
+          toast.success('Navigated to CLI Reference');
+        } else if (e.key === 'q') {
+          e.preventDefault();
+          navigate('/docs/quickstart');
+          toast.success('Navigated to Quick Start');
+        } else if (e.key === 'v') {
+          e.preventDefault();
+          navigate('/verify');
+          toast.success('Navigated to Verify');
+        }
+        lastKey = '';
+      }
+
+      // / for search
+      if (e.key === '/' && !isSearchOpen) {
+        // Prevent typing / if no input is focused
+        if (document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
+          e.preventDefault();
+          setIsSearchOpen(true);
+        }
+      }
+
+      // Escape to close search
+      if (e.key === 'Escape' && isSearchOpen) {
+        setIsSearchOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    
+    // Custom event listener for Navbar search button
+    const handleOpenSearch = () => setIsSearchOpen(true);
+    window.addEventListener('open-docs-search', handleOpenSearch);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('open-docs-search', handleOpenSearch);
+    };
+  }, [navigate, isSearchOpen]);
 
   return (
     <div className="min-h-screen bg-[#050505] flex flex-col">
       <Navbar />
+      
+      {/* Search Modal */}
+      <DocSearch isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
 
       <div className="flex-1 flex pt-12">
         {/* Sidebar */}
