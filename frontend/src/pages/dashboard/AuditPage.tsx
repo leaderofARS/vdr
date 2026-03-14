@@ -14,7 +14,7 @@ import {
   Key,
   Users,
   Globe,
-  Info,
+
   Download,
   RotateCcw,
   Activity,
@@ -127,7 +127,7 @@ function formatTimeAgo(date: string): string {
 
 
 export const AuditPage: React.FC = () => {
-  const { isAdmin: userIsAdmin, loading: rbacLoading, requireRole } = useRBAC();
+  const { isAdmin: userIsAdmin, loading: rbacLoading } = useRBAC();
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [stats, setStats] = useState<AuditStats | null>(null);
   const [loading, setLoading] = useState(true);
