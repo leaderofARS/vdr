@@ -18,9 +18,12 @@ function requireRole(minRole) {
         const callerLevel = ROLE_HIERARCHY[callerRole] || 0;
         const requiredLevel = ROLE_HIERARCHY[minRole] || 0;
 
+        console.log('[RBAC] Role check:', { callerRole, callerLevel, requiredRole: minRole, requiredLevel, userId: req.user?.id });
+
         if (callerLevel < requiredLevel) {
             return res.status(403).json({
-                error: `Access denied. Requires ${minRole} role, you are ${callerRole}.`
+                error: `Access denied. Requires ${minRole} role, you are ${callerRole}.`,
+                debug: { userId: req.user?.id, orgId: req.organization?.id, role: callerRole }
             });
         }
         next();

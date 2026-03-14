@@ -186,7 +186,7 @@ router.get('/stats', authenticate, async (req, res, next) => {
             },
             user: {
                 email: req.user.email,
-                role: 'Administrator'
+                role: req.user.orgRole || 'member'
             },
             recentActivity: recentActivity.map(formatHashRecordShort)
         });

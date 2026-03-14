@@ -8,6 +8,10 @@ const { requireRole } = require('../middleware/rbac');
 router.get('/', authenticate, requireRole('admin'), async (req, res) => {
     try {
         const organizationId = req.organization?.id;
+        const userRole = req.user?.orgRole;
+        
+        console.log('[AUDIT] Fetch request:', { orgId: organizationId, userRole, userId: req.user?.id });
+        
         if (!organizationId) return res.status(400).json({ error: 'No organization linked' });
 
         const {
@@ -53,6 +57,8 @@ router.get('/', authenticate, requireRole('admin'), async (req, res) => {
             user: log.userId ? userMap[log.userId] || null : null
         }));
 
+        console.log('[AUDIT] Fetch response:', { total, logsCount: enrichedLogs.length });
+        
         res.json({
             logs: enrichedLogs,
             total,
@@ -61,7 +67,7 @@ router.get('/', authenticate, requireRole('admin'), async (req, res) => {
         });
     } catch (err) {
         console.error('[AUDIT] fetch error:', err);
-        res.status(500).json({ error: 'Failed to fetch audit logs' });
+        res.status(500).json({ error: 'Failed to fetch audit logs', details: err.message });
     }
 });
 
