@@ -17,7 +17,7 @@ export const DashboardLayout: React.FC = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
 
-  // Handle Cmd+K keyboard shortcut
+  // Handle Cmd+K keyboard shortcut and custom event from Topbar
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
@@ -29,8 +29,16 @@ export const DashboardLayout: React.FC = () => {
       }
     };
 
+    const handleOpenCommandPalette = () => {
+      setIsCommandPaletteOpen(true);
+    };
+
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener('open-command-palette', handleOpenCommandPalette);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('open-command-palette', handleOpenCommandPalette);
+    };
   }, []);
 
   // Show loading spinner while checking auth

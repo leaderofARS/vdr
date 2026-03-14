@@ -13,7 +13,6 @@ import {
   Zap,
   Key,
   Users,
-  Hash,
   CreditCard,
   Trash2,
   ExternalLink,
@@ -27,14 +26,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command';
+
 
 interface Notification {
   id: string;
@@ -77,19 +69,11 @@ const formatRelativeTime = (date: string): string => {
 export const Topbar: React.FC = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const [searchOpen, setSearchOpen] = useState(false);
+
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loadingNotifications, setLoadingNotifications] = useState(false);
-
-  const quickActions = [
-    { icon: Hash, label: 'Anchor Document', shortcut: '⌘H', action: () => navigate('/dashboard/hashes/new') },
-    { icon: Key, label: 'Create API Key', shortcut: '⌘K', action: () => navigate('/dashboard/keys') },
-    { icon: Users, label: 'Invite Team Member', shortcut: '⌘I', action: () => navigate('/dashboard/team') },
-    { icon: Settings, label: 'Organization Settings', shortcut: '⌘S', action: () => navigate('/dashboard/settings') },
-    { icon: ExternalLink, label: 'View API Docs', shortcut: '⌘D', action: () => window.open('/docs', '_blank') },
-  ];
 
   // Poll unread count every 30s
   const pollUnreadCount = useCallback(async () => {
@@ -242,7 +226,7 @@ export const Topbar: React.FC = () => {
         <div className="flex items-center gap-2">
           {/* Search Trigger */}
           <button
-            onClick={() => setSearchOpen(true)}
+            onClick={() => window.dispatchEvent(new CustomEvent('open-command-palette'))}
             className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg bg-white/[0.03] hover:bg-white/[0.05] border border-white/[0.06] text-sipheron-text-muted text-sm transition-all"
           >
             <Search className="w-4 h-4" />
@@ -436,43 +420,6 @@ export const Topbar: React.FC = () => {
         </div>
       </div>
 
-      {/* Command Dialog for Quick Actions */}
-      <CommandDialog open={searchOpen} onOpenChange={setSearchOpen}>
-        <CommandInput placeholder="Type a command or search..." />
-        <CommandList>
-          <CommandEmpty>No results found.</CommandEmpty>
-          <CommandGroup heading="Quick Actions">
-            {quickActions.map((action) => (
-              <CommandItem
-                key={action.label}
-                onSelect={() => {
-                  setSearchOpen(false);
-                  action.action();
-                }}
-              >
-                <action.icon className="mr-2 h-4 w-4" />
-                <span>{action.label}</span>
-                {action.shortcut && (
-                  <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium">
-                    {action.shortcut}
-                  </kbd>
-                )}
-              </CommandItem>
-            ))}
-          </CommandGroup>
-          <CommandGroup heading="Navigation">
-            <CommandItem onSelect={() => { setSearchOpen(false); navigate('/dashboard'); }}>
-              Dashboard Home
-            </CommandItem>
-            <CommandItem onSelect={() => { setSearchOpen(false); navigate('/dashboard/hashes'); }}>
-              Document Hashes
-            </CommandItem>
-            <CommandItem onSelect={() => { setSearchOpen(false); navigate('/dashboard/analytics'); }}>
-              Analytics
-            </CommandItem>
-          </CommandGroup>
-        </CommandList>
-      </CommandDialog>
     </header>
   );
 };
