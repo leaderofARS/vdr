@@ -53,6 +53,7 @@ const usageRoute = require("./routes/usage");
 const keysRoute = require("./routes/keys");
 const membersRouter = require('./routes/members');
 const auditRouter = require('./routes/audit');
+const statsRouter = require('./routes/stats');
 const usageLogger = require("./middleware/usageLogger");
 
 const authenticate = require("./middleware/auth");
@@ -146,6 +147,7 @@ app.use((req, res, next) => {
             req.path.startsWith('/api/usage') ||
             req.path.startsWith('/api/batch') ||
             req.path.startsWith('/api/members') ||
+            req.path.startsWith('/api/stats') ||
             req.path.startsWith('/api/audit')
         ) {
             return next();
@@ -191,6 +193,7 @@ app.use("/api/notifications", notificationsRoute);
 app.use("/api/webhooks", webhooksRoute);
 app.use('/api/usage', usageRoute);
 app.use('/api/members', membersRouter);
+app.use('/api/stats', statsRouter);
 app.use('/api/audit', auditRouter);
 // app.use("/api", usageLogger); // Removed from here and moved before routes
 

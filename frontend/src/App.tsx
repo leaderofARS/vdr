@@ -9,6 +9,7 @@ import { VerifyPage } from '@/pages/public/VerifyPage';
 import { VerifyLandingPage } from '@/pages/public/VerifyLandingPage';
 import { InviteAcceptPage } from '@/pages/public/InviteAcceptPage';
 import { PricingPage } from '@/pages/public/PricingPage';
+import { StatsPage } from '@/pages/public/StatsPage';
 
 // Auth Pages
 import { LoginPage } from '@/pages/auth/LoginPage';
@@ -131,6 +132,7 @@ const AppRoutes: FC = () => {
         {/* Public Pages */}
         <Route path="/verify" element={<VerifyLandingPage />} />
         <Route path="/verify/:hash" element={<VerifyPage />} />
+        <Route path="/stats" element={<StatsPage />} />
         <Route path="/invite/:token" element={<InviteAcceptPage />} />
         <Route path="/pricing" element={<PricingPage />} />
         

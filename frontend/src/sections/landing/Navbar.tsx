@@ -81,6 +81,7 @@ const navItems = [
       }
     ]
   },
+  { label: 'Platform Stats', href: '/stats' },
   { label: 'Pricing', href: '/pricing' },
 ];
 
