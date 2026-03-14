@@ -72,7 +72,6 @@ import {
   TeamPage,
   SettingsPage,
   BillingPage,
-  PlaceholderPage,
   NotificationsPage,
   WebhooksPage,
   AuditPage,
