@@ -4,7 +4,7 @@
  * Tracks all organizational activities with advanced filtering and analytics
  */
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -142,7 +142,6 @@ export const AuditPage: React.FC = () => {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [liveMode, setLiveMode] = useState(false);
   const [newEntries, setNewEntries] = useState(0);
-  const logsEndRef = useRef<HTMLDivElement>(null);
 
   const fetchLogs = useCallback(async (silent = false) => {
     if (!silent) {
