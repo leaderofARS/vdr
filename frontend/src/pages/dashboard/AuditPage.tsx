@@ -10,7 +10,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   ClipboardList,
   Search,
-  ChevronDown,
   User,
   Key,
   Users,
@@ -28,7 +27,9 @@ import {
   ChevronLeft,
   ChevronRight,
   RefreshCw,
-  MapPin
+  MapPin,
+  AlertCircle,
+  ShieldAlert
 } from 'lucide-react';
 import api from '@/utils/api';
 import { Button } from '@/components/ui/button';
@@ -127,6 +128,7 @@ export const AuditPage: React.FC = () => {
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [stats, setStats] = useState<AuditStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [pages, setPages] = useState(1);
@@ -138,12 +140,15 @@ export const AuditPage: React.FC = () => {
     to: ''
   });
   const [expanded, setExpanded] = useState<string | null>(null);
-  const [liveMode, setLiveMode] = useState(true);
+  const [liveMode, setLiveMode] = useState(false);
   const [newEntries, setNewEntries] = useState(0);
   const logsEndRef = useRef<HTMLDivElement>(null);
 
   const fetchLogs = useCallback(async (silent = false) => {
-    if (!silent) setLoading(true);
+    if (!silent) {
+      setLoading(true);
+      setError(null);
+    }
     try {
       const query = new URLSearchParams({ page: String(page), limit: '50' });
       if (filters.category) query.set('category', filters.category);
@@ -157,7 +162,8 @@ export const AuditPage: React.FC = () => {
       ]);
 
       if (logsRes.status === 'fulfilled') {
-        const newLogs = logsRes.value.data.logs || [];
+        const responseData = logsRes.value.data;
+        const newLogs = responseData.logs || responseData.data || [];
         
         // Check for new entries in live mode
         if (silent && liveMode && logs.length > 0) {
@@ -167,13 +173,31 @@ export const AuditPage: React.FC = () => {
         }
         
         setLogs(newLogs);
-        setTotal(logsRes.value.data.total || 0);
-        setPages(logsRes.value.data.pages || 1);
+        setTotal(responseData.total || 0);
+        setPages(responseData.pages || 1);
+      } else {
+        // Handle error
+        const err = logsRes.reason;
+        if (err?.response?.status === 403) {
+          setError('Admin access required to view audit logs');
+        } else {
+          setError('Failed to fetch audit logs');
+        }
+        setLogs([]);
       }
+
       if (statsRes.status === 'fulfilled') {
         setStats(statsRes.value.data);
+      } else {
+        setStats({ total: 0, last24h: 0, byCategory: [] });
       }
-    } catch (err) {
+    } catch (err: any) {
+      console.error('Audit fetch error:', err);
+      if (err?.response?.status === 403) {
+        setError('Admin access required to view audit logs');
+      } else {
+        setError(err?.response?.data?.error || 'Failed to fetch audit logs');
+      }
       if (!silent) toast.error('Failed to fetch audit logs');
     } finally {
       if (!silent) setLoading(false);
@@ -188,7 +212,7 @@ export const AuditPage: React.FC = () => {
   // Real-time polling
   useEffect(() => {
     if (!liveMode) return;
-    const interval = setInterval(() => fetchLogs(true), 10000); // Poll every 10s
+    const interval = setInterval(() => fetchLogs(true), 10000);
     return () => clearInterval(interval);
   }, [liveMode, fetchLogs]);
 
@@ -208,6 +232,11 @@ export const AuditPage: React.FC = () => {
   };
 
   const exportLogs = () => {
+    if (logs.length === 0) {
+      toast.error('No logs to export');
+      return;
+    }
+
     const data = logs.map(log => ({
       Timestamp: log.createdAt,
       Action: ACTION_LABELS[log.action] || log.action,
@@ -238,10 +267,15 @@ export const AuditPage: React.FC = () => {
     return (
       (ACTION_LABELS[log.action] || log.action).toLowerCase().includes(searchLower) ||
       log.user?.email?.toLowerCase().includes(searchLower) ||
-      log.category.toLowerCase().includes(searchLower) ||
+      log.category?.toLowerCase().includes(searchLower) ||
       JSON.stringify(log.metadata).toLowerCase().includes(searchLower)
     );
   });
+
+  // Calculate category counts from actual logs if stats not available
+  const categoryCounts = stats?.byCategory || [];
+  const totalEvents = stats?.total || total || 0;
+  const last24hEvents = stats?.last24h || 0;
 
   return (
     <div className="space-y-6">
@@ -273,12 +307,25 @@ export const AuditPage: React.FC = () => {
 
           <div className="text-right">
             <p className="text-2xl font-mono font-bold text-sipheron-text-primary">
-              {total.toLocaleString()}
+              {loading ? '...' : totalEvents.toLocaleString()}
             </p>
             <p className="text-xs text-sipheron-text-muted uppercase tracking-wider">Total Events</p>
           </div>
         </div>
       </div>
+
+      {/* Error Banner */}
+      {error && (
+        <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 flex items-center gap-3 text-red-400">
+          <ShieldAlert className="w-5 h-5" />
+          <div>
+            <p className="font-medium">{error}</p>
+            {error.includes('Admin') && (
+              <p className="text-sm mt-1">Contact your organization administrator for access.</p>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* New Entries Banner */}
       <AnimatePresence>
@@ -313,12 +360,12 @@ export const AuditPage: React.FC = () => {
             <Activity className="w-5 h-5 text-sipheron-purple" />
           </div>
           <div>
-            <p className="text-xl font-bold text-sipheron-text-primary font-mono">{stats?.last24h || 0}</p>
+            <p className="text-xl font-bold text-sipheron-text-primary font-mono">{loading ? '...' : last24hEvents}</p>
             <p className="text-xs text-sipheron-text-muted">Last 24h</p>
           </div>
         </div>
 
-        {stats?.byCategory?.slice(0, 3).map((cat) => {
+        {categoryCounts.slice(0, 3).map((cat: any) => {
           const config = CATEGORY_CONFIG[cat.category] || CATEGORY_CONFIG.auth;
           const Icon = config.icon;
           return (
@@ -327,7 +374,9 @@ export const AuditPage: React.FC = () => {
                 <Icon className={`w-5 h-5 ${config.color}`} />
               </div>
               <div>
-                <p className="text-xl font-bold text-sipheron-text-primary font-mono">{cat._count.id}</p>
+                <p className="text-xl font-bold text-sipheron-text-primary font-mono">
+                  {cat._count?.id || cat._count || 0}
+                </p>
                 <p className="text-xs text-sipheron-text-muted">{config.label}</p>
               </div>
             </div>
@@ -401,6 +450,7 @@ export const AuditPage: React.FC = () => {
             <Button
               variant="outline"
               onClick={exportLogs}
+              disabled={logs.length === 0}
               className="flex-1 border-white/[0.06] text-sipheron-text-muted"
               size="sm"
             >
@@ -418,13 +468,26 @@ export const AuditPage: React.FC = () => {
             <RefreshCw className="w-8 h-8 text-sipheron-purple animate-spin" />
             <p className="text-sm text-sipheron-text-muted">Loading audit trail...</p>
           </div>
+        ) : error ? (
+          <div className="text-center py-16">
+            <div className="w-20 h-20 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <AlertCircle className="w-10 h-10 text-red-400/60" />
+            </div>
+            <h3 className="text-lg font-semibold text-sipheron-text-primary mb-1">Unable to load audit logs</h3>
+            <p className="text-sm text-sipheron-text-muted">{error}</p>
+          </div>
         ) : filteredLogs.length === 0 ? (
           <div className="text-center py-16">
             <div className="w-20 h-20 bg-sipheron-purple/10 border border-sipheron-purple/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <Info className="w-10 h-10 text-sipheron-purple/40" />
             </div>
             <h3 className="text-lg font-semibold text-sipheron-text-primary mb-1">No events found</h3>
-            <p className="text-sm text-sipheron-text-muted">Try adjusting your filters or search criteria.</p>
+            <p className="text-sm text-sipheron-text-muted">
+              {logs.length === 0 
+                ? "No audit events have been recorded yet. Activities will appear here once they occur."
+                : "Try adjusting your filters or search criteria."
+              }
+            </p>
           </div>
         ) : (
           <div className="divide-y divide-white/[0.04]">
@@ -497,13 +560,23 @@ export const AuditPage: React.FC = () => {
                               )}
 
                               {/* Technical Details */}
-                              <div className="flex flex-wrap items-center gap-4 text-[10px] text-sipheron-text-muted">
-                                <span className="font-mono">ID: {log.id}</span>
-                                {log.userAgent && (
-                                  <span className="truncate max-w-[300px]">
-                                    Agent: {log.userAgent}
-                                  </span>
-                                )}
+                              <div className="grid grid-cols-2 gap-3 text-xs">
+                                <div className="p-3 bg-white/[0.03] rounded-lg border border-white/[0.06]">
+                                  <p className="text-sipheron-text-muted mb-1">Event ID</p>
+                                  <p className="font-mono text-sipheron-text-primary truncate">{log.id}</p>
+                                </div>
+                                <div className="p-3 bg-white/[0.03] rounded-lg border border-white/[0.06]">
+                                  <p className="text-sipheron-text-muted mb-1">User Agent</p>
+                                  <p className="font-mono text-sipheron-text-primary truncate">{log.userAgent || 'N/A'}</p>
+                                </div>
+                                <div className="p-3 bg-white/[0.03] rounded-lg border border-white/[0.06]">
+                                  <p className="text-sipheron-text-muted mb-1">Timestamp</p>
+                                  <p className="font-mono text-sipheron-text-primary">{new Date(log.createdAt).toLocaleString()}</p>
+                                </div>
+                                <div className="p-3 bg-white/[0.03] rounded-lg border border-white/[0.06]">
+                                  <p className="text-sipheron-text-muted mb-1">Category</p>
+                                  <p className="font-mono text-sipheron-text-primary capitalize">{log.category}</p>
+                                </div>
                               </div>
                             </div>
                           </motion.div>
@@ -511,9 +584,9 @@ export const AuditPage: React.FC = () => {
                       </AnimatePresence>
                     </div>
 
-                    {/* Expand Icon */}
-                    <div className={`text-sipheron-text-muted transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
-                      <ChevronDown className="w-5 h-5" />
+                    {/* Expand Indicator */}
+                    <div className="text-sipheron-text-muted">
+                      {isExpanded ? <ChevronLeft className="w-4 h-4 rotate-90" /> : <ChevronLeft className="w-4 h-4 -rotate-90" />}
                     </div>
                   </div>
                 </motion.div>
@@ -523,38 +596,37 @@ export const AuditPage: React.FC = () => {
         )}
 
         {/* Pagination */}
-        {!loading && pages > 1 && (
-          <div className="px-4 py-4 border-t border-white/[0.06] flex items-center justify-between bg-white/[0.02]">
-            <span className="text-xs text-sipheron-text-muted">
-              Page {page} of {pages} · {total} entries
-            </span>
-            <div className="flex gap-2">
+        {!loading && !error && pages > 1 && (
+          <div className="p-4 border-t border-white/[0.06] flex items-center justify-between">
+            <p className="text-sm text-sipheron-text-muted">
+              Showing {logs.length} of {total} events
+            </p>
+            <div className="flex items-center gap-2">
               <Button
                 variant="outline"
                 size="sm"
-                disabled={page === 1}
                 onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
                 className="border-white/[0.06]"
               >
-                <ChevronLeft className="w-4 h-4 mr-1" />
-                Previous
+                <ChevronLeft className="w-4 h-4" />
               </Button>
+              <span className="text-sm text-sipheron-text-muted px-2">
+                Page {page} of {pages}
+              </span>
               <Button
                 variant="outline"
                 size="sm"
-                disabled={page === pages}
                 onClick={() => setPage(p => Math.min(pages, p + 1))}
+                disabled={page === pages}
                 className="border-white/[0.06]"
               >
-                Next
-                <ChevronRight className="w-4 h-4 ml-1" />
+                <ChevronRight className="w-4 h-4" />
               </Button>
             </div>
           </div>
         )}
       </div>
-
-      <div ref={logsEndRef} />
     </div>
   );
 };
