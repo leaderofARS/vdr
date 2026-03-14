@@ -8,3 +8,5 @@ export { CountUp } from './CountUp';
 export { LoadingSkeleton, CardSkeleton, TableSkeleton, ChartSkeleton, StatCardSkeleton } from './LoadingSkeleton';
 
 export { SolanaExplorerLink } from './SolanaExplorerLink';
+
+export { FileUploader } from './FileUploader';

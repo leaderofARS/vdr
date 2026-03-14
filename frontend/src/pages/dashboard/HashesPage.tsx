@@ -16,8 +16,10 @@ import {
   ChevronRight,
   RefreshCw,
   QrCode,
+  FileJson,
+  Upload,
 } from 'lucide-react';
-import { StatusBadge } from '@/components/shared';
+import { StatusBadge, FileUploader } from '@/components/shared';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -78,6 +80,11 @@ export const HashesPage: React.FC = () => {
   const [revokeConfirmText, setRevokeConfirmText] = useState('');
   const [revoking, setRevoking] = useState(false);
   const [qrHash, setQrHash] = useState<string | null>(null);
+  const [anchorModalOpen, setAnchorModalOpen] = useState(false);
+  const [fileHash, setFileHash] = useState<string | null>(null);
+  const [fileName, setFileName] = useState<string | null>(null);
+  const [anchoring, setAnchoring] = useState(false);
+  const [anchorMetadata, setAnchorMetadata] = useState('');
 
   // Get page from URL
   const currentPage = parseInt(searchParams.get('page') || '1', 10);
@@ -224,6 +231,39 @@ export const HashesPage: React.FC = () => {
     toast.success(`${label} copied`);
   };
 
+  // Handle file hash computed
+  const handleHashComputed = (hash: string | null, filename: string | null) => {
+    setFileHash(hash);
+    setFileName(filename);
+    if (hash && filename) {
+      setAnchorModalOpen(true);
+    }
+  };
+
+  // Handle anchor file
+  const handleAnchorFile = async () => {
+    if (!fileHash || !fileName) return;
+    
+    setAnchoring(true);
+    try {
+      await api.post('/api/hashes', {
+        hash: fileHash,
+        metadata: anchorMetadata.trim() || fileName,
+      });
+      toast.success('Document anchored successfully');
+      setAnchorModalOpen(false);
+      setFileHash(null);
+      setFileName(null);
+      setAnchorMetadata('');
+      fetchHashes();
+    } catch (err: any) {
+      console.error('Anchor error:', err);
+      toast.error(err?.response?.data?.error || 'Failed to anchor document');
+    } finally {
+      setAnchoring(false);
+    }
+  };
+
   // Status counts
   const statusCounts = {
     total: pagination.total,
@@ -298,6 +338,19 @@ export const HashesPage: React.FC = () => {
             <div className="text-xs text-sipheron-text-muted">{stat.label}</div>
           </div>
         ))}
+      </div>
+
+      {/* File Uploader - Drag & Drop */}
+      <div className="bg-sipheron-surface rounded-xl p-6 border border-white/[0.06]">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-sm font-medium text-sipheron-text-primary">Anchor New Document</h3>
+            <p className="text-xs text-sipheron-text-muted mt-1">
+              Drag and drop a file to compute its hash and anchor to Solana
+            </p>
+          </div>
+        </div>
+        <FileUploader onHashComputed={handleHashComputed} />
       </div>
 
       {/* Filters */}
@@ -622,6 +675,85 @@ export const HashesPage: React.FC = () => {
               >
                 Copy Verification Link
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Anchor Modal */}
+      {anchorModalOpen && fileHash && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-sipheron-surface rounded-2xl p-6 max-w-md w-full border border-sipheron-purple/30">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-sipheron-text-primary">Anchor Document</h3>
+              <button
+                onClick={() => {
+                  setAnchorModalOpen(false);
+                  setFileHash(null);
+                  setFileName(null);
+                  setAnchorMetadata('');
+                }}
+                className="text-sipheron-text-muted hover:text-sipheron-text-primary"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {/* File Info */}
+              <div className="p-3 bg-black/40 border border-white/[0.06] rounded-lg">
+                <div className="flex items-center gap-2 text-sipheron-text-secondary text-sm mb-2">
+                  <FileJson className="w-4 h-4" />
+                  <span className="truncate">{fileName}</span>
+                </div>
+                <code className="text-xs text-sipheron-teal break-all">{fileHash}</code>
+              </div>
+
+              {/* Metadata */}
+              <div>
+                <label className="block text-xs text-sipheron-text-muted mb-2">
+                  Metadata (optional)
+                </label>
+                <textarea
+                  value={anchorMetadata}
+                  onChange={(e) => setAnchorMetadata(e.target.value)}
+                  placeholder="Document title, description, or other details..."
+                  rows={3}
+                  className="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/[0.06] text-sipheron-text-primary text-sm placeholder:text-sipheron-text-muted focus:border-sipheron-purple focus:ring-2 focus:ring-sipheron-purple/20 outline-none resize-none"
+                />
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => {
+                    setAnchorModalOpen(false);
+                    setFileHash(null);
+                    setFileName(null);
+                    setAnchorMetadata('');
+                  }}
+                  className="flex-1 px-4 py-2.5 rounded-lg bg-white/[0.05] text-sipheron-text-secondary text-sm hover:bg-white/[0.1] transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleAnchorFile}
+                  disabled={anchoring}
+                  className="flex-1 px-4 py-2.5 rounded-lg bg-gradient-to-r from-sipheron-purple to-sipheron-purple-light text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {anchoring ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Anchoring...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-4 h-4" />
+                      Anchor to Solana
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>
