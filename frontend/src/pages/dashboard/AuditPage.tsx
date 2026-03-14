@@ -29,7 +29,8 @@ import {
   RefreshCw,
   MapPin,
   AlertCircle,
-  ShieldAlert
+  ShieldAlert,
+  FileText
 } from 'lucide-react';
 import api from '@/utils/api';
 import { Button } from '@/components/ui/button';
@@ -129,6 +130,7 @@ export const AuditPage: React.FC = () => {
   const [stats, setStats] = useState<AuditStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [pages, setPages] = useState(1);
@@ -155,49 +157,45 @@ export const AuditPage: React.FC = () => {
       if (filters.from) query.set('from', filters.from);
       if (filters.to) query.set('to', filters.to);
 
-      const [logsRes, statsRes] = await Promise.allSettled([
-        api.get(`/api/audit?${query}`),
-        api.get('/api/audit/stats')
-      ]);
-
-      if (logsRes.status === 'fulfilled') {
-        const responseData = logsRes.value.data;
-        const newLogs = responseData.logs || responseData.data || [];
-        
-        // Check for new entries in live mode
-        if (silent && liveMode && logs.length > 0) {
-          const currentIds = new Set(logs.map(l => l.id));
-          const freshCount = newLogs.filter((l: AuditLog) => !currentIds.has(l.id)).length;
-          if (freshCount > 0) setNewEntries(prev => prev + freshCount);
-        }
-        
-        setLogs(newLogs);
-        setTotal(responseData.total || 0);
-        setPages(responseData.pages || 1);
-      } else {
-        // Handle error
-        const err = logsRes.reason;
+      // Fetch logs
+      const logsResponse = await api.get(`/api/audit?${query}`).catch((err) => {
         if (err?.response?.status === 403) {
-          setError('Admin access required to view audit logs');
-        } else {
-          setError('Failed to fetch audit logs');
+          setIsAdmin(false);
+          throw new Error('Admin access required to view audit logs');
         }
-        setLogs([]);
+        throw err;
+      });
+
+      setIsAdmin(true);
+      const responseData = logsResponse.data;
+      const newLogs = responseData.logs || responseData.data || [];
+      
+      // Check for new entries in live mode
+      if (silent && liveMode && logs.length > 0) {
+        const currentIds = new Set(logs.map(l => l.id));
+        const freshCount = newLogs.filter((l: AuditLog) => !currentIds.has(l.id)).length;
+        if (freshCount > 0) setNewEntries(prev => prev + freshCount);
+      }
+      
+      setLogs(newLogs);
+      setTotal(responseData.total || 0);
+      setPages(responseData.pages || 1);
+
+      // Fetch stats separately - don't fail if this errors
+      try {
+        const statsResponse = await api.get('/api/audit/stats');
+        setStats(statsResponse.data);
+      } catch (statsErr) {
+        console.log('Stats fetch failed:', statsErr);
+        // Don't fail the whole request if stats fail
+        setStats({ total: responseData.total || 0, last24h: 0, byCategory: [] });
       }
 
-      if (statsRes.status === 'fulfilled') {
-        setStats(statsRes.value.data);
-      } else {
-        setStats({ total: 0, last24h: 0, byCategory: [] });
-      }
     } catch (err: any) {
       console.error('Audit fetch error:', err);
-      if (err?.response?.status === 403) {
-        setError('Admin access required to view audit logs');
-      } else {
-        setError(err?.response?.data?.error || 'Failed to fetch audit logs');
-      }
-      if (!silent) toast.error('Failed to fetch audit logs');
+      const errorMessage = err?.response?.data?.error || err.message || 'Failed to fetch audit logs';
+      setError(errorMessage);
+      if (!silent) toast.error(errorMessage);
     } finally {
       if (!silent) setLoading(false);
     }
@@ -210,10 +208,10 @@ export const AuditPage: React.FC = () => {
 
   // Real-time polling
   useEffect(() => {
-    if (!liveMode) return;
+    if (!liveMode || isAdmin === false) return;
     const interval = setInterval(() => fetchLogs(true), 10000);
     return () => clearInterval(interval);
-  }, [liveMode, fetchLogs]);
+  }, [liveMode, fetchLogs, isAdmin]);
 
   const handleFilterChange = (key: string, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }));
@@ -276,6 +274,34 @@ export const AuditPage: React.FC = () => {
   const totalEvents = stats?.total || total || 0;
   const last24hEvents = stats?.last24h || 0;
 
+  // If not admin, show access denied
+  if (isAdmin === false) {
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-sipheron-text-primary flex items-center gap-3">
+              <ClipboardList className="w-7 h-7 text-sipheron-purple" />
+              Audit Trail
+            </h1>
+            <p className="text-sm text-sipheron-text-muted mt-1">
+              Comprehensive log of all organizational activities and cryptographic operations.
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-8 text-center">
+          <ShieldAlert className="w-16 h-16 text-amber-400 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-sipheron-text-primary mb-2">Admin Access Required</h3>
+          <p className="text-sipheron-text-muted max-w-md mx-auto">
+            The audit trail is only accessible to organization administrators. 
+            Contact your organization admin if you need access to audit logs.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -316,12 +342,9 @@ export const AuditPage: React.FC = () => {
       {/* Error Banner */}
       {error && (
         <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 flex items-center gap-3 text-red-400">
-          <ShieldAlert className="w-5 h-5" />
+          <AlertCircle className="w-5 h-5 shrink-0" />
           <div>
             <p className="font-medium">{error}</p>
-            {error.includes('Admin') && (
-              <p className="text-sm mt-1">Contact your organization administrator for access.</p>
-            )}
           </div>
         </div>
       )}
@@ -478,12 +501,12 @@ export const AuditPage: React.FC = () => {
         ) : filteredLogs.length === 0 ? (
           <div className="text-center py-16">
             <div className="w-20 h-20 bg-sipheron-purple/10 border border-sipheron-purple/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Info className="w-10 h-10 text-sipheron-purple/40" />
+              <FileText className="w-10 h-10 text-sipheron-purple/40" />
             </div>
             <h3 className="text-lg font-semibold text-sipheron-text-primary mb-1">No events found</h3>
-            <p className="text-sm text-sipheron-text-muted">
+            <p className="text-sm text-sipheron-text-muted max-w-md mx-auto">
               {logs.length === 0 
-                ? "No audit events have been recorded yet. Activities will appear here once they occur."
+                ? "No audit events have been recorded yet. Activities like anchoring documents, creating API keys, or inviting team members will appear here."
                 : "Try adjusting your filters or search criteria."
               }
             </p>
