@@ -136,9 +136,9 @@ export const EmbedSharePage: FC = () => {
     setTimeout(() => setCopied(null), 2000);
   };
 
-  // QR Code URL
+  // QR Code URL - use consistent format like web/dashboard
   const qrCodeUrl = selectedHash 
-    ? `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(generateDirectLink())}&bgcolor=${selectedTheme.bg.replace('#', '')}&color=${selectedTheme.text.replace('#', '')}&qzone=2`
+    ? `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(generateDirectLink())}&bgcolor=000000&color=a855f7&qzone=2`
     : '';
 
   if (loading) {

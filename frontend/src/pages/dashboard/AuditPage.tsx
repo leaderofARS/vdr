@@ -36,6 +36,7 @@ import api from '@/utils/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { useRBAC } from '@/hooks/useRBAC';
 
 
 interface AuditLog {
@@ -126,6 +127,7 @@ function formatTimeAgo(date: string): string {
 
 
 export const AuditPage: React.FC = () => {
+  const { isAdmin: userIsAdmin, loading: rbacLoading, requireRole } = useRBAC();
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [stats, setStats] = useState<AuditStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -274,8 +276,19 @@ export const AuditPage: React.FC = () => {
   const totalEvents = stats?.total || total || 0;
   const last24hEvents = stats?.last24h || 0;
 
+  // If RBAC is loading, show loading state
+  if (rbacLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-center py-24">
+          <div className="w-8 h-8 border-2 border-sipheron-purple border-t-transparent rounded-full animate-spin" />
+        </div>
+      </div>
+    );
+  }
+
   // If not admin, show access denied
-  if (isAdmin === false) {
+  if (!userIsAdmin) {
     return (
       <div className="space-y-6">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
