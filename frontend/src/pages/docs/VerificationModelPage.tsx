@@ -74,59 +74,23 @@ const VerificationModelPage: React.FC = () => {
         However, the implementation involves several layers of security and optimization.
       </p>
 
-      {/* Verification Architecture Diagram */}
-      <div className="my-6 p-5 bg-[#0D0D0D] border border-[#2A2A2A] rounded-lg font-mono text-sm overflow-x-auto">
-        <div className="text-[#555] mb-2">// Cryptographic Verification Flow</div>
-        <div className="text-[#EDEDED] whitespace-pre">
-{`
-    ┌─────────────────────────────────────────────────────────────────────┐
-    │                        VERIFICATION FLOW                            │
-    └─────────────────────────────────────────────────────────────────────┘
+      <div className="my-10 flex justify-center">
+        {`
+\`\`\`mermaid
+sequenceDiagram
+    participant D as Document Source
+    participant V as Verification Layer
+    participant B as Blockchain
     
-         DOCUMENT SOURCE          VERIFICATION LAYER          BLOCKCHAIN
-         ───────────────          ─────────────────           ──────────
-    
-              │                           │                        │
-              │  1. Provide               │                        │
-              │     document              │                        │
-              │──────────────────────────►│                        │
-              │                           │                        │
-              │                           │  2. Hash computation     │
-              │                           │     • SHA-256 locally  │
-              │                           │     • Streaming for    │
-              │                           │       large files      │
-              │                           │                        │
-              │                           │  3. Fetch anchor         │
-              │                           │     • Query by hash    │
-              │                           │     • Or by anchor ID  │
-              │                           │───────────────────────►│
-              │                           │                        │
-              │                           │  4. Retrieve proof       │
-              │                           │     • Transaction sig  │
-              │                           │     • Slot/timestamp   │
-              │                           │◄───────────────────────│
-              │                           │                        │
-              │                           │  5. Verify on-chain      │
-              │                           │     (optional but      │
-              │                           │      recommended)      │
-              │                           │───────────────────────►│
-              │                           │                        │
-              │                           │◄───────────────────────│
-              │                           │                        │
-              │                           │  6. Compare hashes       │
-              │                           │     • Bitwise equality │
-              │                           │     • Timing-safe      │
-              │                           │       comparison       │
-              │                           │                        │
-              │  7. Return                │                        │
-              │     result                │                        │
-              │◄──────────────────────────│                        │
-              │                           │                        │
-         [VERIFIED /                    [VERIFICATION             [PERMANENT
-          MODIFIED /                      COMPLETE]                 RECORD]
-          NOT_FOUND]
-`}
-        </div>
+    D->>V: 1. Provide document
+    V->>V: 2. Hash computation (SHA-256)
+    V->>B: 3. Fetch anchor record
+    B-->>V: 4. Retrieve proof (Tx, Slot)
+    V->>B: 5. Verify on-chain (optional)
+    B-->>V: 6. Compare hashes
+    V->>D: 7. Return result (VERIFIED/MODIFIED)
+\`\`\`
+        `}
       </div>
 
       <h3 id="hash-comparison-security" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Hash Comparison Security</h3>
@@ -169,41 +133,26 @@ function unsafeVerify(computed: string, anchored: string): boolean {
         SipHeron itself.
       </p>
 
-      {/* ZK Diagram */}
-      <div className="my-6 p-5 bg-[#0D0D0D] border border-[#2A2A2A] rounded-lg font-mono text-sm">
-        <div className="text-[#555] mb-2">// Zero-Knowledge Verification Model</div>
-        <div className="text-[#EDEDED]">
-{`
-    PROVER                          VERIFIER
-    ──────                          ────────
+      <div className="my-10 flex justify-center">
+        {`
+\`\`\`mermaid
+graph LR
+    subgraph Prover
+        D[Document D] --> H[H = SHA-256]
+    end
+    subgraph Verifier
+        A[Anchor A] --> AH[Anchored Hash]
+    end
+    H -- 1. Send H --> Verifier
+    AH -- 2. Compare --> H
+    Verifier -- 3. Result --> Prover
     
-    ┌─────────────┐                 ┌─────────────┐
-    │ Document D  │                 │ Anchor A    │
-    │ (private)   │                 │ (public)    │
-    │             │                 │ • Hash H    │
-    │ H = SHA256  │                 │ • Timestamp │
-    │    (D)      │                 │ • Signature │
-    └──────┬──────┘                 └──────┬──────┘
-           │                               │
-           │      1. Send H (hash only)    │
-           │──────────────────────────────►│
-           │                               │
-           │      2. Compare H with        │
-           │         stored hash           │
-           │◄──────────────────────────────│
-           │                               │
-           │      3. Return match result   │
-           │──────────────────────────────►│
-           │                               │
-    
-    RESULT: Verifier knows D matches A, but NEVER sees D itself
-    
-    KNOWLEDGE REVEALED:
-    • That document D exists (if you reveal the hash link)
-    • That D was anchored at time T
-    • NOTHING about the content of D
-`}
-        </div>
+    style D fill:#111,stroke:#2A2A2A,color:#EDEDED
+    style A fill:#111,stroke:#2A2A2A,color:#EDEDED
+    style H fill:#111,stroke:#9B6EFF,color:#EDEDED
+    style AH fill:#111,stroke:#9B6EFF,color:#EDEDED
+\`\`\`
+        `}
       </div>
 
       <h3 id="selective-disclosure" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Selective Disclosure</h3>
@@ -322,46 +271,28 @@ Authorization: Bearer YOUR_API_KEY
         without registration, API keys, or technical knowledge.
       </p>
 
-      {/* Public Link Architecture */}
-      <div className="my-6 p-5 bg-[#0D0D0D] border border-[#2A2A2A] rounded-lg font-mono text-sm">
-        <div className="text-[#555] mb-2">// Public Link Architecture</div>
-        <div className="text-[#EDEDED]">
-{`
-    LINK GENERATION
-    ───────────────
+      <div className="my-10 flex justify-center">
+        {`
+\`\`\`mermaid
+graph TD
+    Owner[Doc Owner] --> Hash[Compute Hash]
+    Hash --> Anchor[Anchor on Solana]
+    Anchor --> Link[Create Public Link]
     
-    Document ──► Hash ──► Anchor on Solana ──► Link Creation
-    Owner                                 
-                                            ↓
-    ┌──────────────────────────────────────────────────────────────┐
-    │  Public Verification Link                                     │
-    │  ────────────────────────                                     │
-    │  https://verify.sipheron.io/v/abc123#hash=0x7f83...          │
-    │                     │      │                                 │
-    │                     │      └── Hash fragment (client-side)   │
-    │                     │          Not sent to server            │
-    │                     │                                         │
-    │                     └── Link ID (server lookup)               │
-    └──────────────────────────────────────────────────────────────┘
+    subgraph Link Structure
+        L1[Base URL]
+        L2[Link ID]
+        L3[Hash Fragment #]
+    end
     
+    Link --> L1
+    Link --> L2
+    Link --> L3
     
-    VERIFICATION FLOW
-    ─────────────────
-    
-    1. User visits public link
-       ↓
-    2. Browser fetches anchor metadata from SipHeron API
-       (no hash revealed yet)
-       ↓
-    3. User uploads document (or provides hash)
-       ↓
-    4. Hash computed locally in browser
-       ↓
-    5. Hash compared to anchor hash
-       ↓
-    6. Result displayed with Solana proof
-`}
-        </div>
+    style L3 stroke:#EF4444,stroke-dasharray: 5 5
+    Note right of L3: Never sent to server
+\`\`\`
+        `}
       </div>
 
       <h3 id="link-security-features" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Link Security Features</h3>
@@ -414,49 +345,25 @@ POST /v1/anchors/anchor_abc123/links
         or product packaging can embed verifiable proofs.
       </p>
 
-      {/* QR Flow Diagram */}
-      <div className="my-6 p-5 bg-[#0D0D0D] border border-[#2A2A2A] rounded-lg font-mono text-sm">
-        <div className="text-[#555] mb-2">// QR Code Verification Flow</div>
-        <div className="text-[#EDEDED]">
-{`
-    ┌─────────────────────────────────────────────────────────────┐
-    │                     QR CODE GENERATION                       │
-    └─────────────────────────────────────────────────────────────┘
+      <div className="my-10 flex justify-center">
+        {`
+\`\`\`mermaid
+graph TD
+    A[Anchor Created] --> G[Generate Link]
+    G --> E[Encode in QR]
     
-    Anchor Created ──► Generate Link ──► Encode in QR
-                                              │
-                                              ▼
-    ┌─────────────────────────────────────────────────────────────┐
-    │  QR Code Contents (vCard-style format)                       │
-    │  ───────────────────────────────────                         │
-    │  SIPHERON:V1                                                 │
-    │  HASH:0x7f83b165...                                          │
-    │  URL:https://verify.sipheron.io/v/def456                     │
-    │  DESC:Certificate of Authenticity                            │
-    │  DATE:2024-01-15                                             │
-    │  SIG:5UfgJ5X...  ← Solana signature (optional)               │
-    └─────────────────────────────────────────────────────────────┘
+    subgraph QR Contents
+        C1[Protocol: V1]
+        C2[Hash]
+        C3[Verification URL]
+        C4[Solana Signature]
+    end
     
-    
-    ┌─────────────────────────────────────────────────────────────┐
-    │                     QR CODE SCANNING                         │
-    └─────────────────────────────────────────────────────────────┘
-    
-    User scans QR
-         │
-         ▼
-    ┌─────────────┐
-    │ Parse QR    │──► If URL present: Open verification page
-    │ contents    │
-    └─────────────┘──► If only hash: Prompt for document upload
-         │
-         ▼
-    Optional: Direct blockchain lookup via embedded signature
-         │
-         ▼
-    Display verification result
-`}
-        </div>
+    E --> QR[Physical QR Code]
+    QR -- Scan --> UI[Verification UI]
+    UI --> Proof[Display Solana Proof]
+\`\`\`
+        `}
       </div>
 
       <h3 id="offline-verification-mode" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Offline Verification Mode</h3>
@@ -495,44 +402,28 @@ POST /v1/anchors/anchor_abc123/links
         Batch verification using Merkle trees provides scalability.
       </p>
 
-      {/* Batch Verification Diagram */}
-      <div className="my-6 p-5 bg-[#0D0D0D] border border-[#2A2A2A] rounded-lg font-mono text-sm overflow-x-auto">
-        <div className="text-[#555] mb-2">// Merkle Tree Batch Verification</div>
-        <div className="text-[#EDEDED] whitespace-pre">
-{`
-    DOCUMENT SET                      MERKLE TREE                     ANCHOR
-    ────────────                      ───────────                     ──────
+      <div className="my-10 flex justify-center">
+        {`
+\`\`\`mermaid
+graph TD
+    DocA[Doc A] --> HA[H(A)]
+    DocB[Doc B] --> HB[H(B)]
+    DocC[Doc C] --> HC[H(C)]
+    DocD[Doc D] --> HD[H(D)]
     
-    Doc A ──► H(A) ──┐
-                     │
-    Doc B ──► H(B) ──┼──► H(A+B) ──┐
-                     │              │
-    Doc C ──► H(C) ──┤              │
-                     │              ├──► H(A+B+C+D) ──► Root ──► Blockchain
-    Doc D ──► H(D) ──┘              │
-                     │              │
-    Doc E ──► H(E) ──┐              │
-                     ├──► H(E+F) ───┘
-    Doc F ──► H(F) ──┘
+    HA --> HAB[H(A+B)]
+    HB --> HAB
+    HC --> HCD[H(C+D)]
+    HD --> HCD
     
+    HAB --> Root[Merkle Root]
+    HCD --> Root
+    Root --> Solana[Solana Blockchain]
     
-    SINGLE DOCUMENT VERIFICATION (e.g., Doc C)
-    ──────────────────────────────────────────
-    
-    1. Hash Doc C locally
-    2. Request Merkle proof from server:
-       [H(D), H(A+B)]
-    3. Compute: H(C+D) then H(H(C+D)+H(A+B))
-    4. Compare to anchored root
-    5. If match, Doc C is verified (and part of set)
-    
-    
-    ADVANTAGES:
-    • One anchor for N documents
-    • O(log N) proof size
-    • Independent verification of any subset
-`}
-        </div>
+    style Root fill:#111,stroke:#9B6EFF,color:#EDEDED
+    style Solana fill:#111,stroke:#9B6EFF,color:#EDEDED
+\`\`\`
+        `}
       </div>
 
       <CodeBlock code={`// Batch anchor with Merkle tree
@@ -674,58 +565,27 @@ with open('./large-file.zip', 'rb') as f:
         Understanding what you need to trust is essential for designing secure verification workflows.
       </p>
 
-      {/* Trust Model Diagram */}
-      <div className="my-6 p-5 bg-[#0D0D0D] border border-[#2A2A2A] rounded-lg font-mono text-sm overflow-x-auto">
-        <div className="text-[#555] mb-2">// Trust Assumptions by Verification Mode</div>
-        <div className="text-[#EDEDED] whitespace-pre">
-{`
-    FULL TRUST MODE (API-based)
-    ───────────────────────────
+      <div className="my-10 flex justify-center">
+        {`
+\`\`\`mermaid
+graph TD
+    subgraph Full Trust
+        U1[User] --> S1[SipHeron API] --> B1[Solana]
+    end
+    subgraph Partial Trust
+        U2[User] --> S2[SipHeron Metadata]
+        U2 --> B2[Solana RPC]
+    end
+    subgraph Zero Trust
+        U3[User] --> B3[Solana RPC]
+    end
     
-    User ──► SipHeron API ──► Solana
-              ↑                    ↑
-              │                    │
-              └── TRUST: API       └── TRUST: Blockchain
-                   returns correct
-                   data
-    
-    Trust assumptions:
-    ✓ SipHeron API is honest
-    ✓ SipHeron database is accurate
-    ✓ Network path to SipHeron is secure
-    ✓ Solana consensus is valid
-    
-    
-    PARTIAL TRUST MODE (Direct to chain)
-    ────────────────────────────────────
-    
-    User ──► SipHeron (metadata) ──► Solana RPC
-              │                           ↑
-              │                           │
-              └── TRUST: Only anchor      └── TRUST: Blockchain
-                   exists at this hash
-    
-    Trust assumptions:
-    ✗ SipHeron cannot lie about hash (verifiable)
-    ✓ SipHeron might omit anchors (detectable)
-    ✓ Solana consensus is valid
-    ✓ RPC node is honest
-    
-    
-    ZERO TRUST MODE (Local verification)
-    ────────────────────────────────────
-    
-    User ──► Local Hash ──► Solana RPC
-                                ↑
-                                │
-                                └── TRUST: Blockchain only
-    
-    Trust assumptions:
-    ✗ No trust in SipHeron required
-    ✓ Solana consensus is valid
-    ✓ RPC node is honest (or use multiple)
-`}
-        </div>
+    style S1 fill:#111,stroke:#9B6EFF,color:#EDEDED
+    style B1 fill:#111,stroke:#9B6EFF,color:#EDEDED
+    style B2 fill:#111,stroke:#9B6EFF,color:#EDEDED
+    style B3 fill:#111,stroke:#9B6EFF,color:#EDEDED
+\`\`\`
+        `}
       </div>
 
       <h3 id="security-properties" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Security Properties</h3>

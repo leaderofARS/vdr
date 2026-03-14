@@ -73,65 +73,26 @@ const StoragePage: React.FC = () => {
         remains off-chain, preserving privacy and minimizing costs.
       </p>
 
-      {/* Storage Comparison Diagram */}
-      <div className="my-6 p-5 bg-[#0D0D0D] border border-[#2A2A2A] rounded-lg font-mono text-sm overflow-x-auto">
-        <div className="text-[#555] mb-2">// Data Storage Architecture</div>
-        <div className="text-[#EDEDED] whitespace-pre">
-{`
-    DOCUMENT UPLOAD                    ON-CHAIN STORAGE
-    ───────────────                    ────────────────
+      <div className="my-10 flex justify-center">
+        {`
+\`\`\`mermaid
+graph TD
+    Doc[Your Document] -- SHA-256 Hash --> Anchor[Solana Anchor Account]
+    Anchor -- Proof --> SipDB[Off-Chain Metadata Record]
+    Doc -- Never Stored --> SipDB
     
-    ┌──────────────────────────────────────────────────────────────┐
-    │  Your Document                                               │
-    │  ─────────────                                               │
-    │  Filename: contract.pdf        ───────┐                      │
-    │  Size: 2.4 MB                         │                      │
-    │  Content: [■■■■■■■■■■■■■■■■■■■■■■■■]  │                      │
-    │  Author: John Doe                     │                      │
-    │  Created: 2024-01-15                  │                      │
-    │  Metadata: {...}                      │                      │
-    └───────────────────────────────────────┼──────────────────────┘
-                                            │
-                                            ▼ Hash computation
-    ┌──────────────────────────────────────────────────────────────┐
-    │  ON-CHAIN (Solana)                                           │
-    │  ─────────────────                                           │
-    │                                                              │
-    │  ┌─────────────────────────────────────────────────────────┐ │
-    │  │ Anchor Account                                          │ │
-    │  │ ─────────────                                           │ │
-    │  │ • Document Hash: 0x7f83b165... (32 bytes)              │ │
-    │  │ • Timestamp:     1705313025 (Unix, 8 bytes)            │ │
-    │  │ • Signer:        Pubkey... (32 bytes)                  │ │
-    │  │ • Slot:          284715623 (8 bytes)                   │ │
-    │  │ • Version:       1 (1 byte)                            │ │
-    │  │                                                         │ │
-    │  │ Total: ~81 bytes per anchor                            │ │
-    │  └─────────────────────────────────────────────────────────┘ │
-    │                                                              │
-    │  Transaction Signature: 5UfgJ5XVLKw8Tvq3Zz3Yj9Z5Z7Z1Z2...    │
-    │                                                              │
-    └──────────────────────────────────────────────────────────────┘
+    subgraph On-Chain
+        Anchor
+    end
     
+    subgraph Off-Chain
+        SipDB
+    end
     
-    OFF-CHAIN (SipHeron Database - Encrypted)
-    ─────────────────────────────────────────
-    
-    ┌──────────────────────────────────────────────────────────────┐
-    │  Metadata Record                                             │
-    │  ──────────────                                              │
-    │  • Anchor ID: anchor_abc123                                  │
-    │  • Organization: org_def456                                  │
-    │  • Filename: contract.pdf                                    │
-    │  • File size: 2457600 bytes                                  │
-    │  • MIME type: application/pdf                                │
-    │  • User metadata: {...}                                      │
-    │  • Created at: 2024-01-15T09:23:45.123Z                      │
-    │                                                              │
-    │  ⚠️ Document content is NEVER stored                        │
-    └──────────────────────────────────────────────────────────────┘
-`}
-        </div>
+    style Anchor fill:#111,stroke:#9B6EFF,color:#EDEDED
+    style SipDB fill:#111,stroke:#2A2A2A,color:#EDEDED
+\`\`\`
+        `}
       </div>
 
       <h3 id="on-chain-data-structure" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">On-Chain Data Structure</h3>
@@ -240,55 +201,22 @@ impl DocumentAnchor {
         program-derived addresses (PDAs) and efficient lookups.
       </p>
 
-      {/* Account Structure Diagram */}
-      <div className="my-6 p-5 bg-[#0D0D0D] border border-[#2A2A2A] rounded-lg font-mono text-sm overflow-x-auto">
-        <div className="text-[#555] mb-2">// Solana Account Layout</div>
-        <div className="text-[#EDEDED] whitespace-pre">
-{`
-    SOLANA ACCOUNT (Anchor Storage)
-    ───────────────────────────────
-    
-    Address: Program Derived Address (PDA)
-    ┌─────────────────────────────────────────────────────────────┐
-    │  PDA Seeds:                                                 │
-    │  • Seed 1: "anchor"                                         │
-    │  • Seed 2: document_hash[0..32]                            │
-    │  • Seed 3: creator_pubkey                                   │
-    │  • Bump: u8 (canonical)                                     │
-    └─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-    ┌─────────────────────────────────────────────────────────────┐
-    │  Account Structure                                          │
-    │  ─────────────────                                          │
-    │                                                             │
-    │  [0..8]    Discriminator (8 bytes)                         │
-    │            - Hash of "account:DocumentAnchor"              │
-    │            - Used by Anchor framework                       │
-    │                                                             │
-    │  [8..40]   Document Hash (32 bytes)                        │
-    │            - SHA-256 of document content                   │
-    │            - Primary identifier                             │
-    │                                                             │
-    │  [40..48]  Timestamp (8 bytes, i64)                        │
-    │            - Unix timestamp of anchor creation             │
-    │                                                             │
-    │  [48..80]  Creator Pubkey (32 bytes)                       │
-    │            - Solana public key of anchor creator           │
-    │                                                             │
-    │  [80..88]  Slot Number (8 bytes, u64)                      │
-    │            - Solana slot when transaction executed         │
-    │                                                             │
-    │  [88..89]  Version (1 byte)                                │
-    │            - Schema version for migrations                 │
-    │                                                             │
-    │  [89..128] Reserved (39 bytes)                             │
-    │            - Future expansion                              │
-    │                                                             │
-    └─────────────────────────────────────────────────────────────┘
-    Total: 128 bytes per anchor account
-`}
-        </div>
+      <div className="my-10 flex justify-center">
+        {`
+\`\`\`mermaid
+classDiagram
+    class AnchorAccount {
+        +Discriminator: 8B
+        +Hash: 32B
+        +Timestamp: i64 (8B)
+        +Creator: Pubkey (32B)
+        +Slot: u64 (8B)
+        +Version: 1B
+        +Reserved: 39B
+    }
+    note for AnchorAccount "Total: 128 bytes"
+\`\`\`
+        `}
       </div>
 
       <h3 id="program-derived-addresses-pdas" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Program Derived Addresses (PDAs)</h3>
@@ -334,51 +262,23 @@ console.log('Anchor account:', pda.toBase58());`} language="javascript" />
         rent requirements automatically.
       </p>
 
-      {/* Rent Calculation Diagram */}
-      <div className="my-6 p-5 bg-[#0D0D0D] border border-[#2A2A2A] rounded-lg font-mono text-sm">
-        <div className="text-[#555] mb-2">// Rent Exemption Calculation</div>
-        <div className="text-[#EDEDED]">
-{`
-    RENT EXEMPTION FORMULA (Solana)
-    ───────────────────────────────
+      <div className="my-10 flex justify-center">
+        {`
+\`\`\`mermaid
+graph TD
+    Size[Account Size: 128B] --> Rate[Rent Rate: 0.00000348 SOL/B-Y]
+    Rate --> Multiplier[2 Year Multiplier]
+    Multiplier --> Total[~0.00089 SOL]
     
-    Rent-exempt balance = (Account size in bytes) × (Rent rate per byte-year) × 2
+    subgraph Cost Comparison
+        Solana[Solana: ~$0.09 one-time]
+        AWS[AWS S3: ~$0.000003/mo]
+        IPFS[IPFS: ~$0.001/mo]
+    end
     
-    For SipHeron anchors:
-    • Account size: 128 bytes
-    • Current rent rate: ~0.00000348 SOL per byte-year
-    • Multiplier: 2 years of rent
-    
-    Calculation:
-    128 bytes × 0.00000348 SOL/byte-year × 2 years = 0.00089088 SOL
-    
-    At $100/SOL: ~$0.089 per anchor
-    At $200/SOL: ~$0.178 per anchor
-    
-    
-    COST COMPARISON
-    ───────────────
-    
-    Storage Method          Cost per 128 bytes
-    ──────────────────      ──────────────────
-    Solana on-chain         ~$0.09 (one-time)
-    AWS S3 (standard)       ~$0.000003/month
-    IPFS (pinning)          ~$0.001/month
-    
-    Note: Solana cost is one-time (rent-exempt), not recurring!
-    
-    
-    OPTIMIZATION: BATCH ANCHORING
-    ─────────────────────────────
-    
-    Multiple hashes can share one anchor using Merkle trees:
-    
-    1000 documents × 0.00089 SOL = 0.89 SOL (individual)
-    vs
-    1 Merkle root × 0.00089 SOL = 0.00089 SOL (batched)
-    Savings: ~99.9% for large batches
-`}
-        </div>
+    style Total fill:#111,stroke:#9B6EFF,color:#EDEDED
+\`\`\`
+        `}
       </div>
 
       <h3 id="current-pricing-approximate" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Current Pricing (Approximate)</h3>
@@ -441,26 +341,20 @@ console.log('Anchor account:', pda.toBase58());`} language="javascript" />
       </ul>
 
       {/* Retention Comparison */}
-      <div className="my-6 p-5 bg-[#0D0D0D] border border-[#2A2A2A] rounded-lg font-mono text-sm">
-        <div className="text-[#555] mb-2">// Retention Guarantees Comparison</div>
-        <div className="text-[#EDEDED]">
-{`
-    STORAGE TYPE          RETENTION GUARANTEE          DEPENDENCIES
-    ────────────          ───────────────────          ────────────
+      <div className="my-10 flex justify-center">
+        {`
+\`\`\`mermaid
+graph TD
+    subgraph Retention Guarantees
+        Local[Local Storage] -- Dependency --> HW[Hardware/Power]
+        Cloud[Cloud Storage] -- Dependency --> CP[Centralized Provider]
+        IPFS[IPFS Storage] -- Dependency --> IN[Incentives/Pinning]
+        Sol[Solana Anchor] -- Dependency --> NC[Network Consensus]
+    end
     
-    Local Hard Drive      Until drive fails            Hardware, power
-    
-    Cloud Storage         Until provider discontinues  Company solvency,
-    (AWS, Google)         service or account           terms of service
-                          suspended
-    
-    IPFS                  While nodes pin content      Node operators'
-                                                      incentives
-    
-    Solana On-Chain       Permanent (rent-exempt)      Network consensus,
-    (SipHeron)                                         validator set
-`}
-        </div>
+    style Sol fill:#111,stroke:#9B6EFF,color:#EDEDED
+\`\`\`
+        `}
       </div>
 
       <h2 id="immutability" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
@@ -474,47 +368,17 @@ console.log('Anchor account:', pda.toBase58());`} language="javascript" />
 
       <h3 id="how-immutability-works" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">How Immutability Works</h3>
 
-      {/* Immutability Diagram */}
-      <div className="my-6 p-5 bg-[#0D0D0D] border border-[#2A2A2A] rounded-lg font-mono text-sm overflow-x-auto">
-        <div className="text-[#555] mb-2">// Immutability Through Consensus</div>
-        <div className="text-[#EDEDED] whitespace-pre">
-{`
-    ATTEMPT TO MODIFY ANCHOR
-    ─────────────────────────
+      <div className="my-10 flex justify-center">
+        {`
+\`\`\`mermaid
+graph LR
+    Attacker[Attacker Proposal] -- Broadcast --> Consensus[Solana Network Validators]
+    Consensus -- REJECTED --> Impact[Anchor Remains Immutable]
     
-    Attacker wants to change: 0x7f83b165... → 0xfakehash...
-    
-         Attacker's Node                Network Consensus
-         ───────────────                ─────────────────
-    
-              │                                │
-              │  "Change anchor X"             │
-              │───────────────────────────────►│
-              │                                │
-              │                         ┌──────┴──────┐
-              │                         │  Validators │
-              │                         │  reject tx  │
-              │                         │             │
-              │                         │ • Anchor    │
-              │◄────────────────────────│   program   │
-              │   "Transaction failed"  │   enforces  │
-              │                         │   immutab.  │
-              │                         │             │
-              │                         │ • No signer │
-              │                         │   authority │
-              │                         └─────────────┘
-    
-    
-    WHY IT'S IMPOSSIBLE
-    ───────────────────
-    
-    1. Anchor accounts have NO update instruction in the program
-    2. Even if program allowed updates, would need creator's private key
-    3. Even with private key, other validators enforce program rules
-    4. Changing program requires governance/supermajority vote
-    5. Historical records are in finalized blocks (can't be rewritten)
-`}
-        </div>
+    style Attacker fill:#111,stroke:#EF4444,color:#EDEDED
+    style Impact fill:#111,stroke:#9B6EFF,color:#EDEDED
+\`\`\`
+        `}
       </div>
 
       <h3 id="fork-resistance" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Fork Resistance</h3>
@@ -645,42 +509,23 @@ console.log('Anchor account:', pda.toBase58());`} language="javascript" />
       </p>
 
       {/* GDPR Diagram */}
-      <div className="my-6 p-5 bg-[#0D0D0D] border border-[#2A2A2A] rounded-lg font-mono text-sm">
-        <div className="text-[#555] mb-2">// GDPR Compliance Architecture</div>
-        <div className="text-[#EDEDED]">
-{`
-    GDPR REQUIREMENTS          SIPHERON SOLUTION
-    ─────────────────          ───────────────
+      <div className="my-10 flex justify-center">
+        {`
+\`\`\`mermaid
+graph TD
+    subgraph GDPR Compliance
+        Req1[Right to Erasure] --> Sol1[Off-chain Metadata Deletion]
+        Req2[Data Minimization] --> Sol2[Only 32B Hash On-Chain]
+        Req3[Purpose Limitation] --> Sol3[Integrity Verification Only]
+        Req4[Data Portability] --> Sol4[Standard JSON Export]
+    end
     
-    Right to erasure           Cannot delete anchors from blockchain,
-    ("right to be               but personal data isn't stored on-chain.
-    forgotten")                 Off-chain metadata can be deleted.
-                               
-                               User request → Delete metadata record →
-                               Anchor remains (just hash) → No PII
-    
-    
-    Data minimization          Only 32-byte hash stored on-chain.
-                               No names, emails, file content.
-                               Off-chain: only data user explicitly
-                               provides in metadata fields.
-    
-    
-    Purpose limitation         Hash used only for integrity verification.
-                               No tracking, profiling, or secondary uses.
-                               Purpose clearly stated in anchor TX.
-    
-    
-    Data portability           User can export all anchor records
-                               including hashes and timestamps.
-                               Standard JSON format provided.
-    
-    
-    Transparency               All on-chain data is public and auditable.
-                               Open-source verification tools.
-                               Clear documentation of data flows.
-`}
-        </div>
+    style Sol1 fill:#111,stroke:#9B6EFF,color:#EDEDED
+    style Sol2 fill:#111,stroke:#9B6EFF,color:#EDEDED
+    style Sol3 fill:#111,stroke:#9B6EFF,color:#EDEDED
+    style Sol4 fill:#111,stroke:#9B6EFF,color:#EDEDED
+\`\`\`
+        `}
       </div>
 
       <h3 id="personal-data-considerations" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Personal Data Considerations</h3>

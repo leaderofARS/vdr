@@ -94,45 +94,21 @@ Maj(x, y, z)  = (x AND y) XOR (x AND z) XOR (y AND z)
       <h3 id="the-hashing-process" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">The Hashing Process</h3>
       
       {/* ASCII Diagram for Hashing Process */}
-      <div className="my-6 p-5 bg-[#0D0D0D] border border-[#2A2A2A] rounded-lg font-mono text-sm">
-        <div className="text-[#555] mb-2">// SHA-256 Hashing Flow</div>
-        <div className="text-[#EDEDED] leading-relaxed">
-{`
-    ┌─────────────────┐
-    │  Original File  │  ← Any size: 1KB to 10GB+
-    │  (arbitrary     │
-    │   data)         │
-    └────────┬────────┘
-             │
-             ▼
-    ┌─────────────────┐
-    │  Preprocessing  │  ← Padding to 512-bit blocks
-    │  • Append '1'   │    Append length (64 bits)
-    │  • Pad with '0' │    Total: multiple of 512
-    │  • Add length   │
-    └────────┬────────┘
-             │
-             ▼
-    ┌─────────────────┐
-    │  Message Schedule│ ← 64 words (W₀ to W₆₃)
-    │  W[t] generation │   from 16 input words
-    └────────┬────────┘
-             │
-             ▼
-    ┌─────────────────┐
-    │  64 Compression │  ← Core hash computation
-    │  Rounds         │    Update 8 working variables
-    │  (a-h registers)│    with non-linear functions
-    └────────┬────────┘
-             │
-             ▼
-    ┌─────────────────┐
-    │  Final Hash     │  ← 256 bits (32 bytes)
-    │  Value          │    Expressed as 64 hex chars
-    │  0x7f83b165...  │
-    └─────────────────┘
-`}
-        </div>
+      <div className="my-10 flex justify-center">
+        {`
+\`\`\`mermaid
+graph TD
+    A[Original File] -- Arbitrary size --> B(Preprocessing)
+    B -- Pad to 512-bit blocks --> C(Message Schedule)
+    C -- 64 words generation --> D(64 Compression Rounds)
+    D -- a-h registers update --> E[Final 32-Byte Hash]
+    style A fill:#111,stroke:#2A2A2A,color:#EDEDED
+    style B fill:#111,stroke:#9B6EFF,color:#EDEDED
+    style C fill:#111,stroke:#9B6EFF,color:#EDEDED
+    style D fill:#111,stroke:#9B6EFF,color:#EDEDED
+    style E fill:#111,stroke:#9B6EFF,color:#EDEDED
+\`\`\`
+        `}
       </div>
 
       <h2 id="hash-properties" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
@@ -217,26 +193,30 @@ console.log(hash1);
         financial reports, or sensitive documents. The original file never leaves your control.
       </p>
       
-      {/* ASCII Diagram for Privacy Model */}
-      <div className="my-6 p-5 bg-[#0D0D0D] border border-[#2A2A2A] rounded-lg font-mono text-sm">
-        <div className="text-[#555] mb-2">// Privacy Model: What the blockchain sees vs. what you keep</div>
-        <div className="text-[#EDEDED] leading-relaxed">
-{`
-    YOUR SYSTEM              BLOCKCHAIN (PUBLIC)         VERIFIER
-    ───────────              ───────────────────         ────────
+      <div className="my-10 flex justify-center">
+        {`
+\`\`\`mermaid
+graph LR
+    subgraph Private System
+        Doc[Confidential Document]
+    end
     
-    ┌─────────────┐         ┌─────────────────┐
-    │ Contract.pdf│         │ Anchor Record   │         ┌─────────────┐
-    │ (confidential│   →    │ ─────────────── │   ←    │ Contract.pdf│
-    │  content)   │         │ • Hash: 0x7f83… │         │ (recomputed │
-    │             │         │ • Timestamp     │         │  hash match)│
-    │  [PRIVATE]  │         │ • Signer pubkey │         │             │
-    └─────────────┘         │ • Slot number   │         │  [PRIVATE]  │
-                            │                 │         └─────────────┘
-                            │  [PUBLIC]       │
-                            └─────────────────┘
-`}
-        </div>
+    subgraph Public Blockchain
+        Anchor[Anchor Record: Hash/Timestamp]
+    end
+    
+    subgraph Verifier
+        VDoc[Recomputed Hash]
+    end
+    
+    Doc -- Only Hash --> Anchor
+    VDoc -- Must Match --> Anchor
+    
+    style Doc fill:#111,stroke:#EF4444,color:#EDEDED
+    style Anchor fill:#111,stroke:#9B6EFF,color:#EDEDED
+    style VDoc fill:#111,stroke:#22C55E,color:#EDEDED
+\`\`\`
+        `}
       </div>
 
       <h3 id="storage-efficiency" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Storage Efficiency</h3>
@@ -354,49 +334,28 @@ sipheron-vdr anchor ./contract.pdf --server-hash
         It works by recomputing the hash and comparing it to the anchored value.
       </p>
 
-      {/* ASCII Diagram for Verification Flow */}
-      <div className="my-6 p-5 bg-[#0D0D0D] border border-[#2A2A2A] rounded-lg font-mono text-sm">
-        <div className="text-[#555] mb-2">// Verification Process Flow</div>
-        <div className="text-[#EDEDED] leading-relaxed">
-{`
-    VERIFICATION REQUEST
-           │
-           ▼
-    ┌─────────────────────┐
-    │ 1. Receive document │
-    │    from user        │
-    └──────────┬──────────┘
-               │
-               ▼
-    ┌─────────────────────┐
-    │ 2. Compute SHA-256  │  ← Same algorithm used during anchor
-    │    hash locally     │
-    └──────────┬──────────┘
-               │
-               ▼
-    ┌─────────────────────┐
-    │ 3. Query blockchain │  ← Fetch anchored hash by ID
-    │    for stored hash  │
-    └──────────┬──────────┘
-               │
-               ▼
-    ┌─────────────────────┐
-    │ 4. Compare hashes   │  ← Bitwise comparison
-    │    bitwise          │
-    └──────────┬──────────┘
-               │
-        ┌──────┴──────┐
-        ▼             ▼
-   ┌─────────┐   ┌─────────┐
-   │  MATCH  │   │ MISMATCH│
-   │  ✓      │   │  ✗      │
-   └────┬────┘   └────┬────┘
-        │             │
-        ▼             ▼
-   Document is    Document has
-   AUTHENTIC      been MODIFIED
-`}
-        </div>
+      <div className="my-10 flex justify-center">
+        {`
+\`\`\`mermaid
+graph TD
+    Start[Verification Request] --> Step1[1. Receive document]
+    Step1 --> Step2[2. Compute SHA-256 locally]
+    Step2 --> Step3[3. Query blockchain for stored hash]
+    Step3 --> Step4[4. Compare hashes bitwise]
+    Step4 --> Match{MATCH?}
+    Match -- Yes --> Authentic[Document is AUTHENTIC]
+    Match -- No --> Modified[Document has been MODIFIED]
+    
+    style Start fill:#111,stroke:#2A2A2A,color:#EDEDED
+    style Step1 fill:#111,stroke:#9B6EFF,color:#EDEDED
+    style Step2 fill:#111,stroke:#9B6EFF,color:#EDEDED
+    style Step3 fill:#111,stroke:#9B6EFF,color:#EDEDED
+    style Step4 fill:#111,stroke:#9B6EFF,color:#EDEDED
+    style Match fill:#111,stroke:#9B6EFF,color:#EDEDED
+    style Authentic fill:#111,stroke:#22C55E,color:#EDEDED
+    style Modified fill:#111,stroke:#EF4444,color:#EDEDED
+\`\`\`
+        `}
       </div>
 
       <h3 id="step-by-step-verification" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Step-by-Step Verification</h3>

@@ -36,20 +36,19 @@ const GuideWebhooksPage: React.FC = () => {
       <h2 id="architecture" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
         Webhook Architecture
       </h2>
-      <div className="p-6 rounded-xl border border-white/10 bg-white/5 mb-8">
-        <pre className="text-sm text-gray-400 font-mono">
-{`┌─────────────┐     Anchor Event     ┌─────────────┐
-│   SipHeron  │ ────────────────────>│  Your App   │
-│   Platform  │    HTTP POST         │  Webhook    │
-│             │                      │  Endpoint   │
-└─────────────┘                      └─────────────┘
-       │                                    │
-       │                                    │
-       │    ┌─────────────┐                 │
-       └───>│  Solana     │                 │
-            │  Blockchain │<────────────────┘
-            └─────────────┘     Verify`}
-        </pre>
+      <div className="my-10 flex justify-center">
+        {`
+\`\`\`mermaid
+graph TD
+    Sip[SipHeron Platform] -- "1. HTTP POST (Event)" --> App[Your App Webhook]
+    Sip -- "2. Anchor Data" --> Solana[Solana Blockchain]
+    App -- "3. Verify Signature & Proof" --> Solana
+    
+    style Sip fill:#111,stroke:#9B6EFF,color:#EDEDED
+    style App fill:#111,stroke:#9B6EFF,color:#EDEDED
+    style Solana fill:#111,stroke:#9B6EFF,color:#EDEDED
+\`\`\`
+        `}
       </div>
 
       <h2 id="setup" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
@@ -58,7 +57,7 @@ const GuideWebhooksPage: React.FC = () => {
       <p className="text-gray-300 leading-relaxed mb-4">
         Create a webhook endpoint using the API or CLI:
       </p>
-      <CodeBlock code={`curl -X POST https://api.sipheron.io/v1/webhooks \\
+      <CodeBlock code={`curl -X POST https://api.sipheron.com/api/webhooks \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{

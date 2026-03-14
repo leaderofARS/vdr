@@ -57,79 +57,24 @@ const LifecyclePage: React.FC = () => {
       <p className="text-gray-300 leading-relaxed mb-4">
         Every document anchor in SipHeron progresses through a well-defined lifecycle. Understanding 
         these states helps you build robust integrations and handle edge cases appropriately.
-      </p>
-
-      {/* ASCII Lifecycle Diagram */}
-      <div className="my-6 p-5 bg-[#0D0D0D] border border-[#2A2A2A] rounded-lg font-mono text-sm overflow-x-auto">
-        <div className="text-[#555] mb-2">// Complete Anchor State Machine</div>
-        <div className="text-[#EDEDED] whitespace-pre">
-{`
-                    ┌─────────────┐
-         ┌─────────│   START     │
-         │         │  (User      │
-         │         │   Action)   │
-         │         └──────┬──────┘
-         │                │
-         │                ▼ create()
-         │         ┌─────────────┐
-         │         │  CREATED    │◄────────────────┐
-         │         │  • Hash     │                 │
-         │         │    computed │                 │
-         │         │  • Metadata │                 │
-         │         │    prepared │                 │
-         │         └──────┬──────┘                 │
-         │                │ stage()                │
-         │                ▼                        │
-         │         ┌─────────────┐                 │
-         │         │   STAGED    │                 │
-         │         │  • Queued   │                 │
-         │         │    locally  │                 │
-         │         │  • Awaiting │                 │
-         │         │    batch    │                 │
-         │         └──────┬──────┘                 │
-         │                │ commit()               │
-         │                ▼                        │
-         │         ┌─────────────┐                 │
-         │         │  ANCHORED   │                 │
-         │         │  • Tx sent  │                 │
-         │         │  • Pending  │                 │
-         │         │    network  │                 │
-         │         └──────┬──────┘                 │
-         │                │ confirm()              │
-         │                ▼                        │
-         │         ┌─────────────┐                 │
-         │    ┌───►│ CONFIRMED   │──────┐          │
-         │    │    │  • On-chain │      │          │
-         │    │    │  • Final    │      │          │
-         │    │    │    slot set │      │          │
-         │    │    └──────┬──────┘      │          │
-         │    │           │             │          │
-         │    │           ▼ verify()    │          │
-         │    │    ┌─────────────┐      │          │
-         │    │    │  VERIFIED   │      │          │
-         │    │    │  • Hash     │      │          │
-         │    │    │    match    │      │          │
-         │    │    │  • Proof    │      │          │
-         │    │    │    valid    │      │          │
-         │    │    └─────────────┘      │          │
-         │    │                         │          │
-         │    │    [Error Paths]        │          │
-         │    │                         │          │
-         │    └──────┐   ┌──────────────┘          │
-         │           │   │                         │
-         ▼           ▼   ▼                         │
-    ┌─────────┐  ┌──────────┐                     │
-    │  FAILED │  │ EXPIRED  │─────────────────────┘
-    │  • Tx   │  │ • TTL    │   re-stage()
-    │    error│  │   passed │
-    │  • Retry│  │ • Requeue│
-    │    after│  │          │
-    └────┬────┘  └──────────┘
-         │
-         ▼ retry()
-    [Return to STAGED]
-`}
-        </div>
+      </p>      <div className="my-10 flex justify-center">
+        {`
+\`\`\`mermaid
+stateDiagram-v2
+    [*] --> CREATED: create()
+    CREATED --> STAGED: stage()
+    STAGED --> ANCHORED: commit()
+    ANCHORED --> CONFIRMED: confirm()
+    CONFIRMED --> VERIFIED: verify()
+    
+    CREATED --> FAILED
+    STAGED --> FAILED
+    ANCHORED --> FAILED
+    STAGED --> EXPIRED
+    EXPIRED --> STAGED: re-stage()
+    FAILED --> STAGED: retry()
+\`\`\`
+        `}
       </div>
 
       <h2 id="state-created" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
@@ -202,30 +147,21 @@ POST /v1/anchors
         especially valuable for high-volume use cases.
       </p>
 
-      {/* Staging Flow Diagram */}
-      <div className="my-6 p-5 bg-[#0D0D0D] border border-[#2A2A2A] rounded-lg font-mono text-sm">
-        <div className="text-[#555] mb-2">// Batch Staging Process</div>
-        <div className="text-[#EDEDED]">
-{`
-    Individual Anchors              Batch Operation
-    ─────────────────               ───────────────
+      <div className="my-10 flex justify-center">
+        {`
+\`\`\`mermaid
+graph LR
+    A1[Anchor 1] -- stage --> Q[Stage Queue]
+    A2[Anchor 2] -- stage --> Q
+    Q -- batch --> BB[Batch Builder]
+    BB --> TX[Create Solana Tx]
+    A3[Anchor 3] -- skip queue --> TX
     
-    ┌─────────┐                     ┌─────────────────┐
-    │ Anchor 1│──┐                  │ Batch Builder   │
-    │ (doc A) │  │                  │ ─────────────── │
-    └─────────┘  │   ┌─────────┐    │ • Collect       │
-                 ├──►│  Stage  │───►│   staged items  │
-    ┌─────────┐  │   │  Queue  │    │ • Build Merkle  │
-    │ Anchor 2│──┘   └─────────┘    │   tree (opt)    │
-    │ (doc B) │                     │ • Create tx     │
-    └─────────┘                     │   instruction   │
-                                    └─────────────────┘
-    ┌─────────┐                              │
-    │ Anchor 3│──────────────────────────────┘
-    │ (doc C) │
-    └─────────┘
-`}
-        </div>
+    style Q fill:#111,stroke:#9B6EFF,color:#EDEDED
+    style BB fill:#111,stroke:#9B6EFF,color:#EDEDED
+    style TX fill:#111,stroke:#9B6EFF,color:#EDEDED
+\`\`\`
+        `}
       </div>
 
       <h3 id="staging-configuration" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Staging Configuration</h3>
@@ -272,46 +208,22 @@ POST /v1/anchors/stage
 
       <h3 id="transaction-flow-on-solana" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Transaction Flow on Solana</h3>
 
-      {/* Transaction Flow Diagram */}
-      <div className="my-6 p-5 bg-[#0D0D0D] border border-[#2A2A2A] rounded-lg font-mono text-sm overflow-x-auto">
-        <div className="text-[#555] mb-2">// Solana Transaction Lifecycle</div>
-        <div className="text-[#EDEDED] whitespace-pre">
-{`
-    SipHeron Backend              Solana Network
-    ──────────────                ──────────────
+      <div className="my-10 flex justify-center">
+        {`
+\`\`\`mermaid
+sequenceDiagram
+    participant B as SipHeron Backend
+    participant S as Solana Network
     
-         │                              │
-         │ 1. Build Transaction         │
-         │    • Create instruction      │
-         │    • Set recent blockhash    │
-         │    • Add anchor data         │
-         ▼                              │
-    ┌─────────┐                         │
-    │  Built  │                         │
-    │   TX    │                         │
-    └────┬────┘                         │
-         │                              │
-         │ 2. Sign Transaction          │
-         │    • Fetch payer keypair     │
-         │    • Sign with Solana SDK    │
-         ▼                              │
-    ┌─────────┐                         │
-    │ Signed  │                         │
-    │   TX    │                         │
-    └────┬────┘                         │
-         │                              │
-         │ 3. Send to RPC               │
-         │    • POST to sendTransaction │
-         │    • Receive tx signature    │
-         ▼                              ▼
-    ┌─────────────────────────────────────────┐
-    │           Solana Network                │
-    │  • Transaction enters mempool           │
-    │  • Leaders schedule for inclusion       │
-    │  • Block production (~400ms/slot)       │
-    └─────────────────────────────────────────┘
-`}
-        </div>
+    B->>B: 1. Build Transaction
+    Note right of B: Instruction, Blockhash, Data
+    B->>B: 2. Sign Transaction
+    Note right of B: Fetch Keypair, Sign with SDK
+    B->>S: 3. Send to RPC
+    Note over S: Mempool, Leader Scheduling
+    S-->>S: Block Production (~400ms)
+\`\`\`
+        `}
       </div>
 
       <h3 id="anchor-instruction-structure" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Anchor Instruction Structure</h3>
@@ -387,33 +299,24 @@ POST /v1/anchors/stage
         </table>
       </div>
 
-      {/* Slot Finality Diagram */}
-      <div className="my-6 p-5 bg-[#0D0D0D] border border-[#2A2A2A] rounded-lg font-mono text-sm overflow-x-auto">
-        <div className="text-[#555] mb-2">// Slot Finality Progression</div>
-        <div className="text-[#EDEDED] whitespace-pre">
-{`
-    Time ──►
+      <div className="my-10 flex justify-center">
+        {`
+\`\`\`mermaid
+graph LR
+    SlotN[Slot N: Processed] --> SlotN1[Slot N+1: Confirmed]
+    SlotN1 --> SlotN32[Slot N+32: Finalized]
     
-    Slot N:   [TX Submitted]────►[Block Produced]────►[Vote: 31%]──►... 
-              (processed)         (in block)           (confirmed)
+    subgraph Progression
+        SlotN
+        SlotN1
+        SlotN32
+    end
     
-    Slot N+1:                      [Vote: 67%]───────►[Superminority]
-                                                        (confirmed)
-    
-    Slot N+2:                                           [Votes continue]
-    
-    ...
-    
-    Slot N+32:                                         [Rooted]◄── FINALIZED
-                                                        (cannot revert)
-    
-    
-    Legend:
-    ─────►  Time progression (~400ms per slot)
-    [ ]     Block boundaries
-    Vote %  Stake-weighted validator votes
-`}
-        </div>
+    style SlotN fill:#111,stroke:#EF4444,color:#EDEDED
+    style SlotN1 fill:#111,stroke:#F59E0B,color:#EDEDED
+    style SlotN32 fill:#111,stroke:#22C55E,color:#EDEDED
+\`\`\`
+        `}
       </div>
 
       <h3 id="sipheron-commitment-strategy" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">SipHeron Commitment Strategy</h3>
