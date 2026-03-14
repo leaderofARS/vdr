@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   Search,
   Book,
@@ -75,7 +74,6 @@ interface DocSearchProps {
 }
 
 export const DocSearch: React.FC<DocSearchProps> = ({ isOpen, onClose }) => {
-  const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -108,7 +106,7 @@ export const DocSearch: React.FC<DocSearchProps> = ({ isOpen, onClose }) => {
       } else if (e.key === 'Enter') {
         e.preventDefault();
         if (filteredItems[selectedIndex]) {
-          navigate(filteredItems[selectedIndex].href);
+          window.location.href = filteredItems[selectedIndex].href;
           onClose();
         }
       } else if (e.key === 'Escape') {
@@ -118,7 +116,7 @@ export const DocSearch: React.FC<DocSearchProps> = ({ isOpen, onClose }) => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, filteredItems, selectedIndex, navigate, onClose]);
+  }, [isOpen, filteredItems, selectedIndex, onClose]);
 
   if (!isOpen) return null;
 
@@ -161,7 +159,7 @@ export const DocSearch: React.FC<DocSearchProps> = ({ isOpen, onClose }) => {
                   <button
                     key={item.id}
                     onClick={() => {
-                      navigate(item.href);
+                      window.location.href = item.href;
                       onClose();
                     }}
                     onMouseEnter={() => setSelectedIndex(index)}

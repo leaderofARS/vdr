@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ExternalLink, ChevronRight } from 'lucide-react';
 import { Navbar, Footer } from '@/sections/landing';
 import { TableOfContents, DocSearch } from '@/components/docs';
-import { toast } from 'sonner';
 
 // Sidebar navigation structure
 const SIDEBAR_ITEMS = [
@@ -116,8 +115,8 @@ const SidebarItem: React.FC<SidebarItemProps & { currentPath: string }> = ({ ite
             <ExternalLink className="w-3 h-3" />
           </a>
         ) : (
-          <Link
-            to={item.href}
+          <a
+            href={item.href}
             className={`flex-1 text-[13px] py-1.5 transition-colors duration-100 flex items-center justify-between group ${indentClass} ${
               isActive
                 ? 'text-[#EDEDED] font-medium border-l-2 border-[#9B6EFF] -ml-[1px]'
@@ -125,7 +124,7 @@ const SidebarItem: React.FC<SidebarItemProps & { currentPath: string }> = ({ ite
             }`}
           >
             <span className={isActive ? 'pl-2.5' : ''}>{item.label}</span>
-          </Link>
+          </a>
         )}
         {hasChildren && (
           <button
@@ -206,7 +205,6 @@ export const DocsLayout: React.FC = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const location = useLocation();
-  const navigate = useNavigate();
   const currentPath = location.pathname;
 
   // Keyboard shortcuts
@@ -229,32 +227,25 @@ export const DocsLayout: React.FC = () => {
       } else if (lastKey === 'g' && now - lastKeyTime < 500) {
         if (e.key === 'h') {
           e.preventDefault();
-          navigate('/');
-          toast.success('Navigated to Home');
+          window.location.href = '/';
         } else if (e.key === 'd') {
           e.preventDefault();
-          navigate('/dashboard');
-          toast.success('Navigated to Dashboard');
+          window.location.href = '/dashboard';
         } else if (e.key === 's') {
           e.preventDefault();
-          navigate('/stats');
-          toast.success('Navigated to Stats');
+          window.location.href = '/stats';
         } else if (e.key === 'a') {
           e.preventDefault();
-          navigate('/docs/api');
-          toast.success('Navigated to API Reference');
+          window.location.href = '/docs/api';
         } else if (e.key === 'c') {
           e.preventDefault();
-          navigate('/docs/cli');
-          toast.success('Navigated to CLI Reference');
+          window.location.href = '/docs/cli';
         } else if (e.key === 'q') {
           e.preventDefault();
-          navigate('/docs/quickstart');
-          toast.success('Navigated to Quick Start');
+          window.location.href = '/docs/quickstart';
         } else if (e.key === 'v') {
           e.preventDefault();
-          navigate('/verify');
-          toast.success('Navigated to Verify');
+          window.location.href = '/verify';
         }
         lastKey = '';
       }
@@ -284,7 +275,7 @@ export const DocsLayout: React.FC = () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('open-docs-search', handleOpenSearch);
     };
-  }, [navigate, isSearchOpen]);
+  }, [isSearchOpen]);
 
   return (
     <div className="min-h-screen bg-[#050505] flex flex-col">

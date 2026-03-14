@@ -1,5 +1,5 @@
-import type { FC } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import React, { useEffect, useRef, type FC } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { Toaster } from 'sonner';
 
@@ -122,6 +122,21 @@ const PublicOnlyRoute: FC<{ children: React.ReactNode }> = ({ children }) => {
   return <>{children}</>;
 };
 
+// Global manager to force full page reload on navigation
+const NavigationReloadManager: FC = () => {
+  const location = useLocation();
+  const lastPathRef = useRef(location.pathname);
+
+  useEffect(() => {
+    // Only reload if the path has actually changed to avoid infinite loops on initial load
+    if (lastPathRef.current !== location.pathname) {
+      window.location.reload();
+    }
+  }, [location.pathname]);
+
+  return null;
+};
+
 const AppRoutes: FC = () => {
   return (
     <Routes>
@@ -239,6 +254,7 @@ const App: FC = () => {
             },
           }}
         />
+        <NavigationReloadManager />
         <AppRoutes />
       </BrowserRouter>
     </AuthProvider>
