@@ -15,6 +15,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import api from '@/utils/api';
+import { toast } from 'sonner';
 
 interface UsageStats {
   totalRequests: number;
@@ -36,14 +37,13 @@ interface UsageRecord {
 }
 
 const TIME_RANGES = [
-  { id: '24h', label: 'Last 24 Hours' },
-  { id: '7d', label: 'Last 7 Days' },
-  { id: '30d', label: 'Last 30 Days' },
-  { id: '90d', label: 'Last 90 Days' },
+  { id: '7', label: 'Last 7 Days' },
+  { id: '30', label: 'Last 30 Days' },
+  { id: '90', label: 'Last 90 Days' },
 ];
 
 export const UsagePage: FC = () => {
-  const [timeRange, setTimeRange] = useState('7d');
+  const [timeRange, setTimeRange] = useState('7');
   const [stats, setStats] = useState<UsageStats>({
     totalRequests: 0,
     successfulRequests: 0,
@@ -63,58 +63,52 @@ export const UsagePage: FC = () => {
   const fetchUsageData = async () => {
     setLoading(true);
     try {
-      // Fetch usage stats
-      const { data: statsData } = await api.get('/api/org/usage', {
-        params: { range: timeRange },
+      // Fetch usage data from correct endpoint
+      const { data: usageData } = await api.get('/api/usage', {
+        params: { period: `${timeRange}d` },
       });
-      setStats(statsData);
 
-      // Fetch usage records (mock for now)
-      const mockRecords: UsageRecord[] = [
-        {
-          id: '1',
-          endpoint: '/api/hashes/verify',
-          method: 'POST',
-          status: 200,
-          responseTime: 145,
-          timestamp: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
-        },
-        {
-          id: '2',
-          endpoint: '/api/record/:hash',
-          method: 'GET',
-          status: 200,
-          responseTime: 89,
-          timestamp: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
-        },
-        {
-          id: '3',
-          endpoint: '/api/hashes',
-          method: 'GET',
-          status: 200,
-          responseTime: 234,
-          timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-        },
-        {
-          id: '4',
-          endpoint: '/api/hashes/verify',
-          method: 'POST',
-          status: 404,
-          responseTime: 67,
-          timestamp: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
-        },
-        {
-          id: '5',
-          endpoint: '/api/org/stats',
-          method: 'GET',
-          status: 200,
-          responseTime: 45,
-          timestamp: new Date(Date.now() - 1000 * 60 * 60).toISOString(),
-        },
-      ];
-      setRecords(mockRecords);
+      // Map usage data to stats
+      const summary = usageData.summary || {};
+      const totalRequests = summary.totalRequests || 0;
+      const successRateStr = summary.successRate || '0%';
+      const successRate = parseFloat(successRateStr) / 100;
+      const successfulRequests = Math.round(totalRequests * successRate);
+      const failedRequests = totalRequests - successfulRequests;
+
+      setStats({
+        totalRequests,
+        successfulRequests,
+        failedRequests,
+        avgResponseTime: summary.avgResponseTime || 0,
+        hashesAnchored: usageData.analytics?.reduce((sum: number, item: any) => sum + (item.count || 0), 0) || 0,
+        hashesVerified: successfulRequests, // Approximation
+      });
+
+      // Fetch real usage logs
+      try {
+        const { data: logsData } = await api.get('/api/usage/logs', {
+          params: { limit: 10 },
+        });
+        
+        const mappedRecords: UsageRecord[] = (logsData.data || logsData.records || []).map((log: any, index: number) => ({
+          id: log.id || `log-${index}`,
+          endpoint: log.endpoint || '/api/unknown',
+          method: log.method || 'GET',
+          status: log.statusCode || 200,
+          responseTime: log.durationMs || 0,
+          timestamp: log.createdAt || log.timestamp || new Date().toISOString(),
+          ip: log.ipAddress,
+        }));
+        
+        setRecords(mappedRecords);
+      } catch (logError) {
+        console.error('Failed to fetch logs:', logError);
+        setRecords([]);
+      }
     } catch (error) {
       console.error('Failed to fetch usage data:', error);
+      toast.error('Failed to load usage data');
     } finally {
       setLoading(false);
     }
@@ -163,18 +157,19 @@ export const UsagePage: FC = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `usage-${timeRange}-${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `usage-${timeRange}d-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);
+    toast.success('Usage data exported');
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-24">
-        <div className="w-8 h-8 border-2 border-sipheron-purple border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
+  // Calculate percentages
+  const successRate = stats.totalRequests > 0 
+    ? Math.round((stats.successfulRequests / stats.totalRequests) * 100) 
+    : 0;
+  const errorRate = stats.totalRequests > 0 
+    ? Math.round((stats.failedRequests / stats.totalRequests) * 100) 
+    : 0;
 
   return (
     <div className="space-y-6">
@@ -228,7 +223,8 @@ export const UsagePage: FC = () => {
           </div>
           <button
             onClick={exportData}
-            className="px-4 py-2 bg-white/[0.03] border border-white/[0.06] rounded-xl text-sm text-sipheron-text-secondary hover:bg-white/[0.05] transition-colors flex items-center gap-2"
+            disabled={records.length === 0}
+            className="px-4 py-2 bg-white/[0.03] border border-white/[0.06] rounded-xl text-sm text-sipheron-text-secondary hover:bg-white/[0.05] transition-colors flex items-center gap-2 disabled:opacity-50"
           >
             <Download className="w-4 h-4" />
             Export
@@ -244,7 +240,7 @@ export const UsagePage: FC = () => {
             <div>
               <p className="text-sm text-sipheron-text-muted">Total Requests</p>
               <p className="text-3xl font-bold text-sipheron-text-primary mt-2">
-                {stats.totalRequests.toLocaleString()}
+                {loading ? '...' : stats.totalRequests.toLocaleString()}
               </p>
             </div>
             <div className="w-12 h-12 rounded-xl bg-sipheron-purple/10 flex items-center justify-center">
@@ -264,9 +260,7 @@ export const UsagePage: FC = () => {
             <div>
               <p className="text-sm text-sipheron-text-muted">Success Rate</p>
               <p className="text-3xl font-bold text-sipheron-text-primary mt-2">
-                {stats.totalRequests > 0
-                  ? Math.round((stats.successfulRequests / stats.totalRequests) * 100)
-                  : 0}%
+                {loading ? '...' : `${successRate}%`}
               </p>
             </div>
             <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center">
@@ -285,7 +279,7 @@ export const UsagePage: FC = () => {
             <div>
               <p className="text-sm text-sipheron-text-muted">Failed Requests</p>
               <p className="text-3xl font-bold text-sipheron-text-primary mt-2">
-                {stats.failedRequests.toLocaleString()}
+                {loading ? '...' : stats.failedRequests.toLocaleString()}
               </p>
             </div>
             <div className="w-12 h-12 rounded-xl bg-red-500/10 flex items-center justify-center">
@@ -293,11 +287,7 @@ export const UsagePage: FC = () => {
             </div>
           </div>
           <div className="flex items-center gap-2 mt-4">
-            <span className="text-sm text-red-400">
-              {stats.totalRequests > 0
-                ? Math.round((stats.failedRequests / stats.totalRequests) * 100)
-                : 0}%
-            </span>
+            <span className="text-sm text-red-400">{errorRate}%</span>
             <span className="text-sm text-sipheron-text-muted">error rate</span>
           </div>
         </div>
@@ -308,7 +298,7 @@ export const UsagePage: FC = () => {
             <div>
               <p className="text-sm text-sipheron-text-muted">Avg Response Time</p>
               <p className="text-3xl font-bold text-sipheron-text-primary mt-2">
-                {stats.avgResponseTime}ms
+                {loading ? '...' : `${stats.avgResponseTime}ms`}
               </p>
             </div>
             <div className="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center">
@@ -325,9 +315,9 @@ export const UsagePage: FC = () => {
         <div className="bg-sipheron-surface rounded-2xl p-6 border border-white/[0.06]">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-sipheron-text-muted">Hashes Anchored</p>
+              <p className="text-sm text-sipheron-text-muted">API Calls</p>
               <p className="text-3xl font-bold text-sipheron-text-primary mt-2">
-                {stats.hashesAnchored.toLocaleString()}
+                {loading ? '...' : stats.hashesAnchored.toLocaleString()}
               </p>
             </div>
             <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center">
@@ -335,8 +325,8 @@ export const UsagePage: FC = () => {
             </div>
           </div>
           <div className="flex items-center gap-2 mt-4">
-            <span className="text-sm text-blue-400">+5</span>
-            <span className="text-sm text-sipheron-text-muted">this period</span>
+            <span className="text-sm text-blue-400">{records.length}</span>
+            <span className="text-sm text-sipheron-text-muted">logged calls</span>
           </div>
         </div>
 
@@ -344,9 +334,9 @@ export const UsagePage: FC = () => {
         <div className="bg-sipheron-surface rounded-2xl p-6 border border-white/[0.06]">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-sipheron-text-muted">Hashes Verified</p>
+              <p className="text-sm text-sipheron-text-muted">Success Count</p>
               <p className="text-3xl font-bold text-sipheron-text-primary mt-2">
-                {stats.hashesVerified.toLocaleString()}
+                {loading ? '...' : stats.successfulRequests.toLocaleString()}
               </p>
             </div>
             <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center">
@@ -354,8 +344,8 @@ export const UsagePage: FC = () => {
             </div>
           </div>
           <div className="flex items-center gap-2 mt-4">
-            <span className="text-sm text-purple-400">+23</span>
-            <span className="text-sm text-sipheron-text-muted">this period</span>
+            <span className="text-sm text-purple-400">{successRate}%</span>
+            <span className="text-sm text-sipheron-text-muted">success rate</span>
           </div>
         </div>
       </div>
@@ -372,36 +362,49 @@ export const UsagePage: FC = () => {
           </span>
         </div>
         <div className="divide-y divide-white/[0.04]">
-          {records.map((record) => (
-            <div
-              key={record.id}
-              className="p-4 flex items-center justify-between hover:bg-white/[0.02] transition-colors"
-            >
-              <div className="flex items-center gap-4">
-                <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase border ${getMethodColor(record.method)}`}>
-                  {record.method}
-                </span>
-                <div>
-                  <p className="text-sm font-medium text-sipheron-text-primary">
-                    {record.endpoint}
-                  </p>
-                  <p className="text-xs text-sipheron-text-muted">
-                    {formatTimeAgo(record.timestamp)}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="text-right">
-                  <span className={`text-sm font-medium ${getStatusColor(record.status)}`}>
-                    {record.status}
-                  </span>
-                  <p className="text-xs text-sipheron-text-muted">
-                    {record.responseTime}ms
-                  </p>
-                </div>
-              </div>
+          {loading ? (
+            <div className="p-8 text-center text-sipheron-text-muted">
+              <div className="w-8 h-8 border-2 border-sipheron-purple border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+              <p>Loading...</p>
             </div>
-          ))}
+          ) : records.length > 0 ? (
+            records.map((record) => (
+              <div
+                key={record.id}
+                className="p-4 flex items-center justify-between hover:bg-white/[0.02] transition-colors"
+              >
+                <div className="flex items-center gap-4">
+                  <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase border ${getMethodColor(record.method)}`}>
+                    {record.method}
+                  </span>
+                  <div>
+                    <p className="text-sm font-medium text-sipheron-text-primary">
+                      {record.endpoint}
+                    </p>
+                    <p className="text-xs text-sipheron-text-muted">
+                      {formatTimeAgo(record.timestamp)}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="text-right">
+                    <span className={`text-sm font-medium ${getStatusColor(record.status)}`}>
+                      {record.status}
+                    </span>
+                    <p className="text-xs text-sipheron-text-muted">
+                      {record.responseTime}ms
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="p-8 text-center text-sipheron-text-muted">
+              <AlertCircle className="w-12 h-12 mx-auto mb-3 opacity-30" />
+              <p>No API calls recorded yet</p>
+              <p className="text-xs mt-1">Make some API calls to see them here</p>
+            </div>
+          )}
         </div>
       </div>
 
