@@ -78,6 +78,7 @@ import {
   AuditPage,
   PlaygroundPage,
   EmbedSharePage,
+  UsagePage,
 } from '@/pages/dashboard';
 
 import './App.css';
@@ -208,7 +209,7 @@ const AppRoutes: FC = () => {
         <Route path="audit" element={<AuditPage />} />
         <Route path="playground" element={<PlaygroundPage />} />
         <Route path="embed" element={<EmbedSharePage />} />
-        <Route path="usage" element={<PlaceholderPage title="Usage" />} />
+        <Route path="usage" element={<UsagePage />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="billing" element={<BillingPage />} />
         <Route path="notifications" element={<NotificationsPage />} />

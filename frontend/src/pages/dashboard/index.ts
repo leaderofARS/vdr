@@ -10,5 +10,6 @@ export { PlaceholderPage } from './PlaceholderPage';
 export { NotificationsPage } from './NotificationsPage';
 export { WebhooksPage } from './WebhooksPage';
 export { AuditPage } from './AuditPage';
+export { UsagePage } from './UsagePage';
 export { PlaygroundPage } from './PlaygroundPage';
 export { EmbedSharePage } from './EmbedSharePage';
