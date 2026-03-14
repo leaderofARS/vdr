@@ -228,18 +228,6 @@ export const Topbar: React.FC = () => {
     navigate('/login');
   };
 
-  // Keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        setSearchOpen(true);
-      }
-    };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
   return (
     <header className="sticky top-0 z-40 h-16 border-b border-white/[0.06] bg-sipheron-bg/95 backdrop-blur-xl">
       <div className="h-full px-4 lg:px-6 flex items-center justify-between">
