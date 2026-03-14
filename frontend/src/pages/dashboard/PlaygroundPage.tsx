@@ -28,7 +28,7 @@ const ENDPOINTS = [
     id: 'verify',
     name: 'Verify Hash',
     method: 'POST',
-    path: '/api/hashes/verify',
+    path: '/verify',
     description: 'Verify if a hash exists on the Solana blockchain',
     defaultBody: { hash: '' },
     params: [
@@ -39,7 +39,7 @@ const ENDPOINTS = [
     id: 'record',
     name: 'Get Record',
     method: 'GET',
-    path: '/api/record/:hash',
+    path: '/record/:hash',
     description: 'Retrieve full record details by hash',
     defaultBody: null,
     params: [
@@ -71,7 +71,7 @@ const ENDPOINTS = [
 
 const CODE_EXAMPLES: Record<string, string> = {
   javascript: `// Using fetch
-const response = await fetch('https://api.sipheron.com/api/hashes/verify', {
+const response = await fetch('https://api.sipheron.com/verify', {
   method: 'POST',
   headers: { 
     'Content-Type': 'application/json',
@@ -85,13 +85,13 @@ console.log(data.verified);`,
 import requests
 
 response = requests.post(
-    'https://api.sipheron.com/api/hashes/verify',
+    'https://api.sipheron.com/verify',
     headers={'Authorization': 'Bearer YOUR_API_KEY'},
     json={'hash': 'f9f5a703...'}
 )
 data = response.json()
 print(data['verified'])`,
-  curl: `curl -X POST https://api.sipheron.com/api/hashes/verify \\
+  curl: `curl -X POST https://api.sipheron.com/verify \\
   -H "Content-Type: application/json" \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -d '{"hash": "f9f5a703..."}'`
