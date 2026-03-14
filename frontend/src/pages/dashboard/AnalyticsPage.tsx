@@ -121,11 +121,7 @@ const truncateHash = (hash: string): string => {
   return `${hash.slice(0, 8)}...${hash.slice(-4)}`;
 };
 
-// Calculate trend from two values
-const calculateTrend = (current: number, previous: number): number => {
-  if (previous === 0) return current > 0 ? 100 : 0;
-  return Math.round(((current - previous) / previous) * 100);
-};
+
 
 export const AnalyticsPage: React.FC = () => {
   const [dateRange, setDateRange] = useState('7');
@@ -704,7 +700,7 @@ export const AnalyticsPage: React.FC = () => {
                       paddingAngle={4}
                       dataKey="value"
                     >
-                      {apiKeyData.map((entry, index) => (
+                      {apiKeyData.map((entry: any, index: number) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
@@ -712,7 +708,7 @@ export const AnalyticsPage: React.FC = () => {
                 </ResponsiveContainer>
               </div>
               <div className="flex-1 space-y-3">
-                {apiKeyData.map((item) => (
+                {apiKeyData.map((item: any) => (
                   <div key={item.name} className="flex items-center gap-3">
                     <div
                       className="w-3 h-3 rounded-full"
