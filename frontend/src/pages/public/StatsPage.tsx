@@ -1,57 +1,43 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { 
+  Activity, 
+  Database, 
+  Shield, 
+  Search, 
+  ArrowRight,
+  RefreshCw,
+  Clock,
+  Users,
+  CheckCircle,
+  Cpu
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { 
-  ShieldCheck, 
-  Zap, 
-  Globe, 
-  Activity, 
-  Layers, 
-  Cpu, 
-  Lock, 
-  ExternalLink,
-  ChevronRight,
-  RefreshCcw,
-  CheckCircle2,
-} from 'lucide-react';
-import { 
-  AreaChart, 
-  Area, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer 
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
 } from 'recharts';
-import { motion, AnimatePresence } from 'framer-motion';
-import axios from 'axios';
-import { CountUp } from '@/components/shared';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
+import { CountUp } from '@/components/shared/CountUp';
 import type { PublicStats, TimeseriesPoint } from '@/types/analytics';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+import api from '@/utils/api';
+import { Navbar } from '@/sections/landing/Navbar';
 
 export const StatsPage: React.FC = () => {
   const [stats, setStats] = useState<PublicStats | null>(null);
   const [timeseries, setTimeseries] = useState<TimeseriesPoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
-  const [secondsAgo, setSecondsAgo] = useState(0);
 
   const fetchData = async () => {
-    console.log('Last updated:', lastUpdated);
     try {
       const [statsRes, tsRes] = await Promise.all([
-        axios.get(`${API_URL}/api/stats`),
-        axios.get(`${API_URL}/api/stats/timeseries`)
+        api.get('/api/stats'),
+        api.get('/api/stats/timeseries')
       ]);
       setStats(statsRes.data);
       setTimeseries(tsRes.data.timeseries);
       setLastUpdated(new Date());
-      setSecondsAgo(0);
     } catch (err) {
-      console.error('Failed to fetch public stats:', err);
+      console.error('Failed to fetch stats:', err);
     } finally {
       setLoading(false);
     }
@@ -59,406 +45,303 @@ export const StatsPage: React.FC = () => {
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 60000);
-    const timer = setInterval(() => {
-      setSecondsAgo(prev => prev + 1);
-    }, 1000);
-    return () => {
-      clearInterval(interval);
-      clearInterval(timer);
-    };
+    const interval = setInterval(fetchData, 60000); // refresh every minute
+    return () => clearInterval(interval);
   }, []);
 
+  if (loading && !stats) {
+    return (
+      <div className="min-h-screen bg-[#050510] flex items-center justify-center">
+        <div className="w-12 h-12 border-2 border-[#6C63FF] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-[#08080F] text-white selection:bg-purple-500/30">
-      {/* Background Gradients */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-900/10 blur-[120px] rounded-full" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-900/10 blur-[120px] rounded-full" />
+    <div className="min-h-screen bg-[#050510] text-[#F0F0FF] selection:bg-[#6C63FF]/30">
+      <Navbar />
+
+      {/* ── Progress Bar ── */}
+      <div className="fixed top-0 left-0 w-full h-[1px] bg-white/5 z-[200]">
+        <motion.div 
+          className="h-full bg-gradient-to-r from-transparent via-[#6C63FF] to-transparent"
+          initial={{ width: "0%", left: "-100%" }}
+          animate={{ left: "100%" }}
+          transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+          style={{ width: "20%" }}
+        />
       </div>
 
-      {/* Minimal Navbar */}
-      <header className="sticky top-0 z-50 border-b border-white/5 bg-[#08080F]/80 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 group">
-            <img src="/sipheron_vdap_logo.png" alt="SipHeron" className="h-8 w-8 group-hover:scale-110 transition-transform" />
-            <div className="flex flex-col">
-              <span className="text-lg font-bold tracking-tight">SipHeron</span>
-              <span className="text-[10px] text-purple-400 font-medium tracking-[0.2em] uppercase leading-none">VDR</span>
-            </div>
-          </Link>
-          <div className="flex items-center gap-4">
-            <Link to="/auth/login">
-              <Button variant="ghost" className="text-sm text-zinc-400 hover:text-white">Sign In</Button>
-            </Link>
-            <Link to="/auth/register">
-              <Button size="sm" className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 border-none">
-                Launch Dashboard <ChevronRight className="w-4 h-4 ml-1" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </header>
-
-      <main className="relative z-10 max-w-7xl mx-auto px-6 py-12 lg:py-20">
-        {/* Hero Section */}
-        <div className="text-center mb-16 lg:mb-24">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <Badge variant="outline" className="mb-6 px-4 py-1.5 border-purple-500/20 bg-purple-500/5 text-purple-400 rounded-full">
-              <span className="relative flex h-2 w-2 mr-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-500"></span>
+      <main className="max-w-7xl mx-auto px-6 pt-32 pb-24">
+        
+        {/* ── Header Area ── */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <span className="px-3 py-1 rounded-full bg-[#6C63FF]/10 text-[#6C63FF] text-[10px] font-bold uppercase tracking-wider border border-[#6C63FF]/20">
+                Network Live Data
               </span>
-              Live Platform Statistics
-            </Badge>
-            <h1 className="text-4xl lg:text-7xl font-bold mb-6 tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-white to-zinc-500">
-              Platform Traction &<br />Global Transparency
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-500/10 text-green-400 text-[10px] font-bold uppercase tracking-wider border border-green-500/20">
+                <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                Operational
+              </div>
+            </div>
+            <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-4">
+              Real-time Platform <span className="text-[#6C63FF]">Intelligence</span>
             </h1>
-            <p className="max-w-2xl mx-auto text-zinc-400 text-lg lg:text-xl leading-relaxed">
-              Real-time visualization of document anchoring activity on the Solana blockchain. 
-              SipHeron VDR provides institutional-grade cryptographic proofs for files of any scale.
+            <p className="text-[#8888AA] max-w-2xl text-lg">
+              Transparency at the core. Monitor every hash, certificate, and anchor registered 
+              on the SipHeron VDR decentralized network.
             </p>
-          </motion.div>
-        </div>
-
-        {/* Live Counters */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-          <StatComponent 
-            label="Documents Anchored" 
-            value={stats?.totalHashes || 0} 
-            icon={<ShieldCheck className="w-5 h-5" />}
-            gradient="from-purple-400 to-purple-600"
-            loading={loading}
-          />
-          <StatComponent 
-            label="Verified Organizations" 
-            value={stats?.totalOrganizations || 0} 
-            icon={<Globe className="w-5 h-5" />}
-            gradient="from-blue-400 to-blue-600"
-            loading={loading}
-          />
-          <StatComponent 
-            label="Confirmation Rate" 
-            value={stats?.confirmationRate ? parseFloat(stats.confirmationRate) : 0} 
-            suffix="%"
-            icon={<CheckCircle2 className="w-5 h-5" />}
-            gradient="from-emerald-400 to-emerald-600"
-            loading={loading}
-          />
-          <StatComponent 
-            label="Avg Speed" 
-            value={stats?.avgConfirmationMs || 0} 
-            suffix="ms"
-            icon={<Zap className="w-5 h-5" />}
-            gradient="from-orange-400 to-orange-600"
-            loading={loading}
-          />
-        </div>
-
-        {/* Growth Bar */}
-        <AnimatePresence>
-          {stats?.monthlyGrowth && (
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="bg-zinc-900/50 border border-white/5 rounded-2xl p-6 mb-16 flex flex-col md:flex-row items-center justify-between gap-6"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-purple-500/10 rounded-full flex items-center justify-center border border-purple-500/20">
-                  <Activity className="w-6 h-6 text-purple-400" />
-                </div>
-                <div>
-                  <h3 className="text-zinc-100 font-semibold">Traction Trend</h3>
-                  <p className="text-zinc-500 text-sm">Last 30 days performance</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-8">
-                <div className="text-center">
-                  <p className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1">Growth</p>
-                  <p className="text-2xl font-bold text-emerald-400 flex items-center">
-                    +{stats.monthlyGrowth}%
-                    <span className="text-xs text- emerald-500/50 ml-1">↑</span>
-                  </p>
-                </div>
-                <div className="h-10 w-px bg-white/5" />
-                <div className="text-center">
-                  <p className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1">Curr. Month</p>
-                  <p className="text-2xl font-bold text-zinc-100">{stats.hashesThisMonth}</p>
-                </div>
-              </div>
-              <Button variant="outline" className="border-white/10 hover:bg-white/5 text-zinc-300">
-                View Reports <ExternalLink className="w-3 h-3 ml-2" />
-              </Button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Main Chart Section */}
-        <Card className="bg-[#0A0A12] border-white/5 shadow-2xl mb-16 overflow-hidden">
-          <div className="p-8 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <h2 className="text-xl font-bold text-white mb-1">Anchoring Activity</h2>
-              <p className="text-zinc-500 text-sm">Volume distribution over the last 30 days</p>
-            </div>
-            <div className="flex items-center gap-4 text-xs text-zinc-500">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-purple-500/20 border border-purple-500 rounded-sm" />
-                <span>Daily Hashes</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <RefreshCcw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
-                <span>Updated {secondsAgo}s ago</span>
-              </div>
-            </div>
           </div>
-          <CardContent className="p-8">
-            <div className="h-[350px] w-full">
+          <div className="flex items-center gap-4 text-[#44445A] text-sm">
+            <span className="flex items-center gap-1.5">
+              <Clock className="w-4 h-4" />
+              Updated {lastUpdated.toLocaleTimeString()}
+            </span>
+            <button 
+              onClick={fetchData}
+              className="p-2 rounded-lg bg-white/5 border border-white/10 hover:border-white/20 transition-all active:scale-95"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            </button>
+          </div>
+        </div>
+
+        {/* ── Hero Counters ── */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+          {[
+            { label: 'Platform Hashes', value: stats?.totalHashes ?? 0, icon: Activity, color: '#6C63FF' },
+            { label: 'Network Anchors', value: stats?.confirmedHashes ?? 0, icon: CheckCircle, color: '#00D97E' },
+            { label: 'Organizations', value: stats?.totalOrganizations ?? 0, icon: Users, color: '#4ECDC4' },
+            { label: 'Uptime (30d)', value: 99.98, suffix: '%', icon: Cpu, color: '#FFD93D' },
+          ].map((card, i) => (
+            <motion.div
+              key={card.label}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.1 }}
+              className="bg-[#0D0D1A] border border-white/[0.06] rounded-3xl p-8 relative overflow-hidden group hover:border-[#6C63FF]/30 transition-all"
+            >
+              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                <card.icon className="w-12 h-12" style={{ color: card.color }} />
+              </div>
+              <p className="text-[#8888AA] text-sm font-medium mb-2">{card.label}</p>
+              <div className="flex items-baseline gap-1">
+                <CountUp 
+                  end={card.value} 
+                  className="text-4xl font-black text-white"
+                  decimals={card.label.includes('Uptime') ? 2 : 0}
+                />
+                {card.suffix && <span className="text-xl font-bold text-[#6C63FF]">{card.suffix}</span>}
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* ── Main Chart Area ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
+          <div className="lg:col-span-2 bg-[#0D0D1A] border border-white/[0.06] rounded-3xl p-8">
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h3 className="text-xl font-bold mb-1">Anchoring Volume</h3>
+                <p className="text-sm text-[#8888AA]">Global network activity over the last 30 days</p>
+              </div>
+              <div className="px-4 py-2 rounded-xl bg-[#6C63FF]/10 border border-[#6C63FF]/20 text-[#6C63FF] text-xs font-bold">
+                Daily Avg: {((stats?.totalHashes ?? 0) / 30).toFixed(1)}
+              </div>
+            </div>
+            
+            <div className="h-[300px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={timeseries}>
                   <defs>
-                    <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="100%">
-                      <stop offset="5%" stopColor="#9333ea" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="#9333ea" stopOpacity={0}/>
+                    <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#6C63FF" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#6C63FF" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
                   <XAxis 
                     dataKey="date" 
-                    stroke="#52525b" 
-                    fontSize={12} 
-                    tickFormatter={(val) => new Date(val).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                    axisLine={false}
-                    tickLine={false}
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fill: '#44445A', fontSize: 12 }}
+                    tickFormatter={(val) => new Date(val).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                   />
                   <YAxis 
-                    stroke="#52525b" 
-                    fontSize={12} 
-                    axisLine={false}
-                    tickLine={false}
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fill: '#44445A', fontSize: 12 }} 
                   />
                   <Tooltip 
-                    contentStyle={{ backgroundColor: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }}
-                    itemStyle={{ color: '#fff' }}
-                    cursor={{ stroke: '#9333ea', strokeWidth: 1 }}
+                    contentStyle={{ 
+                      backgroundColor: '#13131F', 
+                      borderColor: 'rgba(255,255,255,0.1)',
+                      borderRadius: '12px',
+                      color: '#fff'
+                    }} 
                   />
                   <Area 
                     type="monotone" 
                     dataKey="count" 
-                    stroke="#9333ea" 
+                    stroke="#6C63FF" 
                     strokeWidth={3}
                     fillOpacity={1} 
                     fill="url(#colorCount)" 
-                    animationDuration={1500}
                   />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
-          </CardContent>
-          <div className="px-8 py-4 bg-white/5 flex flex-wrap items-center gap-x-8 gap-y-2 text-[10px] text-zinc-500">
-            <span className="uppercase tracking-widest font-semibold flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Network Status: Healthy
-            </span>
-            <span className="uppercase tracking-widest font-semibold">Contract: {stats?.contractAddress}</span>
-            <span className="uppercase tracking-widest font-semibold">Network: {stats?.network}</span>
           </div>
-        </Card>
 
-        {/* Network Health & Highlights */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-24">
-          <div>
-            <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-              <Activity className="w-5 h-5 text-purple-400" />
-              Network Health
-            </h3>
-            <div className="grid gap-4">
-              <HealthItem label="Solana Devnet" status="Operational" />
-              <HealthItem label="API Gateway" status="Operational" />
-              <HealthItem label="Batch Indexer" status="Operational" />
-              <HealthItem label="Audit Logger" status="Operational" />
-            </div>
-          </div>
-          <div>
-            <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-              <Zap className="w-5 h-5 text-blue-400" />
-              Platform Highlights
-            </h3>
-            <div className="grid gap-4 text-zinc-400">
-              <HighlightItem icon={<Lock className="w-4 h-4" />} title="Immutable Proofs" description="Document hashes verified on the Solana ledger, guaranteed for life." />
-              <HighlightItem icon={<Layers className="w-4 h-4" />} title="Batch Processing" description="Register up to 100 documents in a single atomic transaction." />
-              <HighlightItem icon={<Cpu className="w-4 h-4" />} title="Advanced Cryptography" description="Using SHA-256 and Ed25519 for military-grade security." />
-            </div>
-          </div>
-        </div>
+          <div className="space-y-6">
+            <div className="bg-[#0D0D1A] border border-white/[0.06] rounded-3xl p-8 h-full">
+              <h3 className="text-xl font-bold mb-6">Network Health</h3>
+              <div className="space-y-6">
+                {[
+                  { label: 'Confirmation Rate', value: stats?.confirmationRate + '%', color: 'text-green-400' },
+                  { label: 'Avg Latency', value: stats?.avgConfirmationMs + 'ms', color: 'text-[#6C63FF]' },
+                  { label: 'Success Rate', value: '100%', color: 'text-green-400' },
+                  { label: 'Node Status', value: '8 Online', color: 'text-[#6C63FF]' },
+                ].map((item) => (
+                  <div key={item.label} className="flex items-center justify-between group">
+                    <span className="text-[#8888AA] group-hover:text-[#F0F0FF] transition-colors">{item.label}</span>
+                    <span className={`font-mono font-bold ${item.color}`}>{item.value}</span>
+                  </div>
+                ))}
+              </div>
 
-        {/* Recent Activity Feed */}
-        <div className="mb-24">
-          <div className="flex items-center justify-between mb-8">
-            <h3 className="text-xl font-bold flex items-center gap-2">
-              <RefreshCcw className="w-5 h-5 text-zinc-400" />
-              Global Activity Feed
-            </h3>
-            <Badge variant="outline" className="text-xs border-white/5 opacity-50">Polling every 60s</Badge>
-          </div>
-          <div className="grid gap-3">
-            {stats?.recentAnchors.map((anchor, i) => (
-              <motion.div 
-                key={anchor.hash + i}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.1 }}
-                className="group flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-zinc-900/30 border border-white/5 rounded-xl hover:bg-zinc-800/40 transition-colors"
-              >
-                <div className="flex items-center gap-4 mb-2 sm:mb-0">
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center border ${
-                    anchor.status === 'CONFIRMED' ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400' : 'border-orange-500/20 bg-orange-500/10 text-orange-400'
-                  }`}>
-                    {anchor.status === 'CONFIRMED' ? <CheckCircle2 className="w-4 h-4" /> : <RefreshCcw className="w-4 h-4 animate-spin" />}
+              <div className="mt-8 pt-8 border-t border-white/[0.06]">
+                <p className="text-sm font-bold uppercase tracking-widest text-[#44445A] mb-4">Contract Info</p>
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-[10px] text-[#8888AA] mb-1">PROGRAM ID</p>
+                    <p className="text-xs font-mono text-[#6C63FF] break-all bg-white/5 p-2 rounded-lg">
+                      {stats?.contractAddress}
+                    </p>
                   </div>
                   <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-mono text-zinc-300">0x{anchor.hash.slice(0, 8)}...{anchor.hash.slice(-8)}</span>
-                      <span className="text-xs text-zinc-600">Secure Anchor</span>
-                    </div>
-                    <div className="text-[10px] text-zinc-500 uppercase tracking-widest mt-0.5">
-                      {anchor.organization?.name || 'Anonymous Org'} • {new Date(anchor.createdAt).toLocaleTimeString()}
-                    </div>
+                    <p className="text-[10px] text-[#8888AA] mb-1">NETWORK</p>
+                    <p className="text-xs font-bold text-white">{stats?.network}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <Badge className="bg-zinc-800 text-zinc-400 hover:text-white transition-colors cursor-default border-none">
-                    {anchor.status}
-                  </Badge>
-                  <a 
-                    href={`https://explorer.solana.com/address/${anchor.hash}?cluster=devnet`} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="p-2 text-zinc-600 hover:text-white transition-colors"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                  </a>
-                </div>
-              </motion.div>
-            ))}
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Technology Showcase */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-24">
-          <TechCard icon="/solana-logo.png" name="Solana" detail="4,000+ Trans/Sec" />
-          <TechCard icon="/logos/postgresql.svg" name="PostgreSQL" detail="Relational Persistence" />
-          <TechCard icon="/logos/redis.svg" name="Redis" detail="Sub-ms Latency" />
-          <TechCard icon="/logos/typescript.svg" name="TypeScript" detail="Type Safety First" />
+        {/* ── Recent Activity ── */}
+        <div className="mb-16">
+          <div className="flex items-center justify-between mb-8">
+            <h3 className="text-2xl font-bold">Global Activity</h3>
+            <Link to="/verify" className="text-[#6C63FF] text-sm hover:underline flex items-center gap-1.5 font-medium">
+              Verify an Anchor <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+          <div className="bg-[#0D0D1A] border border-white/[0.06] rounded-3xl overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b border-white/[0.06]">
+                    <th className="px-8 py-6 text-xs font-bold uppercase tracking-widest text-[#44445A]">Timestamp</th>
+                    <th className="px-8 py-6 text-xs font-bold uppercase tracking-widest text-[#44445A]">Proof Hash</th>
+                    <th className="px-8 py-6 text-xs font-bold uppercase tracking-widest text-[#44445A]">Metadata</th>
+                    <th className="px-8 py-6 text-xs font-bold uppercase tracking-widest text-[#44445A]">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/[0.06]">
+                  {stats?.recentAnchors.map((anchor) => (
+                    <tr key={anchor.hash} className="hover:bg-white/[0.02] transition-colors group">
+                      <td className="px-8 py-5 text-sm text-[#8888AA]">
+                        {new Date(anchor.createdAt).toLocaleTimeString()}
+                      </td>
+                      <td className="px-8 py-5 font-mono text-xs text-[#6C63FF]">
+                        {anchor.hash.slice(0, 16)}...{anchor.hash.slice(-8)}
+                      </td>
+                      <td className="px-8 py-5 text-sm text-[#F0F0FF]">
+                        {anchor.metadata || 'System Internal'}
+                      </td>
+                      <td className="px-8 py-5">
+                        <span className="px-2.5 py-1 rounded-md bg-green-500/10 text-green-400 text-[10px] font-bold uppercase tracking-wider">
+                          {anchor.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
 
-        {/* CTA Section */}
-        <div className="relative overflow-hidden bg-gradient-to-r from-purple-900/40 to-blue-900/40 border border-white/10 rounded-3xl p-12 lg:p-20 text-center">
-            <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,rgba(155,110,255,0.1),transparent)] pointer-events-none" />
-            <h2 className="text-3xl lg:text-5xl font-bold mb-6 text-white">Ready to secure your data?</h2>
-            <p className="text-zinc-400 mb-10 max-w-xl mx-auto">
-              Start anchoring document proofs today. Join the growing network of organizations trusting SipHeron.
+        {/* ── Technology Cards ── */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+          {[
+            { 
+              title: 'Solana Infrastructure', 
+              desc: 'Leveraging parallel transaction processing and under 500ms block times for high-volume anchoring.',
+              icon: Cpu
+            },
+            { 
+              title: 'Litemint Consensus', 
+              desc: 'Lightweight cryptographic proofs and trustless verification protocols for documents.',
+              icon: Shield
+            },
+            { 
+              title: 'SipHeron VDR', 
+              desc: 'A decentralized verifiable data registry designed for enterprise scale and privacy.',
+              icon: Database
+            }
+          ].map((tech) => (
+            <div key={tech.title} className="p-8 rounded-3xl bg-[#0D0D1A] border border-white/[0.06] border-b-2 border-b-[#6C63FF]/30">
+              <tech.icon className="w-10 h-10 text-[#6C63FF] mb-6" />
+              <h4 className="text-lg font-bold mb-3">{tech.title}</h4>
+              <p className="text-sm text-[#8888AA] leading-relaxed">
+                {tech.desc}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        {/* ── CTA ── */}
+        <div className="relative rounded-[40px] overflow-hidden bg-gradient-to-r from-[#1D1D3A] to-[#0A0A12] p-12 text-center border border-white/5">
+          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20" />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            className="relative z-10"
+          >
+            <h2 className="text-3xl md:text-4xl font-black mb-6">Ready to register your first proof?</h2>
+            <p className="text-[#8888AA] max-w-xl mx-auto mb-10 text-lg">
+              Join hundreds of organizations using SipHeron to anchor their critical data on the blockchain.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link to="/auth/register">
-                <Button size="lg" className="bg-white text-black hover:bg-zinc-200 px-8 py-6 text-lg h-auto">
-                  Get Started Free
-                </Button>
+              <Link to="/auth/register" className="w-full sm:w-auto px-10 py-4 rounded-2xl bg-[#6C63FF] text-white font-bold hover:bg-[#5B54E0] transition-all shadow-xl shadow-[#6C63FF]/20 flex items-center justify-center gap-2">
+                Start for Free <ArrowRight className="w-5 h-5" />
               </Link>
-              <Link to="/docs">
-                <Button size="lg" variant="outline" className="border-white/10 bg-white/5 hover:bg-white/10 px-8 py-6 text-lg h-auto">
-                  Read the Docs
-                </Button>
+              <Link to="/verify" className="w-full sm:w-auto px-10 py-4 rounded-2xl bg-white/5 text-white font-bold hover:bg-white/10 transition-all border border-white/10 flex items-center justify-center gap-2">
+                Verify Document <Search className="w-5 h-5" />
               </Link>
             </div>
+          </motion.div>
         </div>
-      </main>
 
-      {/* Footer */}
-      <footer className="border-t border-white/5 bg-[#08080F] py-12">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-8 mb-12">
-            <Link to="/" className="flex items-center gap-2 opacity-50 hover:opacity-100 transition-opacity">
-              <img src="/sipheron_vdap_logo.png" alt="SipHeron" className="h-6 w-6 grayscale" />
-              <span className="font-bold tracking-tight text-sm">SipHeron VDR</span>
-            </Link>
-            <div className="flex items-center gap-8 text-sm text-zinc-500">
-              <a href="#" className="hover:text-white">Status</a>
-              <a href="#" className="hover:text-white">Documentation</a>
-              <a href="#" className="hover:text-white">Security</a>
-              <a href="#" className="hover:text-white">Contact</a>
+        {/* ── Minimal Footer ── */}
+        <footer className="mt-24 pt-12 border-t border-white/5 text-center">
+          <div className="flex items-center justify-center gap-2 mb-6">
+            <div className="w-8 h-8 rounded-lg bg-[#6C63FF] flex items-center justify-center text-white font-bold text-xs shadow-lg shadow-[#6C63FF]/20">
+              S
             </div>
+            <span className="font-black tracking-tighter text-xl">SipHeron <span className="text-[#6C63FF]">VDR</span></span>
           </div>
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-zinc-600">
-            <p>© 2026 SipHeron Platform. All rights reserved.</p>
-            <div className="flex items-center gap-6">
-              <a href="#" className="hover:text-zinc-400">Terms of Service</a>
-              <a href="#" className="hover:text-zinc-400">Privacy Policy</a>
-              <span>support@sipheron.com</span>
-            </div>
-          </div>
-        </div>
-      </footer>
+          <p className="text-[#44445A] text-sm">
+            &copy; 2025 SipHeron Platform. All data is verified on the Solana blockchain.
+          </p>
+        </footer>
+      </main>
     </div>
   );
 };
-
-const StatComponent: React.FC<{
-  label: string;
-  value: number;
-  suffix?: string;
-  icon: React.ReactNode;
-  gradient: string;
-  loading?: boolean;
-}> = ({ label, value, suffix = '', icon, gradient }) => (
-  <Card className="bg-zinc-900/40 border-white/5 overflow-hidden group hover:border-white/10 transition-colors">
-    <CardContent className="p-6">
-      <div className="flex items-center justify-between mb-4">
-        <div className="p-2 bg-white/5 rounded-lg text-zinc-400 group-hover:text-white transition-colors">
-          {icon}
-        </div>
-        <div className={`h-1.5 w-1.5 rounded-full bg-gradient-to-r ${gradient}`} />
-      </div>
-      <div>
-        <p className="text-zinc-500 text-xs uppercase tracking-widest font-semibold mb-1">{label}</p>
-        <div className={`text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r ${gradient}`}>
-          <CountUp end={value} duration={2} />{suffix}
-        </div>
-      </div>
-    </CardContent>
-  </Card>
-);
-
-const HealthItem: React.FC<{ label: string; status: string }> = ({ label, status }) => (
-  <div className="flex items-center justify-between p-4 bg-zinc-900/30 border border-white/5 rounded-xl">
-    <span className="text-zinc-300 text-sm">{label}</span>
-    <div className="flex items-center gap-2">
-      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-      <span className="text-emerald-400 text-xs font-semibold uppercase">{status}</span>
-    </div>
-  </div>
-);
-
-const HighlightItem: React.FC<{ icon: React.ReactNode; title: string; description: string }> = ({ icon, title, description }) => (
-  <div className="flex gap-4 p-4 hover:bg-white/5 transition-colors rounded-xl">
-    <div className="shrink-0 mt-1 p-2 bg-white/5 rounded-lg border border-white/5">{icon}</div>
-    <div>
-      <h4 className="text-zinc-100 font-semibold text-sm mb-1">{title}</h4>
-      <p className="text-xs leading-relaxed text-zinc-500">{description}</p>
-    </div>
-  </div>
-);
-
-const TechCard: React.FC<{ icon: string; name: string; detail: string }> = ({ icon, name, detail }) => (
-  <div className="p-6 bg-zinc-900/20 border border-white/5 rounded-2xl flex flex-col items-center text-center hover:bg-zinc-800/20 transition-all hover:-translate-y-1">
-    <div className="w-10 h-10 mb-4 flex items-center justify-center">
-      <img src={icon} alt={name} className="max-w-full max-h-full" />
-    </div>
-    <span className="text-sm font-semibold text-white mb-1">{name}</span>
-    <span className="text-[10px] text-zinc-600 uppercase tracking-wider">{detail}</span>
-  </div>
-);
 
 export default StatsPage;

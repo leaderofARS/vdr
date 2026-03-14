@@ -81,8 +81,8 @@ const navItems = [
       }
     ]
   },
-  { label: 'Platform Stats', href: '/stats' },
   { label: 'Pricing', href: '/pricing' },
+  { label: 'Stats', href: '/stats' },
 ];
 
 const dropdownVariants = {

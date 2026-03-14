@@ -132,9 +132,9 @@ const AppRoutes: FC = () => {
         {/* Public Pages */}
         <Route path="/verify" element={<VerifyLandingPage />} />
         <Route path="/verify/:hash" element={<VerifyPage />} />
-        <Route path="/stats" element={<StatsPage />} />
         <Route path="/invite/:token" element={<InviteAcceptPage />} />
         <Route path="/pricing" element={<PricingPage />} />
+        <Route path="/stats" element={<StatsPage />} />
         
         {/* Legal Pages */}
         <Route path="/terms" element={<TermsPage />} />

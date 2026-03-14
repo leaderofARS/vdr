@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { CountUp } from '@/components/shared';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+import api from '@/utils/api';
+import { useState, useEffect } from 'react';
+import type { PublicStats } from '@/types/analytics';
 
 interface Testimonial {
   quote: string;
@@ -12,6 +11,7 @@ interface Testimonial {
   company: string;
   industry: string;
 }
+
 
 const testimonials: Testimonial[] = [
   {
@@ -41,30 +41,20 @@ const testimonials: Testimonial[] = [
 ];
 
 export const SocialProof: React.FC = () => {
-  const [liveStats, setLiveStats] = useState([
-    { key: 'totalHashes', value: 12847, label: 'Documents Anchored', suffix: '' },
-    { key: 'totalOrganizations', value: 284, label: 'Organizations', suffix: '' },
-    { key: 'avgConfirmationMs', value: 421, label: 'Average Confirmation Time', suffix: 'ms' },
-    { key: 'cost', value: 0.001, label: 'Average Cost Per Anchor', suffix: '', prefix: '$' },
-  ]);
+  const [liveStats, setLiveStats] = useState<PublicStats | null>(null);
 
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const res = await axios.get(`${API_URL}/api/stats`);
-        const data = res.data;
-        setLiveStats(prev => prev.map(stat => {
-          if (data[stat.key] !== undefined) {
-            return { ...stat, value: data[stat.key] };
-          }
-          return stat;
-        }));
-      } catch (err) {
-        console.error('Failed to fetch live stats:', err);
-      }
-    };
-    fetchStats();
+    api.get('/api/stats').then(res => {
+      setLiveStats(res.data);
+    }).catch(err => console.error('Failed to fetch social proof stats:', err));
   }, []);
+
+  const stats = [
+    { value: liveStats?.totalHashes ?? 12847, label: 'Documents Anchored', suffix: '' },
+    { value: liveStats?.totalOrganizations ?? 284, label: 'Organizations', suffix: '' },
+    { value: liveStats?.avgConfirmationMs ?? 421, label: 'Average Confirmation Time', suffix: 'ms' },
+    { value: 0.001, label: 'Average Cost Per Anchor', suffix: '', prefix: '$' },
+  ];
 
   return (
     <section className="relative py-24 overflow-hidden">
@@ -88,7 +78,7 @@ export const SocialProof: React.FC = () => {
 
         {/* Stats Row */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-          {liveStats.map((stat) => (
+          {stats.map((stat) => (
             <div
               key={stat.label}
               className="text-center p-6 rounded-xl bg-sipheron-surface border border-white/[0.06]"
@@ -122,11 +112,14 @@ export const SocialProof: React.FC = () => {
                 boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.05)',
               }}
             >
+              {/* Quote */}
               <p className="text-sm text-sipheron-text-secondary leading-relaxed mb-6">
                 &ldquo;{testimonial.quote}&rdquo;
               </p>
 
+              {/* Author */}
               <div className="flex items-center gap-3">
+                {/* Avatar */}
                 <div
                   className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold"
                   style={{
@@ -137,6 +130,7 @@ export const SocialProof: React.FC = () => {
                   {testimonial.initials}
                 </div>
 
+                {/* Info */}
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium text-sipheron-text-primary truncate">
                     {testimonial.name}
@@ -146,6 +140,7 @@ export const SocialProof: React.FC = () => {
                   </div>
                 </div>
 
+                {/* Industry Tag */}
                 <span className="px-2 py-0.5 rounded-full text-[10px] bg-white/5 text-sipheron-text-muted">
                   {testimonial.industry}
                 </span>

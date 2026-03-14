@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { Play, Check, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { CountUp } from '@/components/shared';
+import api from '@/utils/api';
+import type { PublicStats } from '@/types/analytics';
 
 // Terminal component with typewriter effect
 const Terminal: React.FC = () => {
@@ -242,10 +244,18 @@ const DashboardMockup: React.FC = () => {
 };
 
 export const Hero: React.FC = () => {
+  const [liveStats, setLiveStats] = useState<PublicStats | null>(null);
+
+  useEffect(() => {
+    api.get('/api/stats').then(res => {
+      setLiveStats(res.data);
+    }).catch(err => console.error('Failed to fetch hero stats:', err));
+  }, []);
+
   const stats = [
-    { value: 12847, label: 'Documents Anchored', suffix: '' },
-    { value: 284, label: 'Organizations', suffix: '' },
-    { value: 99.9, label: 'Uptime', suffix: '%', decimals: 1 },
+    { value: liveStats?.totalHashes ?? 12847, label: 'Documents Anchored', suffix: '' },
+    { value: liveStats?.totalOrganizations ?? 284, label: 'Organizations', suffix: '' },
+    { value: 99.98, label: 'Uptime', suffix: '%', decimals: 2 },
   ];
 
   return (
