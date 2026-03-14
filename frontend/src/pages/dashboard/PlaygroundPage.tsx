@@ -26,21 +26,21 @@ import api from '@/utils/api';
 const ENDPOINTS = [
   {
     id: 'verify',
-    name: 'Verify Hash',
-    method: 'POST',
-    path: '/verify',
-    description: 'Verify if a hash exists on the Solana blockchain',
-    defaultBody: { hash: '' },
+    name: 'Verify Hash (Public)',
+    method: 'GET',
+    path: '/api/hashes/public/:hash',
+    description: 'Public verification - check if hash exists without authentication',
+    defaultBody: null,
     params: [
       { name: 'hash', type: 'string', required: true, description: 'SHA-256 hash to verify (64 hex characters)' }
     ]
   },
   {
     id: 'record',
-    name: 'Get Record',
+    name: 'Get Record Detail',
     method: 'GET',
-    path: '/record/:hash',
-    description: 'Retrieve full record details by hash',
+    path: '/api/hashes/:hash',
+    description: 'Get full record details for your organization',
     defaultBody: null,
     params: [
       { name: 'hash', type: 'string', required: true, description: 'SHA-256 hash to lookup' }
@@ -70,31 +70,24 @@ const ENDPOINTS = [
 ];
 
 const CODE_EXAMPLES: Record<string, string> = {
-  javascript: `// Using fetch
-const response = await fetch('https://api.sipheron.com/verify', {
-  method: 'POST',
-  headers: { 
-    'Content-Type': 'application/json',
-    'Authorization': 'Bearer YOUR_API_KEY'
-  },
-  body: JSON.stringify({ hash: 'f9f5a703...' })
+  javascript: `// Using fetch - Public verification
+const response = await fetch('https://api.sipheron.com/api/hashes/public/abc123...', {
+  method: 'GET',
+  headers: { 'Content-Type': 'application/json' }
 });
 const data = await response.json();
 console.log(data.verified);`,
-  python: `# Using requests
+  python: `# Using requests - Public verification
 import requests
 
-response = requests.post(
-    'https://api.sipheron.com/verify',
-    headers={'Authorization': 'Bearer YOUR_API_KEY'},
-    json={'hash': 'f9f5a703...'}
+response = requests.get(
+    'https://api.sipheron.com/api/hashes/public/abc123...',
+    headers={'Content-Type': 'application/json'}
 )
 data = response.json()
 print(data['verified'])`,
-  curl: `curl -X POST https://api.sipheron.com/verify \\
-  -H "Content-Type: application/json" \\
-  -H "Authorization: Bearer YOUR_API_KEY" \\
-  -d '{"hash": "f9f5a703..."}'`
+  curl: `curl -X GET https://api.sipheron.com/api/hashes/public/abc123... \\
+  -H "Content-Type: application/json"`
 };
 
 export const PlaygroundPage: FC = () => {
@@ -132,7 +125,16 @@ export const PlaygroundPage: FC = () => {
       const path = selectedEndpoint.path.replace(/:hash/g, hashInput || 'example_hash');
 
       if (selectedEndpoint.method === 'GET') {
-        res = await api.get(path);
+        // For GET requests, parse requestBody as query params if provided
+        let params = {};
+        if (requestBody && requestBody !== '{}') {
+          try {
+            params = JSON.parse(requestBody);
+          } catch (e) {
+            // Invalid JSON, ignore
+          }
+        }
+        res = await api.get(path, { params });
       } else {
         const body = requestBody ? JSON.parse(requestBody) : {};
         if (hashInput) body.hash = hashInput;
@@ -144,7 +146,7 @@ export const PlaygroundPage: FC = () => {
     } catch (err: any) {
       setError({
         status: err.response?.status || 500,
-        message: err.response?.data?.message || err.message,
+        message: err.response?.data?.error || err.response?.data?.message || err.message,
         data: err.response?.data as Record<string, unknown>
       });
     } finally {
@@ -294,7 +296,7 @@ export const PlaygroundPage: FC = () => {
             </h3>
 
             {/* Hash Input */}
-            {(selectedEndpoint.id === 'verify' || selectedEndpoint.id === 'record') && (
+            {(selectedEndpoint.id === 'verify' || selectedEndpoint.id === 'record' || selectedEndpoint.path.includes(':hash')) && (
               <div className="mb-4">
                 <label className="text-xs font-medium text-sipheron-text-muted uppercase tracking-wider mb-2 block">
                   Hash
@@ -317,8 +319,25 @@ export const PlaygroundPage: FC = () => {
               </div>
             )}
 
-            {/* JSON Body Editor */}
-            {selectedEndpoint.defaultBody && (
+            {/* Query Params Editor for GET requests */}
+            {selectedEndpoint.method === 'GET' && selectedEndpoint.params.length > 0 && (
+              <div>
+                <label className="text-xs font-medium text-sipheron-text-muted uppercase tracking-wider mb-2 block">
+                  Query Parameters (JSON)
+                </label>
+                <textarea
+                  value={requestBody}
+                  onChange={(e) => setRequestBody(e.target.value)}
+                  rows={4}
+                  placeholder='{"page": 1, "limit": 20}'
+                  className="w-full bg-sipheron-base border border-white/[0.06] rounded-xl p-4 text-sm font-mono text-sipheron-text-primary focus:outline-none focus:border-sipheron-purple/50 resize-none"
+                  spellCheck={false}
+                />
+              </div>
+            )}
+
+            {/* JSON Body Editor for POST requests */}
+            {selectedEndpoint.method === 'POST' && selectedEndpoint.defaultBody && (
               <div>
                 <label className="text-xs font-medium text-sipheron-text-muted uppercase tracking-wider mb-2 block">
                   Request Body (JSON)
