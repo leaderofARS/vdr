@@ -19,7 +19,6 @@ import {
 import { CountUp } from '@/components/shared/CountUp';
 import type { PublicStats, TimeseriesPoint } from '@/types/analytics';
 import api from '@/utils/api';
-import { Navbar } from '@/sections/landing/Navbar';
 
 export const StatsPage: React.FC = () => {
   const [stats, setStats] = useState<PublicStats | null>(null);
@@ -59,7 +58,6 @@ export const StatsPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#050510] text-[#F0F0FF] selection:bg-[#6C63FF]/30">
-      <Navbar />
 
       {/* ── Progress Bar ── */}
       <div className="fixed top-0 left-0 w-full h-[1px] bg-white/5 z-[200]">
@@ -327,18 +325,6 @@ export const StatsPage: React.FC = () => {
           </motion.div>
         </div>
 
-        {/* ── Minimal Footer ── */}
-        <footer className="mt-24 pt-12 border-t border-white/5 text-center">
-          <div className="flex items-center justify-center gap-2 mb-6">
-            <div className="w-8 h-8 rounded-lg bg-[#6C63FF] flex items-center justify-center text-white font-bold text-xs shadow-lg shadow-[#6C63FF]/20">
-              S
-            </div>
-            <span className="font-black tracking-tighter text-xl">SipHeron <span className="text-[#6C63FF]">VDR</span></span>
-          </div>
-          <p className="text-[#44445A] text-sm">
-            &copy; 2025 SipHeron Platform. All data is verified on the Solana blockchain.
-          </p>
-        </footer>
       </main>
     </div>
   );
