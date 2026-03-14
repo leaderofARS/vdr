@@ -155,7 +155,7 @@ type Permission =
 
       <div className="flex items-center gap-2 mb-4">
         <MethodBadge method="POST" />
-        <code className="text-purple-300 font-mono text-sm">/keys</code>
+        <code className="text-purple-300 font-mono text-sm">/dashboard/api/v1/keys</code>
       </div>
 
       <h3 id="request-body" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Request Body</h3>
@@ -205,7 +205,7 @@ type Permission =
       </div>
 
       <h3 id="request-example" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Request Example</h3>
-      <CodeBlock code={`curl -X POST https://api.sipheron.io/v1/keys \\
+      <CodeBlock code={`curl -X POST https://api.sipheron.com/dashboard/api/v1/keys \\
   -H "Authorization: Bearer {your_admin_key}" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -253,7 +253,7 @@ type Permission =
 
       <div className="flex items-center gap-2 mb-4">
         <MethodBadge method="GET" />
-        <code className="text-purple-300 font-mono text-sm">/keys</code>
+        <code className="text-purple-300 font-mono text-sm">/dashboard/api/v1/keys</code>
       </div>
 
       <h3 id="query-parameters" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Query Parameters</h3>
@@ -297,7 +297,7 @@ type Permission =
       </div>
 
       <h3 id="request-example" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Request Example</h3>
-      <CodeBlock code={`curl -X GET "https://api.sipheron.io/v1/keys?status=active&limit=50" \\
+      <CodeBlock code={`curl -X GET "https://api.sipheron.com/dashboard/api/v1/keys?status=active&limit=50" \\
   -H "Authorization: Bearer {your_admin_key}"`} />
 
       <h3 id="response" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Response</h3>
@@ -337,7 +337,7 @@ type Permission =
 
       <div className="flex items-center gap-2 mb-4">
         <MethodBadge method="GET" />
-        <code className="text-purple-300 font-mono text-sm">/keys/:id</code>
+        <code className="text-purple-300 font-mono text-sm">/dashboard/api/v1/keys/:id</code>
       </div>
 
       <h3 id="url-parameters" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">URL Parameters</h3>
@@ -396,7 +396,7 @@ type Permission =
 
       <div className="flex items-center gap-2 mb-4">
         <MethodBadge method="PATCH" />
-        <code className="text-purple-300 font-mono text-sm">/keys/:id</code>
+        <code className="text-purple-300 font-mono text-sm">/dashboard/api/v1/keys/:id</code>
       </div>
 
       <h3 id="url-parameters" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">URL Parameters</h3>
@@ -462,7 +462,7 @@ type Permission =
       </div>
 
       <h3 id="request-example" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Request Example</h3>
-      <CodeBlock code={`curl -X PATCH https://api.sipheron.io/v1/keys/key_abc123xyz789 \\
+      <CodeBlock code={`curl -X PATCH https://api.sipheron.com/dashboard/api/v1/keys/key_abc123xyz789 \\
   -H "Authorization: Bearer {your_admin_key}" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -498,11 +498,11 @@ type Permission =
 
       <div className="flex items-center gap-2 mb-4">
         <MethodBadge method="DELETE" />
-        <code className="text-purple-300 font-mono text-sm">/keys/:id</code>
+        <code className="text-purple-300 font-mono text-sm">/dashboard/api/v1/keys/:id</code>
       </div>
 
       <h3 id="request-example" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Request Example</h3>
-      <CodeBlock code={`curl -X DELETE https://api.sipheron.io/v1/keys/key_abc123xyz789 \\
+      <CodeBlock code={`curl -X DELETE https://api.sipheron.com/dashboard/api/v1/keys/key_abc123xyz789 \\
   -H "Authorization: Bearer {your_admin_key}" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -564,7 +564,7 @@ ADMIN_KEY="{your_admin_key_here}"
 
 # Step 1: Create new key
 echo "Creating new API key..."
-NEW_KEY_RESPONSE=$(curl -s -X POST https://api.sipheron.io/v1/keys \\
+NEW_KEY_RESPONSE=$(curl -s -X POST https://api.sipheron.com/dashboard/api/v1/keys \\
   -H "Authorization: Bearer $ADMIN_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -580,7 +580,7 @@ echo "Update your .env file with: API_KEY=$NEW_KEY"
 
 # After deployment, revoke old key
 echo "Revoking old key: $OLD_KEY_ID"
-curl -X DELETE https://api.sipheron.io/v1/keys/$OLD_KEY_ID \\
+curl -X DELETE https://api.sipheron.com/dashboard/api/v1/keys/$OLD_KEY_ID \\
   -H "Authorization: Bearer $ADMIN_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{"reason": "Scheduled rotation"}'

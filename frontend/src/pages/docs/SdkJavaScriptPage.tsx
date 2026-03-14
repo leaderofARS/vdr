@@ -43,7 +43,7 @@ npm install @sipheron/vdr-sdk
 yarn add @sipheron/vdr-sdk
 
 # CDN (browser)
-<script src="https://cdn.sipheron.io/sdk/v2/sipheron-vdr.min.js"></script>`} />
+<script src="https://cdn.sipheron.com/sdk/v2/sipheron-vdr.min.js"></script>`} />
 
       <h2 id="initialization" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
         Initialization

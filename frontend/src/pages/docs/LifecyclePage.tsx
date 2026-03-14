@@ -108,7 +108,7 @@ stateDiagram-v2
       </ul>
 
       <CodeBlock code={`// Anchor creation request
-POST /v1/anchors
+POST /dashboard/api/v1/anchors
 {
   "hash": "0x7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa5d007f1bfa4d9...",
   "filename": "contract-v2.pdf",
@@ -166,7 +166,7 @@ graph LR
 
       <h3 id="staging-configuration" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Staging Configuration</h3>
       <CodeBlock code={`// Stage multiple anchors
-POST /v1/anchors/stage
+POST /dashboard/api/v1/anchors/stage
 {
   "anchor_ids": [
     "anchor_abc123",
@@ -504,7 +504,7 @@ await retryWithBackoff(
       </p>
 
       <CodeBlock code={`// Create new version with parent reference
-POST /v1/anchors
+POST /dashboard/api/v1/anchors
 {
   "hash": "0x9a2c4e8f1b3d5a7c9e0f2a4b6c8d0e1f3a5b7c9d1e3f5a7b9c1d3e5f7a9b1c3",
   "filename": "contract-v3.pdf",
@@ -577,7 +577,7 @@ POST /v1/anchors
       </p>
 
       <CodeBlock code={`// Configure webhook for state transitions
-POST /v1/webhooks
+POST /dashboard/api/v1/webhooks
 {
   "url": "https://your-app.com/webhooks/sipheron",
   "events": [

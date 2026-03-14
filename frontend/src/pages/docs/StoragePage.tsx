@@ -569,7 +569,7 @@ graph TD
       </p>
 
       <CodeBlock code={`// Export all user data (GDPR Article 20)
-GET /v1/user/data-export
+GET /dashboard/api/v1/user/data-export
 Authorization: Bearer YOUR_API_KEY
 
 // Response - complete data portability

@@ -135,7 +135,7 @@ sipheron-vdr link revoke --hash 0x7f83b165... --all`} />
 LINK=$(sipheron-vdr link generate 0x7f83b165... --expires 30d --json | jq -r '.url')
 echo "Share this link with your client: $LINK"
 
-# Output: https://app.sipheron.io/verify/abc123-def456`} />
+# Output: https://app.sipheron.com/verify/abc123-def456`} />
 
       <h3 id="secure-board-document" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Secure Board Document</h3>
       <CodeBlock code={`# Password-protected link for sensitive board materials
@@ -147,10 +147,10 @@ sipheron-vdr link generate 0x7f83b165... \\
       <h2 id="url-structure" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
         URL Structure
       </h2>
-      <CodeBlock code={`https://app.sipheron.io/verify/{link-id}
+      <CodeBlock code={`https://app.sipheron.com/verify/{link-id}
 
 # Example
-https://app.sipheron.io/verify/abc123-def456-ghi789
+https://app.sipheron.com/verify/abc123-def456-ghi789
 
 # With custom domain (enterprise)
 https://verify.yourcompany.com/abc123-def456`} language="text" />

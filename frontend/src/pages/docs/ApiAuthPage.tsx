@@ -55,7 +55,7 @@ const ApiAuthPage: React.FC = () => {
 
       <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg p-6 mb-12">
         <h3 id="base-url" className="text-lg font-semibold text-white mb-2 scroll-mt-24">Base URL</h3>
-        <CodeBlock code="https://api.sipheron.io/v1" />
+        <CodeBlock code="https://api.sipheron.com/dashboard/api/v1" />
       </div>
 
       {/* Bearer Token Authentication */}
@@ -72,7 +72,7 @@ const ApiAuthPage: React.FC = () => {
       <CodeBlock code="Authorization: Bearer {YOUR_API_KEY}" />
 
       <h3 id="bearer-example-request" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Example Request</h3>
-      <CodeBlock code={`curl -X GET https://api.sipheron.io/v1/hashes \\
+      <CodeBlock code={`curl -X GET https://api.sipheron.com/dashboard/api/v1/hashes \\
   -H "Authorization: Bearer {'{token}'}" \\
   -H "Content-Type: application/json"`} />
 
@@ -103,7 +103,7 @@ const headers: AuthHeaders = {
       <CodeBlock code="X-API-Key: {YOUR_API_KEY}" />
 
       <h3 id="api-key-example-request" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Example Request</h3>
-      <CodeBlock code={`curl -X GET https://api.sipheron.io/v1/hashes \\
+      <CodeBlock code={`curl -X GET https://api.sipheron.com/dashboard/api/v1/hashes \\
   -H "X-API-Key: {'{your_api_key}'}" \\
   -H "Content-Type: application/json"`} />
 
@@ -125,7 +125,7 @@ const headers: AuthHeaders = {
 
       <div className="flex items-center gap-2 mb-4">
         <MethodBadge method="POST" />
-        <code className="text-purple-300 font-mono text-sm">/auth/refresh</code>
+        <code className="text-purple-300 font-mono text-sm">/dashboard/api/v1/auth/refresh</code>
       </div>
 
       <h3 id="refresh-headers" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Request Headers</h3>
@@ -157,7 +157,7 @@ const headers: AuthHeaders = {
       </div>
 
       <h3 id="refresh-example" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Request Example</h3>
-      <CodeBlock code={`curl -X POST https://api.sipheron.io/v1/auth/refresh \\
+      <CodeBlock code={`curl -X POST https://api.sipheron.com/dashboard/api/v1/auth/refresh \\
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." \\
   -H "X-Refresh-Token: rt_abc123xyz789..." \\
   -H "Content-Type: application/json"`} />
@@ -225,7 +225,7 @@ const headers: AuthHeaders = {
 
       <div className="flex items-center gap-2 mb-4">
         <MethodBadge method="POST" />
-        <code className="text-purple-300 font-mono text-sm">/auth/revoke</code>
+        <code className="text-purple-300 font-mono text-sm">/dashboard/api/v1/auth/revoke</code>
       </div>
 
       <h3 id="request-body" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Request Body</h3>
@@ -257,7 +257,7 @@ const headers: AuthHeaders = {
       </div>
 
       <h3 id="request-example" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Request Example</h3>
-      <CodeBlock code={`curl -X POST https://api.sipheron.io/v1/auth/revoke \\
+      <CodeBlock code={`curl -X POST https://api.sipheron.com/dashboard/api/v1/auth/revoke \\
   -H "Authorization: Bearer sk_live_51HYs2jK8QJ4mP2v9..." \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -405,7 +405,7 @@ const headers: AuthHeaders = {
   "variable": [
     {
       "key": "base_url",
-      "value": "https://api.sipheron.io/v1"
+      "value": "https://api.sipheron.com/dashboard/api/v1"
     },
     {
       "key": "access_token",

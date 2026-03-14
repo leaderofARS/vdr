@@ -38,10 +38,10 @@ const SupportPage: React.FC = () => {
         Contact Support
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-        <a href="mailto:support@sipheron.io" className="p-6 rounded-xl border border-white/10 bg-white/5 hover:border-purple-500/30 hover:bg-white/[0.07] transition-all group">
+        <a href="mailto:support@sipheron.com" className="p-6 rounded-xl border border-white/10 bg-white/5 hover:border-purple-500/30 hover:bg-white/[0.07] transition-all group">
           <Mail className="w-8 h-8 text-purple-400 mb-4 group-hover:scale-110 transition-transform" />
           <h3 id="email-support" className="text-lg font-bold text-white mb-2 scroll-mt-24">Email Support</h3>
-          <p className="text-sm text-gray-400">support@sipheron.io</p>
+          <p className="text-sm text-gray-400">support@sipheron.com</p>
           <p className="text-xs text-gray-500 mt-2">Response within 24 hours</p>
         </a>
         <a href="https://discord.gg/sipheron" target="_blank" rel="noopener noreferrer" className="p-6 rounded-xl border border-white/10 bg-white/5 hover:border-purple-500/30 hover:bg-white/[0.07] transition-all group">
@@ -149,7 +149,7 @@ sipheron-vdr status network --network mainnet
 
 # Check rate limits
 curl -H "Authorization: Bearer YOUR_API_KEY" \\
-  https://api.sipheron.io/v1/usage \\
+  https://api.sipheron.com/dashboard/api/v1/usage \\
   -v 2>&1 | grep -i rate`} />
 
       <h2 id="common-issues" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
@@ -226,13 +226,13 @@ curl -H "Authorization: Bearer YOUR_API_KEY" \\
         Check our status page for real-time information about API and network availability:
       </p>
       <a 
-        href="https://status.sipheron.io" 
+        href="https://status.sipheron.com" 
         target="_blank" 
         rel="noopener noreferrer"
         className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-500/20 text-purple-400 hover:bg-purple-500/30 transition-colors"
       >
         <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-        status.sipheron.io
+        status.sipheron.com
       </a>
 
       <h2 id="enterprise" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
@@ -264,7 +264,7 @@ curl -H "Authorization: Bearer YOUR_API_KEY" \\
         </li>
       </ul>
       <a 
-        href="mailto:enterprise@sipheron.io" 
+        href="mailto:enterprise@sipheron.com" 
         className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors"
       >
         <Mail className="w-4 h-4" />

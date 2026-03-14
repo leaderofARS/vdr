@@ -40,7 +40,7 @@ const GuideEnterprisePage: React.FC = () => {
         Enterprise organizations support multiple teams, custom roles, and centralized billing.
       </p>
       <CodeBlock code={`# Create organization
-curl -X POST https://api.sipheron.io/v1/organizations \\
+curl -X POST https://api.sipheron.com/dashboard/api/v1/organizations \\
   -H "Authorization: Bearer TOKEN" \\
   -d '{
     "name": "Acme Corp",
@@ -54,7 +54,7 @@ curl -X POST https://api.sipheron.io/v1/organizations \\
         Enable SAML 2.0 or OIDC single sign-on for your organization.
       </p>
       <CodeBlock code={`# Configure SAML SSO
-curl -X PATCH https://api.sipheron.io/v1/organizations/ID/sso \\
+curl -X PATCH https://api.sipheron.com/dashboard/api/v1/organizations/ID/sso \\
   -H "Authorization: Bearer TOKEN" \\
   -d '{
     "provider": "saml",

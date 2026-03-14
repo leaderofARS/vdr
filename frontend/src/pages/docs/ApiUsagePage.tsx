@@ -38,12 +38,12 @@ const ApiUsagePage: React.FC = () => {
       </h2>
       <div className="flex items-center gap-2 mb-4">
         <span className="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs font-mono rounded">GET</span>
-        <code className="text-purple-300 font-mono text-sm">/usage</code>
+        <code className="text-purple-300 font-mono text-sm">/dashboard/api/v1/usage</code>
       </div>
       <p className="text-gray-300 leading-relaxed mb-4">
         Get current billing period usage and quota information.
       </p>
-      <CodeBlock code={`curl https://api.sipheron.io/v1/usage \\
+      <CodeBlock code={`curl https://api.sipheron.com/dashboard/api/v1/usage \\
   -H "Authorization: Bearer YOUR_API_KEY"`} />
 
       <h3 id="response" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Response</h3>
@@ -82,18 +82,18 @@ const ApiUsagePage: React.FC = () => {
       </h2>
       <div className="flex items-center gap-2 mb-4">
         <span className="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs font-mono rounded">GET</span>
-        <code className="text-purple-300 font-mono text-sm">/usage/history</code>
+        <code className="text-purple-300 font-mono text-sm">/dashboard/api/v1/usage/history</code>
       </div>
       <CodeBlock code={`# Daily breakdown for current month
-curl https://api.sipheron.io/v1/usage/history \\
+curl https://api.sipheron.com/dashboard/api/v1/usage/history \\
   -H "Authorization: Bearer YOUR_API_KEY"
 
 # Specific date range
-curl "https://api.sipheron.io/v1/usage/history?from=2024-01-01&to=2024-01-31" \\
+curl "https://api.sipheron.com/dashboard/api/v1/usage/history?from=2024-01-01&to=2024-01-31" \\
   -H "Authorization: Bearer YOUR_API_KEY"
 
 # Weekly aggregation
-curl "https://api.sipheron.io/v1/usage/history?aggregation=week" \\
+curl "https://api.sipheron.com/dashboard/api/v1/usage/history?aggregation=week" \\
   -H "Authorization: Bearer YOUR_API_KEY"`} />
 
       <h3 id="query-parameters" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Query Parameters</h3>
@@ -131,9 +131,9 @@ curl "https://api.sipheron.io/v1/usage/history?aggregation=week" \\
       </h2>
       <div className="flex items-center gap-2 mb-4">
         <span className="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs font-mono rounded">GET</span>
-        <code className="text-purple-300 font-mono text-sm">/analytics/anchors</code>
+        <code className="text-purple-300 font-mono text-sm">/dashboard/api/v1/analytics/anchors</code>
       </div>
-      <CodeBlock code={`curl https://api.sipheron.io/v1/analytics/anchors \\
+      <CodeBlock code={`curl https://api.sipheron.com/dashboard/api/v1/analytics/anchors \\
   -H "Authorization: Bearer YOUR_API_KEY"`} />
 
       <h3 id="response" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">Response</h3>
@@ -162,21 +162,21 @@ curl "https://api.sipheron.io/v1/usage/history?aggregation=week" \\
       </h2>
       <div className="flex items-center gap-2 mb-4">
         <span className="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs font-mono rounded">GET</span>
-        <code className="text-purple-300 font-mono text-sm">/analytics/verifications</code>
+        <code className="text-purple-300 font-mono text-sm">/dashboard/api/v1/analytics/verifications</code>
       </div>
-      <CodeBlock code={`curl https://api.sipheron.io/v1/analytics/verifications \\
+      <CodeBlock code={`curl https://api.sipheron.com/dashboard/api/v1/analytics/verifications \\
   -H "Authorization: Bearer YOUR_API_KEY"`} />
 
       <h2 id="export" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
         Export Usage Data
       </h2>
       <CodeBlock code={`# Export as CSV
-curl "https://api.sipheron.io/v1/usage/history?format=csv" \\
+curl "https://api.sipheron.com/dashboard/api/v1/usage/history?format=csv" \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   --output usage-report.csv
 
 # Export as JSON
-curl "https://api.sipheron.io/v1/usage/history?format=json" \\
+curl "https://api.sipheron.com/dashboard/api/v1/usage/history?format=json" \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   --output usage-report.json`} />
 

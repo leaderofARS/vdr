@@ -195,7 +195,7 @@ graph LR
       </p>
 
       <CodeBlock code={`// Self-verification via API
-GET /v1/anchors/anchor_abc123/verify
+GET /dashboard/api/v1/anchors/anchor_abc123/verify
 Authorization: Bearer YOUR_API_KEY
 
 // Response
@@ -316,7 +316,7 @@ graph TD
       </ul>
 
       <CodeBlock code={`// Generate public verification link
-POST /v1/anchors/anchor_abc123/links
+POST /dashboard/api/v1/anchors/anchor_abc123/links
 {
   "type": "public",
   "expires_in_days": 30,
@@ -329,9 +329,9 @@ POST /v1/anchors/anchor_abc123/links
 // Response
 {
   "link_id": "link_def456",
-  "url": "https://verify.sipheron.io/v/def456#hash=0x7f83b165...",
-  "short_url": "https://sipheron.io/v/def456",
-  "qr_code": "https://api.sipheron.io/qr/def456.png",
+  "url": "https://verify.sipheron.com/v/def456#hash=0x7f83b165...",
+  "short_url": "https://sipheron.com/v/def456",
+  "qr_code": "https://api.sipheron.com/dashboard/api/qr/def456.png",
   "expires_at": "2024-02-14T09:23:45.123Z",
   "uses_remaining": 100
 }`} language="json" />
@@ -388,7 +388,7 @@ graph TD
     "timestamp": 1705313025
   },
   "links": {
-    "verify": "https://verify.sipheron.io/v/def456",
+    "verify": "https://verify.sipheron.com/v/def456",
     "explorer": "https://explorer.solana.com/tx/5UfgJ5X..."
   }
 }`} language="json" />
@@ -427,7 +427,7 @@ graph TD
       </div>
 
       <CodeBlock code={`// Batch anchor with Merkle tree
-POST /v1/anchors/batch
+POST /dashboard/api/v1/anchors/batch
 {
   "documents": [
     { "id": "doc_001", "hash": "0xabc123..." },
@@ -453,7 +453,7 @@ POST /v1/anchors/batch
 }
 
 // Verify single document from batch
-POST /v1/anchors/batch_xyz789/verify
+POST /dashboard/api/v1/anchors/batch_xyz789/verify
 {
   "document_id": "doc_001",
   "document_hash": "0xabc123..."  // Recomputed locally
@@ -476,15 +476,15 @@ POST /v1/anchors/batch_xyz789/verify
 
       <h3 id="rest-api" className="text-lg font-semibold text-white mt-8 mb-3 scroll-mt-24">REST API</h3>
       <CodeBlock code={`// Basic verification
-GET /v1/anchors/:id/verify
+GET /dashboard/api/v1/anchors/:id/verify
 
 // With document upload (server-side hashing)
-POST /v1/anchors/:id/verify
+POST /dashboard/api/v1/anchors/:id/verify
 Content-Type: multipart/form-data
 file: <binary document data>
 
 // Verify by hash (no account required for public anchors)
-GET /v1/verify?hash=0x7f83b165...
+GET /dashboard/api/v1/verify?hash=0x7f83b165...
 
 // Response format
 {

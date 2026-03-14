@@ -36,7 +36,7 @@ const ApiReferencePage: React.FC = () => {
       <p className="text-xl text-gray-300 mb-12 leading-relaxed">
         Complete reference for the SipHeron REST API. The base URL for all API requests is:
       </p>
-      <CodeBlock code="https://api.sipheron.io/v1" />
+      <CodeBlock code="https://api.sipheron.com/dashboard/api/v1" />
 
       <h2 id="authentication" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
         Authentication
@@ -59,12 +59,12 @@ const ApiReferencePage: React.FC = () => {
       </h3>
       <div className="flex items-center gap-2 mb-4">
         <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs font-mono rounded">POST</span>
-        <code className="text-purple-300 font-mono text-sm">/hashes</code>
+        <code className="text-purple-300 font-mono text-sm">/dashboard/api/v1/hashes</code>
       </div>
       <p className="text-gray-300 leading-relaxed mb-4">
         Create a new hash anchor on the blockchain.
       </p>
-      <CodeBlock code={`curl -X POST https://api.sipheron.io/v1/hashes \\
+      <CodeBlock code={`curl -X POST https://api.sipheron.com/dashboard/api/v1/hashes \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -124,12 +124,12 @@ const ApiReferencePage: React.FC = () => {
       </h3>
       <div className="flex items-center gap-2 mb-4">
         <span className="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs font-mono rounded">GET</span>
-        <code className="text-purple-300 font-mono text-sm">/hashes</code>
+        <code className="text-purple-300 font-mono text-sm">/dashboard/api/v1/hashes</code>
       </div>
       <p className="text-gray-300 leading-relaxed mb-4">
         Retrieve a paginated list of all hashes for your organization.
       </p>
-      <CodeBlock code={`curl https://api.sipheron.io/v1/hashes \\
+      <CodeBlock code={`curl https://api.sipheron.com/dashboard/api/v1/hashes \\
   -H "Authorization: Bearer YOUR_API_KEY"`} />
 
       <h4 className="text-sm font-semibold text-white mt-6 mb-2">Query Parameters</h4>
@@ -167,12 +167,12 @@ const ApiReferencePage: React.FC = () => {
       </h3>
       <div className="flex items-center gap-2 mb-4">
         <span className="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs font-mono rounded">GET</span>
-        <code className="text-purple-300 font-mono text-sm">/hashes/:id/verify</code>
+        <code className="text-purple-300 font-mono text-sm">/dashboard/api/v1/hashes/:id/verify</code>
       </div>
       <p className="text-gray-300 leading-relaxed mb-4">
         Verify that a provided hash matches the anchored hash on the blockchain.
       </p>
-      <CodeBlock code={`curl https://api.sipheron.io/v1/hashes/hash_abc123/verify \\
+      <CodeBlock code={`curl https://api.sipheron.com/dashboard/api/v1/hashes/hash_abc123/verify \\
   -H "Authorization: Bearer YOUR_API_KEY"`} />
 
       <h2 id="api-keys" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
@@ -184,9 +184,9 @@ const ApiReferencePage: React.FC = () => {
       </h3>
       <div className="flex items-center gap-2 mb-4">
         <span className="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs font-mono rounded">GET</span>
-        <code className="text-purple-300 font-mono text-sm">/keys</code>
+        <code className="text-purple-300 font-mono text-sm">/dashboard/api/v1/keys</code>
       </div>
-      <CodeBlock code={`curl https://api.sipheron.io/v1/keys \\
+      <CodeBlock code={`curl https://api.sipheron.com/dashboard/api/v1/keys \\
   -H "Authorization: Bearer YOUR_API_KEY"`} />
 
       <h3 id="create-key" className="text-xl font-semibold text-white mt-8 mb-3 scroll-mt-24">
@@ -194,9 +194,9 @@ const ApiReferencePage: React.FC = () => {
       </h3>
       <div className="flex items-center gap-2 mb-4">
         <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs font-mono rounded">POST</span>
-        <code className="text-purple-300 font-mono text-sm">/keys</code>
+        <code className="text-purple-300 font-mono text-sm">/dashboard/api/v1/keys</code>
       </div>
-      <CodeBlock code={`curl -X POST https://api.sipheron.io/v1/keys \\
+      <CodeBlock code={`curl -X POST https://api.sipheron.com/dashboard/api/v1/keys \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -213,9 +213,9 @@ const ApiReferencePage: React.FC = () => {
       </h3>
       <div className="flex items-center gap-2 mb-4">
         <span className="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs font-mono rounded">GET</span>
-        <code className="text-purple-300 font-mono text-sm">/organizations/:id</code>
+        <code className="text-purple-300 font-mono text-sm">/dashboard/api/v1/organizations/:id</code>
       </div>
-      <CodeBlock code={`curl https://api.sipheron.io/v1/organizations/org_abc123 \\
+      <CodeBlock code={`curl https://api.sipheron.com/dashboard/api/v1/organizations/org_abc123 \\
   -H "Authorization: Bearer YOUR_API_KEY"`} />
 
       <h3 id="org-usage" className="text-xl font-semibold text-white mt-8 mb-3 scroll-mt-24">
@@ -223,9 +223,9 @@ const ApiReferencePage: React.FC = () => {
       </h3>
       <div className="flex items-center gap-2 mb-4">
         <span className="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs font-mono rounded">GET</span>
-        <code className="text-purple-300 font-mono text-sm">/organizations/:id/usage</code>
+        <code className="text-purple-300 font-mono text-sm">/dashboard/api/v1/organizations/:id/usage</code>
       </div>
-      <CodeBlock code={`curl https://api.sipheron.io/v1/organizations/org_abc123/usage \\
+      <CodeBlock code={`curl https://api.sipheron.com/dashboard/api/v1/organizations/org_abc123/usage \\
   -H "Authorization: Bearer YOUR_API_KEY"`} />
 
       <h2 id="webhooks" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
@@ -237,9 +237,9 @@ const ApiReferencePage: React.FC = () => {
       </h3>
       <div className="flex items-center gap-2 mb-4">
         <span className="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs font-mono rounded">GET</span>
-        <code className="text-purple-300 font-mono text-sm">/webhooks</code>
+        <code className="text-purple-300 font-mono text-sm">/dashboard/api/v1/webhooks</code>
       </div>
-      <CodeBlock code={`curl https://api.sipheron.io/v1/webhooks \\
+      <CodeBlock code={`curl https://api.sipheron.com/dashboard/api/v1/webhooks \\
   -H "Authorization: Bearer YOUR_API_KEY"`} />
 
       <h3 id="create-webhook" className="text-xl font-semibold text-white mt-8 mb-3 scroll-mt-24">
@@ -247,9 +247,9 @@ const ApiReferencePage: React.FC = () => {
       </h3>
       <div className="flex items-center gap-2 mb-4">
         <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs font-mono rounded">POST</span>
-        <code className="text-purple-300 font-mono text-sm">/webhooks</code>
+        <code className="text-purple-300 font-mono text-sm">/dashboard/api/v1/webhooks</code>
       </div>
-      <CodeBlock code={`curl -X POST https://api.sipheron.io/v1/webhooks \\
+      <CodeBlock code={`curl -X POST https://api.sipheron.com/dashboard/api/v1/webhooks \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{

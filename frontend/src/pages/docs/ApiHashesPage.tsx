@@ -101,7 +101,7 @@ interface VerificationResult {
 
       <div className="flex items-center gap-2 mb-4">
         <MethodBadge method="POST" />
-        <code className="text-purple-300 font-mono text-sm">/hashes</code>
+        <code className="text-purple-300 font-mono text-sm">/dashboard/api/v1/hashes</code>
       </div>
 
       <h3 id="request-body" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Request Body</h3>
@@ -157,7 +157,7 @@ interface VerificationResult {
       </div>
 
       <h3 id="request-example" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Request Example</h3>
-      <CodeBlock code={`curl -X POST https://api.sipheron.io/v1/hashes \\
+      <CodeBlock code={`curl -X POST https://api.sipheron.com/dashboard/api/v1/hashes \\
   -H "Authorization: Bearer sk_live_51HYs2jK8QJ4mP2v9..." \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -219,7 +219,7 @@ interface VerificationResult {
 
       <div className="flex items-center gap-2 mb-4">
         <MethodBadge method="GET" />
-        <code className="text-purple-300 font-mono text-sm">/hashes</code>
+        <code className="text-purple-300 font-mono text-sm">/dashboard/api/v1/hashes</code>
       </div>
 
       <h3 id="query-parameters" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Query Parameters</h3>
@@ -299,7 +299,7 @@ interface VerificationResult {
       </div>
 
       <h3 id="request-example" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Request Example</h3>
-      <CodeBlock code={`curl -X GET "https://api.sipheron.io/v1/hashes?limit=10&network=mainnet&status=confirmed&sort_by=created_at&sort_order=desc" \\
+      <CodeBlock code={`curl -X GET "https://api.sipheron.com/dashboard/api/v1/hashes?limit=10&network=mainnet&status=confirmed&sort_by=created_at&sort_order=desc" \\
   -H "Authorization: Bearer sk_live_51HYs2jK8QJ4mP2v9..."`} />
 
       <h3 id="response" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Response</h3>
@@ -337,7 +337,7 @@ interface VerificationResult {
 
       <div className="flex items-center gap-2 mb-4">
         <MethodBadge method="GET" />
-        <code className="text-purple-300 font-mono text-sm">/hashes/:id</code>
+        <code className="text-purple-300 font-mono text-sm">/dashboard/api/v1/hashes/:id</code>
       </div>
 
       <h3 id="url-parameters" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">URL Parameters</h3>
@@ -363,7 +363,7 @@ interface VerificationResult {
       </div>
 
       <h3 id="request-example" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Request Example</h3>
-      <CodeBlock code={`curl -X GET https://api.sipheron.io/v1/hashes/hash_2vN8mKpQr5StUvWxYzAbCdEfGhIjKlMnOp \\
+      <CodeBlock code={`curl -X GET https://api.sipheron.com/dashboard/api/v1/hashes/hash_2vN8mKpQr5StUvWxYzAbCdEfGhIjKlMnOp \\
   -H "Authorization: Bearer sk_live_51HYs2jK8QJ4mP2v9..."`} />
 
       <h3 id="response" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Response</h3>
@@ -402,7 +402,7 @@ interface VerificationResult {
 
       <div className="flex items-center gap-2 mb-4">
         <MethodBadge method="GET" />
-        <code className="text-purple-300 font-mono text-sm">/hashes/:id/verify</code>
+        <code className="text-purple-300 font-mono text-sm">/dashboard/api/v1/hashes/:id/verify</code>
       </div>
 
       <h3 id="url-parameters" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">URL Parameters</h3>
@@ -450,7 +450,7 @@ interface VerificationResult {
       </div>
 
       <h3 id="request-example" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Request Example</h3>
-      <CodeBlock code={`curl -X GET "https://api.sipheron.io/v1/hashes/hash_2vN8mKpQr5StUvWxYzAbCdEfGhIjKlMnOp/verify?hash=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" \\
+      <CodeBlock code={`curl -X GET "https://api.sipheron.com/dashboard/api/v1/hashes/hash_2vN8mKpQr5StUvWxYzAbCdEfGhIjKlMnOp/verify?hash=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" \\
   -H "Authorization: Bearer sk_live_51HYs2jK8QJ4mP2v9..."`} />
 
       <h3 id="response" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Response</h3>
@@ -481,7 +481,7 @@ interface VerificationResult {
 
       <div className="flex items-center gap-2 mb-4">
         <MethodBadge method="DELETE" />
-        <code className="text-purple-300 font-mono text-sm">/hashes/:id</code>
+        <code className="text-purple-300 font-mono text-sm">/dashboard/api/v1/hashes/:id</code>
       </div>
 
       <h3 id="url-parameters" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">URL Parameters</h3>
@@ -529,7 +529,7 @@ interface VerificationResult {
       </div>
 
       <h3 id="request-example" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Request Example</h3>
-      <CodeBlock code={`curl -X DELETE https://api.sipheron.io/v1/hashes/hash_2vN8mKpQr5StUvWxYzAbCdEfGhIjKlMnOp \\
+      <CodeBlock code={`curl -X DELETE https://api.sipheron.com/dashboard/api/v1/hashes/hash_2vN8mKpQr5StUvWxYzAbCdEfGhIjKlMnOp \\
   -H "Authorization: Bearer sk_live_51HYs2jK8QJ4mP2v9..." \\
   -H "Content-Type: application/json" \\
   -d '{

@@ -145,7 +145,7 @@ const ChangelogPage: React.FC = () => {
       <ul className="space-y-2 text-gray-400 text-sm">
         <li>• GitHub Releases: <a href="https://github.com/leaderofARS/vdr/releases" className="text-purple-400 hover:text-purple-300">github.com/leaderofARS/vdr/releases</a></li>
         <li>• Developer Newsletter: Subscribe in your dashboard</li>
-        <li>• RSS Feed: <a href="https://sipheron.io/changelog.xml" className="text-purple-400 hover:text-purple-300">sipheron.io/changelog.xml</a></li>
+        <li>• RSS Feed: <a href="https://sipheron.com/changelog.xml" className="text-purple-400 hover:text-purple-300">sipheron.com/changelog.xml</a></li>
       </ul>
     </div>
   );

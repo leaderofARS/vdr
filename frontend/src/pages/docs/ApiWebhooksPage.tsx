@@ -38,9 +38,9 @@ const ApiWebhooksPage: React.FC = () => {
       </h2>
       <div className="flex items-center gap-2 mb-4">
         <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs font-mono rounded">POST</span>
-        <code className="text-purple-300 font-mono text-sm">/webhooks</code>
+        <code className="text-purple-300 font-mono text-sm">/dashboard/api/v1/webhooks</code>
       </div>
-      <CodeBlock code={`curl -X POST https://api.sipheron.io/v1/webhooks \\
+      <CodeBlock code={`curl -X POST https://api.sipheron.com/dashboard/api/v1/webhooks \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -76,9 +76,9 @@ const ApiWebhooksPage: React.FC = () => {
       </h2>
       <div className="flex items-center gap-2 mb-4">
         <span className="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs font-mono rounded">GET</span>
-        <code className="text-purple-300 font-mono text-sm">/webhooks</code>
+        <code className="text-purple-300 font-mono text-sm">/dashboard/api/v1/webhooks</code>
       </div>
-      <CodeBlock code={`curl https://api.sipheron.io/v1/webhooks \\
+      <CodeBlock code={`curl https://api.sipheron.com/dashboard/api/v1/webhooks \\
   -H "Authorization: Bearer YOUR_API_KEY"`} />
 
       <h2 id="get-webhook" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
@@ -86,9 +86,9 @@ const ApiWebhooksPage: React.FC = () => {
       </h2>
       <div className="flex items-center gap-2 mb-4">
         <span className="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs font-mono rounded">GET</span>
-        <code className="text-purple-300 font-mono text-sm">/webhooks/:id</code>
+        <code className="text-purple-300 font-mono text-sm">/dashboard/api/v1/webhooks/:id</code>
       </div>
-      <CodeBlock code={`curl https://api.sipheron.io/v1/webhooks/wh_abc123 \\
+      <CodeBlock code={`curl https://api.sipheron.com/dashboard/api/v1/webhooks/wh_abc123 \\
   -H "Authorization: Bearer YOUR_API_KEY"`} />
 
       <h2 id="update-webhook" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
@@ -96,9 +96,9 @@ const ApiWebhooksPage: React.FC = () => {
       </h2>
       <div className="flex items-center gap-2 mb-4">
         <span className="px-2 py-1 bg-yellow-500/20 text-yellow-400 text-xs font-mono rounded">PATCH</span>
-        <code className="text-purple-300 font-mono text-sm">/webhooks/:id</code>
+        <code className="text-purple-300 font-mono text-sm">/dashboard/api/v1/webhooks/:id</code>
       </div>
-      <CodeBlock code={`curl -X PATCH https://api.sipheron.io/v1/webhooks/wh_abc123 \\
+      <CodeBlock code={`curl -X PATCH https://api.sipheron.com/dashboard/api/v1/webhooks/wh_abc123 \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -111,9 +111,9 @@ const ApiWebhooksPage: React.FC = () => {
       </h2>
       <div className="flex items-center gap-2 mb-4">
         <span className="px-2 py-1 bg-red-500/20 text-red-400 text-xs font-mono rounded">DELETE</span>
-        <code className="text-purple-300 font-mono text-sm">/webhooks/:id</code>
+        <code className="text-purple-300 font-mono text-sm">/dashboard/api/v1/webhooks/:id</code>
       </div>
-      <CodeBlock code={`curl -X DELETE https://api.sipheron.io/v1/webhooks/wh_abc123 \\
+      <CodeBlock code={`curl -X DELETE https://api.sipheron.com/dashboard/api/v1/webhooks/wh_abc123 \\
   -H "Authorization: Bearer YOUR_API_KEY"`} />
 
       <h2 id="test-webhook" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
@@ -121,9 +121,9 @@ const ApiWebhooksPage: React.FC = () => {
       </h2>
       <div className="flex items-center gap-2 mb-4">
         <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs font-mono rounded">POST</span>
-        <code className="text-purple-300 font-mono text-sm">/webhooks/:id/test</code>
+        <code className="text-purple-300 font-mono text-sm">/dashboard/api/v1/webhooks/:id/test</code>
       </div>
-      <CodeBlock code={`curl -X POST https://api.sipheron.io/v1/webhooks/wh_abc123/test \\
+      <CodeBlock code={`curl -X POST https://api.sipheron.com/dashboard/api/v1/webhooks/wh_abc123/test \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{

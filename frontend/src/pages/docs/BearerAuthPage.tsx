@@ -186,7 +186,7 @@ sipheron-vdr auth login --email user@example.com --password YourPassword123 --js
         For programmatic access, exchange credentials directly for tokens:
       </p>
       <CodeBlock code={`# Exchange credentials for tokens
-curl -X POST https://api.sipheron.io/v1/auth/token \\
+curl -X POST https://api.sipheron.com/dashboard/api/v1/auth/token \\
   -H "Content-Type: application/json" \\
   -d '{
     "grant_type": "password",
@@ -231,12 +231,12 @@ curl -X POST https://api.sipheron.io/v1/auth/token \\
         with the Bearer scheme:
       </p>
       <CodeBlock code={`# Basic API request with Bearer token
-curl -X GET https://api.sipheron.io/v1/documents \\
+curl -X GET https://api.sipheron.com/dashboard/api/v1/documents \\
   -H "Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..." \\
   -H "Content-Type: application/json"
 
 # Anchor a document
-curl -X POST https://api.sipheron.io/v1/anchors \\
+curl -X POST https://api.sipheron.com/dashboard/api/v1/anchors \\
   -H "Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..." \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -252,7 +252,7 @@ curl -X POST https://api.sipheron.io/v1/anchors \\
       </h3>
       <CodeBlock code={`// Using native fetch
 const anchorDocument = async (fileHash: string, token: string) => {
-  const response = await fetch('https://api.sipheron.io/v1/anchors', {
+  const response = await fetch('https://api.sipheron.com/dashboard/api/v1/anchors', {
     method: 'POST',
     headers: {
       'Authorization': \`Bearer \${token}\`,
@@ -298,7 +298,7 @@ def anchor_document(file_hash: str, token: str) -> Dict[str, Any]:
     }
     
     response = requests.post(
-        'https://api.sipheron.io/v1/anchors',
+        'https://api.sipheron.com/dashboard/api/v1/anchors',
         headers=headers,
         json=payload
     )
@@ -334,7 +334,7 @@ print(f"Anchor created: {result['anchor_id']}")`} language="python" />
         Manual Token Refresh
       </h3>
       <CodeBlock code={`# Exchange refresh token for new access token
-curl -X POST https://api.sipheron.io/v1/auth/refresh \\
+curl -X POST https://api.sipheron.com/dashboard/api/v1/auth/refresh \\
   -H "Content-Type: application/json" \\
   -d '{
     "refresh_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
@@ -376,7 +376,7 @@ curl -X POST https://api.sipheron.io/v1/auth/refresh \\
   }
 
   async refresh(): Promise<void> {
-    const response = await fetch('https://api.sipheron.io/v1/auth/refresh', {
+    const response = await fetch('https://api.sipheron.com/dashboard/api/v1/auth/refresh', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ refresh_token: this.refreshToken })
@@ -466,7 +466,7 @@ access_token = os.environ.get('SIPHERON_ACCESS_TOKEN')`} />
         Revoke via API
       </h3>
       <CodeBlock code={`# Revoke a specific token
-curl -X POST https://api.sipheron.io/v1/auth/revoke \\
+curl -X POST https://api.sipheron.com/dashboard/api/v1/auth/revoke \\
   -H "Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..." \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -475,7 +475,7 @@ curl -X POST https://api.sipheron.io/v1/auth/revoke \\
   }'
 
 # Revoke all tokens for user (admin only)
-curl -X POST https://api.sipheron.io/v1/auth/revoke-all \\
+curl -X POST https://api.sipheron.com/dashboard/api/v1/auth/revoke-all \\
   -H "Authorization: Bearer admin_token..." \\
   -H "Content-Type: application/json" \\
   -d '{"user_id": "user_abc123"}'`} />
@@ -504,7 +504,7 @@ sipheron-vdr auth revoke --all`} />
             The access token has expired. Use the refresh token to get a new one.
           </p>
           <CodeBlock code={`# Refresh the token
-curl -X POST https://api.sipheron.io/v1/auth/refresh \\
+curl -X POST https://api.sipheron.com/dashboard/api/v1/auth/refresh \\
   -H "Content-Type: application/json" \\
   -d '{"refresh_token": "your_refresh_token"}'`} />
         </div>
@@ -518,7 +518,7 @@ curl -X POST https://api.sipheron.io/v1/auth/refresh \\
 sipheron-vdr auth login
 
 # Or via API
-curl -X POST https://api.sipheron.io/v1/auth/token \\
+curl -X POST https://api.sipheron.com/dashboard/api/v1/auth/token \\
   -H "Content-Type: application/json" \\
   -d '{"grant_type": "password", "email": "...", "password": "..."}'`} />
         </div>
@@ -529,7 +529,7 @@ curl -X POST https://api.sipheron.io/v1/auth/token \\
             The token doesn't have permission for the requested operation.
           </p>
           <CodeBlock code={`# Generate a new token with required scope
-curl -X POST https://api.sipheron.io/v1/auth/token \\
+curl -X POST https://api.sipheron.com/dashboard/api/v1/auth/token \\
   -H "Content-Type: application/json" \\
   -d '{
     "grant_type": "password",
@@ -572,22 +572,22 @@ Authorization: Bearer <token>
             <tr>
               <td className="py-3 pr-4 text-white">Login/Get Token</td>
               <td className="py-3 pr-4 text-purple-300 font-mono">auth login</td>
-              <td className="py-3 pr-4 text-gray-400 font-mono">POST /v1/auth/token</td>
+              <td className="py-3 pr-4 text-gray-400 font-mono">POST /dashboard/api/v1/auth/token</td>
             </tr>
             <tr>
               <td className="py-3 pr-4 text-white">Refresh Token</td>
               <td className="py-3 pr-4 text-purple-300 font-mono">auth refresh</td>
-              <td className="py-3 pr-4 text-gray-400 font-mono">POST /v1/auth/refresh</td>
+              <td className="py-3 pr-4 text-gray-400 font-mono">POST /dashboard/api/v1/auth/refresh</td>
             </tr>
             <tr>
               <td className="py-3 pr-4 text-white">Logout/Revoke</td>
               <td className="py-3 pr-4 text-purple-300 font-mono">auth logout</td>
-              <td className="py-3 pr-4 text-gray-400 font-mono">POST /v1/auth/revoke</td>
+              <td className="py-3 pr-4 text-gray-400 font-mono">POST /dashboard/api/v1/auth/revoke</td>
             </tr>
             <tr>
               <td className="py-3 pr-4 text-white">Check Token</td>
               <td className="py-3 pr-4 text-purple-300 font-mono">auth whoami</td>
-              <td className="py-3 pr-4 text-gray-400 font-mono">GET /v1/auth/verify</td>
+              <td className="py-3 pr-4 text-gray-400 font-mono">GET /dashboard/api/v1/auth/verify</td>
             </tr>
           </tbody>
         </table>

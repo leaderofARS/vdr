@@ -57,7 +57,7 @@ graph TD
       <p className="text-gray-300 leading-relaxed mb-4">
         Create a webhook endpoint using the API or CLI:
       </p>
-      <CodeBlock code={`curl -X POST https://api.sipheron.com/api/webhooks \\
+      <CodeBlock code={`curl -X POST https://api.sipheron.com/dashboard/api/webhooks \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{

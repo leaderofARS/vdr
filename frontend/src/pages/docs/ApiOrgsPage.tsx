@@ -99,7 +99,7 @@ interface OrganizationMember {
       </h2>
       <div className="flex items-center gap-2 mb-4">
         <MethodBadge method="GET" />
-        <code className="text-purple-300 font-mono text-sm">/organizations/:id</code>
+        <code className="text-purple-300 font-mono text-sm">/dashboard/api/v1/organizations/:id</code>
       </div>
 
       <h3 id="url-parameters" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">URL Parameters</h3>
@@ -124,7 +124,7 @@ interface OrganizationMember {
         </table>
       </div>
 
-      <CodeBlock code={`curl -X GET https://api.sipheron.io/v1/organizations/org_acme_corp \\
+      <CodeBlock code={`curl -X GET https://api.sipheron.com/dashboard/api/v1/organizations/org_acme_corp \\
   -H "Authorization: Bearer sk_live_admin_51HYs2jK8QJ4mP2v9..."`} />
 
       <h3 id="response" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Response</h3>
@@ -161,7 +161,7 @@ interface OrganizationMember {
       </h2>
       <div className="flex items-center gap-2 mb-4">
         <MethodBadge method="PATCH" />
-        <code className="text-purple-300 font-mono text-sm">/organizations/:id</code>
+        <code className="text-purple-300 font-mono text-sm">/dashboard/api/v1/organizations/:id</code>
       </div>
 
       <h3 id="request-body" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Request Body</h3>
@@ -204,7 +204,7 @@ interface OrganizationMember {
         </table>
       </div>
 
-      <CodeBlock code={`curl -X PATCH https://api.sipheron.io/v1/organizations/org_acme_corp \\
+      <CodeBlock code={`curl -X PATCH https://api.sipheron.com/dashboard/api/v1/organizations/org_acme_corp \\
   -H "Authorization: Bearer sk_live_admin_51HYs2jK8QJ4mP2v9..." \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -222,7 +222,7 @@ interface OrganizationMember {
       </h2>
       <div className="flex items-center gap-2 mb-4">
         <MethodBadge method="GET" />
-        <code className="text-purple-300 font-mono text-sm">/organizations/:id/usage</code>
+        <code className="text-purple-300 font-mono text-sm">/dashboard/api/v1/organizations/:id/usage</code>
       </div>
 
       <h3 id="query-parameters" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Query Parameters</h3>
@@ -247,7 +247,7 @@ interface OrganizationMember {
         </table>
       </div>
 
-      <CodeBlock code={`curl -X GET "https://api.sipheron.io/v1/organizations/org_acme_corp/usage?period=current" \\
+      <CodeBlock code={`curl -X GET "https://api.sipheron.com/dashboard/api/v1/organizations/org_acme_corp/usage?period=current" \\
   -H "Authorization: Bearer sk_live_admin_51HYs2jK8QJ4mP2v9..."`} />
 
       <h3 id="response" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Response</h3>
@@ -291,7 +291,7 @@ interface OrganizationMember {
       </h2>
       <div className="flex items-center gap-2 mb-4">
         <MethodBadge method="GET" />
-        <code className="text-purple-300 font-mono text-sm">/organizations/:id/members</code>
+        <code className="text-purple-300 font-mono text-sm">/dashboard/api/v1/organizations/:id/members</code>
       </div>
 
       <h3 id="query-parameters" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Query Parameters</h3>
@@ -322,7 +322,7 @@ interface OrganizationMember {
         </table>
       </div>
 
-      <CodeBlock code={`curl -X GET "https://api.sipheron.io/v1/organizations/org_acme_corp/members?limit=50" \\
+      <CodeBlock code={`curl -X GET "https://api.sipheron.com/dashboard/api/v1/organizations/org_acme_corp/members?limit=50" \\
   -H "Authorization: Bearer sk_live_admin_51HYs2jK8QJ4mP2v9..."`} />
 
       <h3 id="response" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Response</h3>
@@ -362,7 +362,7 @@ interface OrganizationMember {
       </h2>
       <div className="flex items-center gap-2 mb-4">
         <MethodBadge method="POST" />
-        <code className="text-purple-300 font-mono text-sm">/organizations/:id/invites</code>
+        <code className="text-purple-300 font-mono text-sm">/dashboard/api/v1/organizations/:id/invites</code>
       </div>
 
       <h3 id="request-body" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Request Body</h3>
@@ -405,7 +405,7 @@ interface OrganizationMember {
         </table>
       </div>
 
-      <CodeBlock code={`curl -X POST https://api.sipheron.io/v1/organizations/org_acme_corp/invites \\
+      <CodeBlock code={`curl -X POST https://api.sipheron.com/dashboard/api/v1/organizations/org_acme_corp/invites \\
   -H "Authorization: Bearer sk_live_admin_51HYs2jK8QJ4mP2v9..." \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -423,7 +423,7 @@ interface OrganizationMember {
     "email": "charlie@acme.example.com",
     "role": "member",
     "status": "pending",
-    "invite_url": "https://app.sipheron.io/invite/abc123xyz",
+    "invite_url": "https://app.sipheron.com/invite/abc123xyz",
     "expires_at": "2024-01-22T09:30:00.000Z",
     "created_at": "2024-01-15T09:30:00.000Z",
     "created_by": "user_def456"
@@ -512,28 +512,28 @@ interface OrganizationMember {
           <tbody className="divide-y divide-white/5">
             <tr>
               <td className="py-3 pr-4"><MethodBadge method="GET" /></td>
-              <td className="py-3 pr-4 text-purple-300 font-mono">/organizations/:id/billing</td>
+              <td className="py-3 pr-4 text-purple-300 font-mono">/dashboard/api/v1/organizations/:id/billing</td>
               <td className="py-3 pr-4 text-gray-400">Get billing details</td>
             </tr>
             <tr>
               <td className="py-3 pr-4"><MethodBadge method="POST" /></td>
-              <td className="py-3 pr-4 text-purple-300 font-mono">/organizations/:id/billing/portal</td>
+              <td className="py-3 pr-4 text-purple-300 font-mono">/dashboard/api/v1/organizations/:id/billing/portal</td>
               <td className="py-3 pr-4 text-gray-400">Get Stripe customer portal URL</td>
             </tr>
             <tr>
               <td className="py-3 pr-4"><MethodBadge method="GET" /></td>
-              <td className="py-3 pr-4 text-purple-300 font-mono">/organizations/:id/invoices</td>
+              <td className="py-3 pr-4 text-purple-300 font-mono">/dashboard/api/v1/organizations/:id/invoices</td>
               <td className="py-3 pr-4 text-gray-400">List invoices</td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <CodeBlock code={`curl -X POST https://api.sipheron.io/v1/organizations/org_acme_corp/billing/portal \\
+      <CodeBlock code={`curl -X POST https://api.sipheron.com/dashboard/api/v1/organizations/org_acme_corp/billing/portal \\
   -H "Authorization: Bearer sk_live_admin_51HYs2jK8QJ4mP2v9..." \\
   -H "Content-Type: application/json" \\
   -d '{
-    "return_url": "https://app.sipheron.io/settings/billing"
+    "return_url": "https://app.sipheron.com/settings/billing"
   }'`} />
 
       <h3 id="response" className="text-lg font-semibold text-white mt-6 mb-3 scroll-mt-24">Response</h3>

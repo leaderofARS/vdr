@@ -146,7 +146,7 @@ sipheron-vdr anchor ./large-batch/ --recursive --batch-size 50`} />
   sipheron-vdr verify ./contract.pdf
   
   Public Link:
-  https://app.sipheron.io/verify/abc123-def456`} />
+  https://app.sipheron.com/verify/abc123-def456`} />
 
       <h2 id="cost-estimation" className="text-2xl font-bold text-white mt-16 mb-4 scroll-mt-24">
         Cost Estimation
