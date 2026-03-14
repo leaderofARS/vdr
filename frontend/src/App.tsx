@@ -76,6 +76,8 @@ import {
   NotificationsPage,
   WebhooksPage,
   AuditPage,
+  PlaygroundPage,
+  EmbedSharePage,
 } from '@/pages/dashboard';
 
 import './App.css';
@@ -204,8 +206,8 @@ const AppRoutes: FC = () => {
         <Route path="team" element={<TeamPage />} />
         <Route path="webhooks" element={<WebhooksPage />} />
         <Route path="audit" element={<AuditPage />} />
-        <Route path="playground" element={<PlaceholderPage title="API Playground" />} />
-        <Route path="embed" element={<PlaceholderPage title="Embed & Share" />} />
+        <Route path="playground" element={<PlaygroundPage />} />
+        <Route path="embed" element={<EmbedSharePage />} />
         <Route path="usage" element={<PlaceholderPage title="Usage" />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="billing" element={<BillingPage />} />
