@@ -122,11 +122,7 @@ app.use('/api/verify', widgetCors)
 app.use('/widget', widgetCors)             // new widget endpoint
 app.use('/api/widget', widgetCors)         // widget analytics endpoint
 
-// Handle preflight for widget routes
-app.options('/widget/*', widgetCors)
-app.options('/api/widget/*', widgetCors)
-app.options('/api/verify/*', widgetCors)
-app.options('/api/hashes/badge/*', widgetCors)
+// Implicit preflight is handled directly by app.use() declarations above
 
 // Specific body-parser limits for batch registrations
 app.use('/api/batch-register', express.json({ limit: '10mb' }));
