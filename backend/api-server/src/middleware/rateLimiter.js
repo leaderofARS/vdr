@@ -329,6 +329,7 @@ module.exports = {
     authLimiter,
     batchRegisterLimiter,
     keyCreationLimiter,
+    globalRateLimiter,
     monthlyQuotaMiddleware,
     incrementAnchorUsage,
     PLAN_LIMITS
