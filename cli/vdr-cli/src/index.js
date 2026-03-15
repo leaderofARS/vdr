@@ -24,13 +24,20 @@ const createLinkCommand = require("./commands/link");
 const { createLoginCommand } = require("./commands/login");
 const createDoctorCommand = require("./commands/doctor");
 const { checkForUpdate } = require('./utils/updateCheck');
+const registerCertificateCommand = require("./commands/certificate");
+const registerWhoamiCommand = require("./commands/whoami");
 
 const program = new Command();
 
 program
     .name("sipheron-vdr")
     .description("SipHeron-VDR cli")
-    .version(require("../package.json").version);
+    .version(require("../package.json").version)
+    .option(
+      '-f, --format <format>',
+      'Output format: human (default), json, quiet',
+      'human'
+    );
 
 // Core Execution pipeline (Git-style)
 program.addCommand(createStageCommand());
@@ -52,6 +59,10 @@ program.addCommand(createLoginCommand());
 program.addCommand(createDoctorCommand());
 
 const { loadConfig } = require("./utils/configManager");
+const { makeRequest } = require("./utils/apiClient");
+
+registerCertificateCommand(program, { getConfig: loadConfig, makeRequest });
+registerWhoamiCommand(program, { getConfig: loadConfig, makeRequest });
 const { performLogin } = require("./commands/login");
 const { createWallet } = require("./commands/wallet");
 

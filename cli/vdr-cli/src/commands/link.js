@@ -11,16 +11,20 @@ const axios = require("axios");
 const ora = require("ora");
 const chalk = require("chalk");
 const { loadConfig, saveConfig } = require("../utils/configManager");
+const { createFormatter } = require("../utils/formatter");
 
 function createLinkCommand() {
     const linkCmd = new Command("link")
         .description("Link your CLI to an organization using an API Key")
         .argument("<apiKey>", "Institutional API Key from the SipHeron Dashboard")
-        .action(async (apiKey) => {
+        .option("-f, --format <format>", "Output format: human (default), json, quiet", "human")
+        .action(async (apiKey, options) => {
             const config = loadConfig();
             const apiUrl = config.apiUrl || "https://api.sipheron.com";
+            
+            const fmt = createFormatter(options.format || 'human');
 
-            const spinner = ora("Verifying Institutional API Key...").start();
+            const spinner = fmt.format === 'human' ? ora("Verifying Institutional API Key...").start() : null;
 
             try {
                 const response = await axios.get(`${apiUrl}/auth/verify-key`, {
@@ -35,6 +39,7 @@ function createLinkCommand() {
                 const orgId = org.id || "N/A";
                 const solanaPDA = org.solanaPubkey || "N/A";
                 const userEmail = user.email || "N/A";
+                const plan = org.plan || "free";
 
                 // Update local config
                 config.apiKey = apiKey;
@@ -43,23 +48,24 @@ function createLinkCommand() {
 
                 saveConfig(config);
 
-                spinner.succeed(chalk.green("CLI Linked Successfully!"));
+                if (spinner) spinner.stop();
 
-                console.log("\n" + chalk.bold("--- Institutional Context ---"));
-                console.log(`${chalk.cyan("Organization:")} ${orgName}`);
-                console.log(`${chalk.cyan("ID:")}           ${orgId}`);
-                console.log(`${chalk.cyan("Admin:")}        ${userEmail}`);
-                console.log(`${chalk.cyan("Solana PDA:")}   ${solanaPDA}`);
-                console.log("\n" + chalk.gray("Your CLI is now authorized to anchor proofs to this institution's registry."));
+                fmt.success('Linked successfully', {
+                  organization: orgName,
+                  plan: plan,
+                  apiKey: `${apiKey.slice(0, 8)}...`,
+                  id: orgId,
+                  solanaPDA: solanaPDA,
+                  admin: userEmail,
+                });
+                fmt.exit(0);
 
             } catch (error) {
-                spinner.fail(chalk.red("Institutional Linking Failed"));
+                if (spinner) spinner.stop();
                 if (error.response) {
-                    console.error(chalk.red(`Error: ${error.response.data.error || "Invalid API Key"}`));
+                    fmt.fail("Failed to link", { details: error.response.data.error || "Invalid API Key" });
                 } else {
-                    console.error(chalk.red(`Error: ${error.message}`));
-                    console.log(chalk.yellow(`\nTip: Ensure your API server is running at ${apiUrl}`));
-                    console.log(chalk.yellow("Use 'sipheron-vdr config set apiUrl <url>' to change it."));
+                    fmt.fail("Failed to link", { details: error.message, tip: `Ensure your API server is running at ${apiUrl}` });
                 }
             }
         });

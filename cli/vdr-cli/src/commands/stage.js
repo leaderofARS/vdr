@@ -6,6 +6,7 @@ const { computeFileHash } = require('../utils/hash')
 const fs = require('fs')
 const path = require('path')
 const { addStagedItem } = require('../utils/stagingManager')
+const { createFormatter } = require('../utils/formatter')
 
 // Simple glob expander — no new packages needed
 function expandGlob(pattern) {
@@ -39,7 +40,11 @@ function createStageCommand() {
         .option('-m, --metadata <metadata>', 'Metadata to store with the hash', '')
         .option('-e, --expiry <seconds>', 'Unix expiration time (0 = infinite)', '0')
         .option('--json', 'Output as JSON')
+        .option('-f, --format <format>', 'Output format: human (default), json, quiet', 'human')
         .action(async (files, options) => {
+            const format = options.json ? 'json' : (options.format || 'human')
+            const fmt = createFormatter(format)
+
             // Expand all patterns
             const resolved = []
             for (const pattern of files) {
@@ -48,18 +53,17 @@ function createStageCommand() {
                     // Try as literal path
                     const abs = path.resolve(process.cwd(), pattern)
                     if (fs.existsSync(abs)) resolved.push(abs)
-                    else console.log(chalk.yellow(`⚠ No files matched: ${pattern}`))
+                    else fmt.warn(`No files matched: ${pattern}`)
                 } else {
                     resolved.push(...expanded)
                 }
             }
 
             if (resolved.length === 0) {
-                console.error(chalk.red('Error: No files found to stage.'))
-                process.exit(1)
+                fmt.fail('No files found to stage.')
             }
 
-            console.log(chalk.bold(`\nStaging ${resolved.length} file(s)...\n`))
+            if (fmt.format === 'human') console.log(chalk.bold(`\nStaging ${resolved.length} file(s)...\n`))
 
             const results = []
             let staged = 0
@@ -67,7 +71,7 @@ function createStageCommand() {
 
             for (const absolutePath of resolved) {
                 const filename = path.basename(absolutePath)
-                const spinner = ora(`Hashing ${filename}...`).start()
+                const spinner = fmt.format === 'human' ? ora(`Hashing ${filename}...`).start() : null
 
                 try {
                     const hexHash = await computeFileHash(absolutePath)
@@ -86,29 +90,34 @@ function createStageCommand() {
 
                     const added = addStagedItem(item)
                     if (added) {
-                        spinner.succeed(`${filename} ${chalk.gray(hexHash.slice(0, 12) + '...')}`)
+                        if (spinner) spinner.succeed(`${filename} ${chalk.gray(hexHash.slice(0, 12) + '...')}`)
                         staged++
                         results.push({ file: item.file, hash: hexHash, status: 'staged' })
+                        if (fmt.format === 'quiet') console.log(hexHash)
                     } else {
-                        spinner.warn(`${filename} already staged — skipped`)
+                        if (spinner) spinner.warn(`${filename} already staged — skipped`)
                         skipped++
                         results.push({ file: item.file, hash: hexHash, status: 'skipped' })
                     }
                 } catch (err) {
-                    spinner.fail(`${filename} — ${err.message}`)
+                    if (spinner) spinner.fail(`${filename} — ${err.message}`)
                     results.push({ file: absolutePath, status: 'error', error: err.message })
                 }
             }
 
-            if (options.json) {
+            if (options.json || fmt.format === 'json') {
                 console.log(JSON.stringify(results, null, 2))
-                return
+                fmt.exit(0)
             }
 
-            console.log('')
-            if (staged > 0) console.log(chalk.green(`✓ Staged ${staged} file(s) successfully.`))
-            if (skipped > 0) console.log(chalk.yellow(`⚠ Skipped ${skipped} already-staged file(s).`))
-            if (staged > 0) console.log(chalk.yellow(`\nRun 'sipheron-vdr anchor' to commit to the Solana network.`))
+            if (fmt.format === 'human') {
+                console.log('')
+                if (staged > 0) console.log(chalk.green(`✓ Staged ${staged} file(s) successfully.`))
+                if (skipped > 0) console.log(chalk.yellow(`⚠ Skipped ${skipped} already-staged file(s).`))
+                if (staged > 0) console.log(chalk.yellow(`\nRun 'sipheron-vdr anchor' to commit to the Solana network.`))
+            }
+            
+            fmt.exit(staged > 0 ? 0 : (skipped > 0 ? 0 : 1))
         })
 }
 

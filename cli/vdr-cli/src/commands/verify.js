@@ -7,38 +7,48 @@ const { computeFileHash } = require('../utils/hash')
 const fs = require('fs')
 const path = require('path')
 const { loadConfig } = require('../utils/configManager')
+const { createFormatter } = require('../utils/formatter')
 
 const verifyCmd = new Command('verify')
     .description('Verify a file, URL, or hash against the SipHeron registry')
-    .argument('[file]', 'Path to the file to verify')
+    .argument('[file]', 'Path to the file to verify, or a 64-char hex hash')
     .option('--url <url>', 'Fetch file from URL and verify its hash')
     .option('--hash <hash>', 'Verify a raw SHA-256 hash directly without a file')
     .option('--json', 'Output result as JSON')
-    .action(async (file, options) => {
+    .option('-f, --format <format>', 'Output format: human (default), json, quiet', 'human')
+    .action(async (target, options) => {
+        const format = options.json ? 'json' : (options.format || 'human')
+        const fmt = createFormatter(format)
+
         const config = loadConfig()
         const apiKey = config.apiKey || process.env.SIPHERON_API_KEY
         const apiUrl = config.apiUrl || 'https://api.sipheron.com'
 
-        let hexHash = null
+        let computedHash = null
 
-        // Mode 1: --hash flag
-        if (options.hash) {
-            if (!/^[a-fA-F0-9]{64}$/.test(options.hash)) {
-                console.error(chalk.red('Invalid SHA-256 hash format'))
-                process.exit(1)
+        // Check if argument is a file path or a 64-char hex hash
+        const isHashArg = target && /^[a-f0-9]{64}$/i.test(target)
+        const isFile = target && !isHashArg && fs.existsSync(target)
+
+        // Mode 1: --hash flag or hash argument
+        if (options.hash || isHashArg) {
+            const hashToVerify = options.hash || target
+            if (!/^[a-fA-F0-9]{64}$/.test(hashToVerify)) {
+                fmt.fail('Invalid SHA-256 hash format')
             }
-            hexHash = options.hash
+            computedHash = hashToVerify.toLowerCase()
+            fmt.info(`Verifying hash: ${computedHash.slice(0, 16)}...`)
         }
         // Mode 2: --url flag
         else if (options.url) {
-            const spinner = ora(`Fetching from ${options.url}...`).start()
+            fmt.info(`Fetching from ${options.url}...`)
             try {
                 const https = require('https')
                 const http = require('http')
                 const { createHash } = require('crypto')
                 const client = options.url.startsWith('https') ? https : http
 
-                hexHash = await new Promise((resolve, reject) => {
+                computedHash = await new Promise((resolve, reject) => {
                     client.get(options.url, (res) => {
                         if (res.statusCode !== 200) {
                             reject(new Error(`Failed to fetch: ${res.statusCode} ${res.statusMessage}`))
@@ -50,74 +60,76 @@ const verifyCmd = new Command('verify')
                         res.on('error', reject)
                     }).on('error', reject)
                 })
-                spinner.succeed(`URL hash: ${chalk.cyan(hexHash)}`)
+                fmt.info(`URL hash: ${computedHash}`)
             } catch (err) {
-                spinner.fail(`Failed to fetch URL: ${err.message}`)
-                process.exit(1)
+                fmt.fail(`Failed to fetch URL: ${err.message}`)
             }
         }
-        // Mode 3: file path (existing behavior)
+        // Mode 3: file path
+        else if (isFile || target) {
+            if (!fs.existsSync(target)) {
+                fmt.fail(`File not found: ${target}`)
+            }
+            fmt.info(`Hashing file: ${target}`)
+            computedHash = await computeFileHash(target)
+            fmt.info(`SHA-256: ${computedHash.slice(0, 16)}...`)
+        }
         else {
-            if (!file) {
-                console.error(chalk.red('Error: Please provide a file path, --url, or --hash'))
-                process.exit(1)
-            }
-            if (!fs.existsSync(file)) {
-                console.error(chalk.red(`Error: File not found at '${file}'`))
-                process.exit(1)
-            }
-            const spinner = ora('Computing local SHA-256 hash...').start()
-            hexHash = await computeFileHash(file)
-            spinner.succeed(`Local hash: ${chalk.cyan(hexHash)}`)
+            fmt.fail(`Argument is neither a valid file path nor a 64-character SHA-256 hash`)
         }
 
-        // Query backend — use GET /api/hashes/:hash (requires auth)
-        const spinner2 = ora('Querying SipHeron Registry...').start()
+        // Query backend
+        fmt.info('Querying SipHeron Registry...')
         try {
-            const { data } = await axios.get(`${apiUrl}/api/hashes/${hexHash}`, {
+            const res = await axios.post(`${apiUrl}/api/verify`, { hash: computedHash }, {
                 headers: { 'x-api-key': apiKey }
             })
 
-            spinner2.stop()
+            const data = res.data
 
-            if (options.json) {
-                console.log(JSON.stringify(data, null, 2))
-                return
+            if (data.authentic) {
+                fmt.authentic({
+                    hash: computedHash,
+                    metadata: data.anchor?.metadata,
+                    anchoredAt: data.anchor?.blockTimestamp || data.anchor?.createdAt,
+                    organization: data.anchor?.organizationName,
+                    txSignature: data.blockchain?.txSignature,
+                    explorerUrl: data.blockchain?.explorerUrl,
+                    verifyUrl: `https://app.sipheron.com/verify/${computedHash}`,
+                })
+                fmt.exit(0)
+            } else if (data.status === 'REVOKED') {
+                fmt.revoked({
+                    hash: computedHash,
+                    revokedAt: data.anchor?.revokedAt,
+                    revocationNote: data.anchor?.revocationNote,
+                })
+                fmt.exit(2)
+            } else if (data.error === 'NOT_FOUND' || data.status === 'NOT_FOUND' || res.status === 404) {
+                fmt.notFound(computedHash)
+                fmt.exit(1)
+            } else {
+                fmt.mismatch(computedHash, data.anchor?.hash)
+                fmt.exit(1)
             }
 
-            const isRevoked = data.status === 'revoked' || data.isRevoked
-            const statusText = isRevoked ? chalk.red('REVOKED') : chalk.green('AUTHENTIC ✓')
-
-            console.log('')
-            console.log(chalk.bold('── Verification Result ──────────────────'))
-            console.log(chalk.cyan('Status:    ') + statusText)
-            console.log(chalk.cyan('Hash:      ') + data.hash?.slice(0, 20) + '...')
-            console.log(chalk.cyan('Metadata:  ') + (data.metadata || '—'))
-            console.log(chalk.cyan('Registered:') + ' ' + (data.registeredAt ? new Date(data.registeredAt).toLocaleString() : '—'))
-            if (data.explorerUrl) console.log(chalk.cyan('Explorer:  ') + data.explorerUrl)
-            if (isRevoked && data.revokedAt) console.log(chalk.red('Revoked:   ') + new Date(data.revokedAt).toLocaleString())
-            console.log('')
-
-            // Exit code for CI/CD use
-            if (isRevoked) process.exit(2) // revoked
         } catch (err) {
-            if (err.response?.status === 404) {
-                spinner2.fail(chalk.red('NOT FOUND IN REGISTRY — File may be tampered or not anchored'))
-                if (options.json) console.log(JSON.stringify({ verified: false, hash: hexHash }))
-                process.exit(3) // not found
+            if (err.response?.status === 404 || err.response?.data?.error === 'NOT_FOUND') {
+                fmt.notFound(computedHash)
+                fmt.exit(1)
             }
-            spinner2.fail(chalk.red('Verification failed'))
-            console.error(chalk.red(err.response?.data?.error || err.message))
-            process.exit(1)
+            fmt.fail('Verification failed', { details: err.response?.data?.error || err.message })
         }
     })
 
 const verifyHashCmd = new Command('verify-hash')
     .description('Verify a raw hex hash directly against the VDR registry (Legacy)')
     .argument('<hash>', 'SHA-256 hex string')
-    .action(async (hash) => {
+    .option('-f, --format <format>', 'Output format: human (default), json, quiet', 'human')
+    .action(async (hash, options) => {
         // Redirect to verify --hash
-        await verifyCmd.parseAsync(['node', 'verify', '--hash', hash]);
+        const fmtString = options.format || 'human'
+        await verifyCmd.parseAsync(['node', 'verify', '--hash', hash, '--format', fmtString]);
     })
 
 module.exports = { verifyCmd, verifyHashCmd }

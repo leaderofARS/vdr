@@ -13,16 +13,19 @@ const chalk = require("chalk");
 const { getStagedItems, clearStagedItems } = require("../utils/stagingManager");
 const { loadConfig } = require("../utils/configManager");
 const { formatSignature } = require("../utils/format");
+const { createFormatter } = require("../utils/formatter");
 
 function createAnchorCommand() {
     const pushCmd = new Command("anchor")
         .description("Commit all locally staged hashes to the SipHeron Solana Registry. (Like git push)")
-        .action(async () => {
+        .option("-f, --format <format>", "Output format: human (default), json, quiet", "human")
+        .action(async (options) => {
+            const fmt = createFormatter(options.format || 'human');
             const items = getStagedItems();
 
             if (items.length === 0) {
-                console.log(chalk.yellow("No hashes staged. Nothing to push."));
-                return;
+                fmt.warn("No hashes staged. Nothing to push.");
+                fmt.exit(0);
             }
 
             const config = loadConfig();
@@ -30,19 +33,21 @@ function createAnchorCommand() {
             const apiUrl = config.apiUrl || 'https://api.sipheron.com';
 
             if (!apiKey) {
-                console.error(chalk.red('No API key found. Run: sipheron-vdr link <apiKey>'));
-                process.exit(1);
+                fmt.fail('No API key found. Run: sipheron-vdr link <apiKey>');
             }
 
-            console.log(chalk.bold(`Preparing to push ${items.length} hashes to SipHeron Registry...\n`));
+            if (fmt.format === 'human') console.log(chalk.bold(`Preparing to push ${items.length} hashes to SipHeron Registry...\n`));
 
-            const spinner = ora("Submitting batch to backend queue...").start();
+            const spinner = fmt.format === 'human' ? ora("Submitting batch to backend queue...").start() : null;
+            
+            fmt.info('Broadcasting to Solana...');
 
             try {
+                const results = [];
                 // Post each hash individually to support per-file metadata
                 for (const staged of items) {
-                    spinner.text = `Anchoring ${staged.file}...`;
-                    await axios.post(`${apiUrl}/api/hashes`, {
+                    if (spinner) spinner.text = `Anchoring ${staged.file}...`;
+                    const res = await axios.post(`${apiUrl}/api/hashes`, {
                         hash: staged.hash,
                         metadata: staged.metadata || require('path').basename(staged.file),
                         fileSize: staged.fileSize || null,
@@ -53,29 +58,39 @@ function createAnchorCommand() {
                             'Content-Type': 'application/json'
                         }
                     });
+                    
+                    results.push(res.data);
                 }
 
-                spinner.succeed(chalk.green(`Successfully dispatched ${items.length} hashes to the blockchain!`));
-                console.log(chalk.gray(`The SipHeron Indexer is currently mapping these PDAs to the Smart Contract in the background.`));
-
+                if (spinner) spinner.succeed(chalk.green(`Successfully dispatched ${items.length} hashes to the blockchain!`));
+                
                 // Clear the local queue
                 clearStagedItems();
-                console.log(chalk.green("\nLocal staging queue cleared."));
+                
+                if (items.length === 1 && results[0]) {
+                    const r = results[0];
+                    fmt.success('Hash anchored to Solana', {
+                      hash: r.hash || items[0].hash,
+                      txSignature: r.txSignature,
+                      blockNumber: r.blockNumber,
+                      status: r.status || 'CONFIRMED',
+                      verifyUrl: `https://app.sipheron.com/verify/${r.hash || items[0].hash}`,
+                      explorerUrl: r.txSignature ? `https://explorer.solana.com/tx/${r.txSignature}?cluster=devnet` : undefined,
+                    });
+                } else if (fmt.format === 'json') {
+                    console.log(JSON.stringify(results, null, 2));
+                } else if (fmt.format === 'quiet') {
+                    results.forEach(r => console.log(r.hash || ''));
+                } else {
+                    console.log(chalk.gray(`The SipHeron Indexer is currently mapping these PDAs to the Smart Contract in the background.`));
+                    console.log(chalk.green("\nLocal staging queue cleared."));
+                }
+                
+                fmt.exit(0);
 
             } catch (error) {
-                spinner.fail(chalk.red("Failed to push hashes to registry"));
-
-                if (error.response) {
-                    console.error(chalk.red(`Status: ${error.response.status}`));
-                    console.error(chalk.red(`Error:  ${JSON.stringify(error.response.data)}`));
-
-                    if (error.response.status === 401 || error.response.status === 403) {
-                        console.log(chalk.yellow('\nTip: Authentication failed. Re-link your CLI with: sipheron-vdr link <apiKey>'));
-                    }
-                } else {
-                    console.error(chalk.red(`Error:  ${error.message}`));
-                }
-                process.exit(1);
+                if (spinner) spinner.stop();
+                fmt.fail('Anchoring failed', { details: error.response ? `${error.response.status}: ${JSON.stringify(error.response.data)}` : error.message });
             }
         });
 
