@@ -448,46 +448,151 @@ router.post('/', authenticate, monthlyQuotaMiddleware, idempotencyMiddleware, as
  * @description returns SVG verification badge (public, no auth)
  */
 router.get('/badge/:hash', async (req, res) => {
-    try {
-        const { hash } = req.params;
-        const record = await prisma.hashRecord.findUnique({
-            where: { hash },
-            select: { status: true, hash: true, isRevoked: true }
-        });
+  try {
+    const { hash } = req.params;
+    const {
+      style = 'flat',
+      size = 'medium',
+      theme = 'dark',
+      color,
+      label = 'SipHeron VDR',
+    } = req.query;
 
-        const verified = record && (record.status === 'CONFIRMED' || record.status === 'active') && !record.isRevoked;
-        const color = verified ? '#22c55e' : (record && (record.status === 'revoked' || record.isRevoked) ? '#ef4444' : '#555555');
-        const label = verified ? 'verified' : (record && (record.status === 'revoked' || record.isRevoked) ? 'revoked' : 'not found');
-        const icon = verified ? '✓' : '✗';
+    const record = await prisma.hashRecord.findUnique({
+      where: { hash },
+      select: { status: true, hash: true, isRevoked: true }
+    });
 
-        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="180" height="20">
-  <linearGradient id="b" x2="0" y2="100%">
+    // Determine badge state
+    const isVerified = record && (record.status === 'CONFIRMED' || record.status === 'active') && !record.isRevoked;
+    const isRevoked = record && (record.status === 'REVOKED' || record.status === 'revoked' || record.isRevoked);
+    const statusText = isVerified ? 'verified'
+                     : isRevoked  ? 'revoked'
+                     : record     ? 'pending'
+                     : 'not found';
+
+    // Colors
+    const defaultVerifiedColor = isVerified ? '#00D97E'
+                               : isRevoked  ? '#FF4757'
+                               : record     ? '#FFD93D'
+                               : '#888888';
+    const statusColor = color ? `#${color.replace('#', '')}` : defaultVerifiedColor;
+
+    // Theme colors
+    const labelBg = theme === 'light' ? '#555555' : '#1a1a2e';
+    const labelText = '#FFFFFF';
+    const statusBg = statusColor;
+
+    // Size variants
+    const SIZES = {
+      small:  { h: 18, fs: 9,  lw: 90, sw: 55, r: 3 },
+      medium: { h: 20, fs: 11, lw: 110, sw: 70, r: 3 },
+      large:  { h: 28, fs: 13, lw: 120, sw: 75, r: 6 },
+    };
+    const s = SIZES[size] || SIZES.medium;
+    const totalW = s.lw + s.sw;
+
+    // Style variant — border radius
+    const rx = style === 'flat-square' ? 0
+             : style === 'for-the-badge' ? 0
+             : s.r;
+
+    // for-the-badge has uppercase text and different proportions
+    const displayLabel = style === 'for-the-badge'
+      ? label.toUpperCase()
+      : label;
+    const displayStatus = style === 'for-the-badge'
+      ? statusText.toUpperCase()
+      : statusText;
+
+    const icon = isVerified ? '✓' : isRevoked ? '✗' : '○';
+
+    const svg = generateBadgeSVG({
+      totalW, h: s.h, fs: s.fs,
+      lw: s.lw, sw: s.sw, rx,
+      labelBg, labelText, statusBg,
+      displayLabel, displayStatus: `${icon} ${displayStatus}`,
+      style,
+    });
+
+    res.setHeader('Content-Type', 'image/svg+xml');
+    res.setHeader('Cache-Control', 'public, max-age=300'); // 5 min cache
+    res.setHeader('X-Badge-Status', statusText);
+    res.send(svg);
+  } catch (err) {
+    console.error('[BADGE] error:', err);
+    res.setHeader('Content-Type', 'image/svg+xml');
+    res.send(generateErrorBadge());
+  }
+});
+
+function generateBadgeSVG({
+  totalW, h, fs, lw, sw, rx,
+  labelBg, labelText, statusBg,
+  displayLabel, displayStatus, style,
+}) {
+  if (style === 'for-the-badge') {
+    return `<svg xmlns="http://www.w3.org/2000/svg"
+  width="${totalW}" height="${h}" role="img"
+  aria-label="${displayLabel}: ${displayStatus}">
+  <title>${displayLabel}: ${displayStatus}</title>
+  <g shape-rendering="crispEdges">
+    <rect width="${lw}" height="${h}" fill="${labelBg}"/>
+    <rect x="${lw}" width="${sw}" height="${h}" fill="${statusBg}"/>
+  </g>
+  <g fill="#fff" text-anchor="middle"
+     font-family="DejaVu Sans,Verdana,Geneva,sans-serif"
+     font-size="${fs}" font-weight="bold">
+    <text x="${lw / 2}" y="${Math.round(h * 0.7)}"
+          fill="${labelText}">${displayLabel}</text>
+    <text x="${lw + sw / 2}" y="${Math.round(h * 0.7)}"
+          fill="#fff">${displayStatus}</text>
+  </g>
+</svg>`;
+  }
+
+  return `<svg xmlns="http://www.w3.org/2000/svg"
+  width="${totalW}" height="${h}" role="img"
+  aria-label="${displayLabel}: ${displayStatus}">
+  <title>${displayLabel}: ${displayStatus}</title>
+  <linearGradient id="s" x2="0" y2="100%">
     <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
     <stop offset="1" stop-opacity=".1"/>
   </linearGradient>
   <clipPath id="r">
-    <rect width="180" height="20" rx="3" fill="#fff"/>
+    <rect width="${totalW}" height="${h}" rx="${rx}" fill="#fff"/>
   </clipPath>
   <g clip-path="url(#r)">
-    <rect width="110" height="20" fill="#2d2d2d"/>
-    <rect x="110" width="70" height="20" fill="${color}"/>
-    <rect width="180" height="20" fill="url(#b)"/>
+    <rect width="${lw}" height="${h}" fill="${labelBg}"/>
+    <rect x="${lw}" width="${sw}" height="${h}" fill="${statusBg}"/>
+    <rect width="${totalW}" height="${h}" fill="url(#s)"/>
   </g>
-  <g fill="#fff" text-anchor="middle" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="110">
-    <text x="555" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="1000" lengthAdjust="spacing">SipHeron VDR</text>
-    <text x="555" y="140" transform="scale(.1)" textLength="1000" lengthAdjust="spacing">SipHeron VDR</text>
-    <text x="1445" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="600" lengthAdjust="spacing">${icon} ${label}</text>
-    <text x="1445" y="140" transform="scale(.1)" textLength="600" lengthAdjust="spacing">${icon} ${label}</text>
+  <g fill="#fff" text-anchor="middle"
+     font-family="DejaVu Sans,Verdana,Geneva,sans-serif"
+     font-size="${fs}">
+    <text aria-hidden="true" x="${lw / 2 + 1}" y="${Math.round(h * 0.75)}"
+          fill="#010101" fill-opacity=".3">${displayLabel}</text>
+    <text x="${lw / 2}" y="${Math.round(h * 0.72)}"
+          fill="${labelText}">${displayLabel}</text>
+    <text aria-hidden="true" x="${lw + sw / 2 + 1}" y="${Math.round(h * 0.75)}"
+          fill="#010101" fill-opacity=".3">${displayStatus}</text>
+    <text x="${lw + sw / 2}" y="${Math.round(h * 0.72)}"
+          fill="#fff">${displayStatus}</text>
   </g>
 </svg>`;
+}
 
-        res.setHeader('Content-Type', 'image/svg+xml');
-        res.setHeader('Cache-Control', 'public, max-age=300'); // 5 min cache
-        res.send(svg);
-    } catch (err) {
-        res.status(500).send('');
-    }
-});
+function generateErrorBadge() {
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="160" height="20">
+  <rect width="100" height="20" fill="#555"/>
+  <rect x="100" width="60" height="20" fill="#888"/>
+  <g fill="#fff" text-anchor="middle"
+     font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="10">
+    <text x="50" y="14" fill="#fff">SipHeron VDR</text>
+    <text x="130" y="14" fill="#fff">error</text>
+  </g>
+</svg>`;
+}
 
 /**
  * @route POST /api/hashes/bulk-verify
