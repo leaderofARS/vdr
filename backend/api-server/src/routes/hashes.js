@@ -121,7 +121,6 @@ router.get('/', authenticate, async (req, res) => {
           hash: true,
           pdaAddress: true,
           ownerWallet: true,
-          owner: true,
           organizationId: true,
           metadata: true,
           status: true,

@@ -19,6 +19,7 @@ model User {
   organizations Organization[]
   apiKeys       ApiKey[]
   memberships   OrgMember[]
+  records       HashRecord[]
 }
 
 model Organization {
@@ -99,6 +100,8 @@ model HashRecord {
   fileSize       BigInt?   // File size in bytes
   mimeType       String?   // MIME type e.g. application/pdf
   tags           String[]  // Array of user-defined tags
+  userId         String?   // User ID who anchored it
+  user           User?     @relation(fields: [userId], references: [id])
   revokedBy      String?   // User ID who revoked
   revocationNote String?   // Reason for revocation
   certificateGeneratedAt DateTime?  // when certificate was first generated
