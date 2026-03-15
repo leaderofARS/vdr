@@ -965,6 +965,73 @@ router.get('/:hash/verifications', authenticate, async (req, res) => {
   }
 })
 
+// POST /api/hashes/:hash/widget-view — track embed widget view/interaction
+// No auth required — called from external sites
+router.post('/:hash/widget-view', async (req, res) => {
+  try {
+    const { hash } = req.params
+    const {
+      event = 'view',        // view | verify_attempt | verify_complete
+      authentic = null,      // true | false | null
+      referrer = null,       // the embedding site's domain
+      widgetId = null,       // optional widget identifier
+    } = req.body
+
+    // Validate hash format
+    if (!/^[a-f0-9]{64}$/i.test(hash)) {
+      return res.status(400).json({ error: 'Invalid hash' })
+    }
+
+    // Find the record to get organizationId
+    const record = await prisma.hashRecord.findUnique({
+      where: { hash },
+      select: { id: true, organizationId: true }
+    })
+
+    if (!record) {
+      return res.status(404).json({ error: 'Hash not found' })
+    }
+
+    // Extract clean referrer domain
+    let referrerDomain = null
+    try {
+      if (referrer) {
+        referrerDomain = new URL(referrer).hostname
+      }
+    } catch { /* invalid URL — ignore */ }
+
+    // Log to audit log as widget event
+    const { logAudit } = require('../utils/auditLogger')
+    await logAudit({
+      organizationId: record.organizationId,
+      action: `WIDGET_${event.toUpperCase().replace('-', '_')}`,
+      category: 'widget',
+      metadata: {
+        hash: hash.slice(0, 16) + '...',
+        event,
+        authentic,
+        referrerDomain,
+        widgetId,
+        userAgent: req.headers['user-agent']?.slice(0, 100),
+      },
+    }).catch(console.error) // non-fatal
+
+    // Update view counter on hash record
+    if (event === 'view') {
+      await prisma.hashRecord.update({
+        where: { id: record.id },
+        data: { widgetViewCount: { increment: 1 } }
+      }).catch(console.error) // non-fatal
+    }
+
+    res.json({ tracked: true, event })
+  } catch (err) {
+    console.error('[WIDGET] view tracking error:', err)
+    // Always return 200 — never break the host site
+    res.json({ tracked: false })
+  }
+})
+
 /**
  * @route GET /api/hashes/:hash
  * @description Get detail for a specific hash.

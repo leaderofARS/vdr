@@ -106,6 +106,7 @@ model HashRecord {
   revocationNote String?   // Reason for revocation
   certificateGeneratedAt DateTime?  // when certificate was first generated
   certificateCount       Int        @default(0) // how many times generated
+  widgetViewCount        Int        @default(0) // times embed widget was viewed
   @@index([organizationId])
 }
 
