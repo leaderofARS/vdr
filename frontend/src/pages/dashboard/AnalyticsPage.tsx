@@ -154,6 +154,29 @@ export const AnalyticsPage: React.FC = () => {
     value: string
   }>({ type: null, value: '' })
 
+interface WidgetAnalytics {
+  summary: {
+    totalViews: number
+    verifyAttempts: number
+    verifyCompletions: number
+    authenticResults: number
+    mismatchResults: number
+    conversionRate: string
+    authenticRate: string
+  }
+  topHashes: {
+    hash: string
+    metadata?: string
+    widgetViewCount: number
+    status: string
+  }[]
+  topReferrers: { domain: string; count: number }[]
+  dailyViews: { date: string; count: number }[]
+}
+
+const [widgetAnalytics, setWidgetAnalytics] = useState<WidgetAnalytics | null>(null)
+const [widgetLoading, setWidgetLoading] = useState(true)
+
   const navigate = useNavigate();
 
   // Fetch analytics data
@@ -202,6 +225,14 @@ export const AnalyticsPage: React.FC = () => {
       .then(res => setBreakdown(res.data))
       .catch(console.error)
   }, [fetchData, dateRange]);
+
+  useEffect(() => {
+    setWidgetLoading(true)
+    api.get('/api/hashes/widget-analytics')
+      .then(res => setWidgetAnalytics(res.data))
+      .catch(console.error)
+      .finally(() => setWidgetLoading(false))
+  }, [dateRange]);
 
   // Auto-refresh interval
   useEffect(() => {
@@ -1465,6 +1496,211 @@ export const AnalyticsPage: React.FC = () => {
       </div>
       )}
 
+      {/* ── Widget Analytics Section ── */}
+      <div className="space-y-4">
+        {/* Section header */}
+        <div className="flex items-center gap-3">
+          <div className="h-px flex-1 bg-white/[0.06]" />
+          <span className="text-xs font-bold text-[#6C63FF] uppercase tracking-widest px-2">
+            Embed Widget Analytics
+          </span>
+          <div className="h-px flex-1 bg-white/[0.06]" />
+        </div>
+
+        {widgetLoading ? (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="h-24 bg-white/5 rounded-2xl shimmer" />
+            ))}
+          </div>
+        ) : !widgetAnalytics || widgetAnalytics.summary.totalViews === 0 ? (
+          <div className="bg-[#0D0D1A] border border-white/[0.06] rounded-2xl p-8 text-center">
+            <p className="text-3xl mb-3">🔗</p>
+            <p className="text-sm font-medium text-[#F0F0FF]">
+              No widget interactions yet
+            </p>
+            <p className="text-xs text-[#44445A] mt-1 mb-4">
+              Embed the verification widget on your website to track how visitors interact with your documents.
+            </p>
+            <a
+              href="/dashboard/embed"
+              className="text-xs text-[#6C63FF] hover:text-[#4ECDC4] transition-colors font-medium"
+            >
+              Go to Embed & Share →
+            </a>
+          </div>
+        ) : (
+          <>
+            {/* Widget summary stats */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {[
+                {
+                  label: 'Total Widget Views',
+                  value: widgetAnalytics.summary.totalViews,
+                  icon: '👁',
+                  sub: 'times widget was loaded',
+                },
+                {
+                  label: 'Verify Attempts',
+                  value: widgetAnalytics.summary.verifyAttempts,
+                  icon: '📄',
+                  sub: `${widgetAnalytics.summary.conversionRate}% conversion`,
+                },
+                {
+                  label: 'Authentic Results',
+                  value: widgetAnalytics.summary.authenticResults,
+                  icon: '✓',
+                  color: '#00D97E',
+                  sub: `${widgetAnalytics.summary.authenticRate}% authentic rate`,
+                },
+                {
+                  label: 'Mismatch Results',
+                  value: widgetAnalytics.summary.mismatchResults,
+                  icon: '✗',
+                  color: '#FF4757',
+                  sub: 'documents that differed',
+                },
+              ].map(stat => (
+                <div
+                  key={stat.label}
+                  className="bg-[#0D0D1A] border border-white/[0.06] rounded-2xl p-4 hover:border-[rgba(108,99,255,0.3)] transition-all"
+                >
+                  <div className="text-xl mb-2">{stat.icon}</div>
+                  <p className="text-2xl font-black tabular-nums" style={{ color: stat.color || '#F0F0FF' }}>
+                    {stat.value.toLocaleString()}
+                  </p>
+                  <p className="text-xs text-[#8888AA] mt-0.5">{stat.label}</p>
+                  <p className="text-[10px] text-[#44445A] mt-0.5">{stat.sub}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Daily views chart */}
+            {widgetAnalytics.dailyViews.length > 0 && (
+              <div className="bg-[#0D0D1A] border border-white/[0.06] rounded-2xl p-5">
+                <p className="text-sm font-semibold text-[#F0F0FF] mb-1">
+                  Widget Views Over Time
+                </p>
+                <p className="text-xs text-[#8888AA] mb-5">
+                  Daily embed widget loads across all embedded documents
+                </p>
+                <ResponsiveContainer width="100%" height={180}>
+                  <AreaChart
+                    data={widgetAnalytics.dailyViews}
+                    margin={{ top: 5, right: 5, left: -20, bottom: 0 }}
+                  >
+                    <defs>
+                      <linearGradient id="widgetGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#4ECDC4" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#4ECDC4" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                    <XAxis
+                      dataKey="date"
+                      tick={{ fill: '#44445A', fontSize: 10 }}
+                      tickLine={false} axisLine={false}
+                      tickFormatter={d => new Date(d).toLocaleDateString('en-US', {
+                        month: 'short', day: 'numeric'
+                      })}
+                    />
+                    <YAxis
+                      tick={{ fill: '#44445A', fontSize: 10 }}
+                      tickLine={false} axisLine={false}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        background: '#13131F',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: '10px', color: '#F0F0FF', fontSize: 12,
+                      }}
+                      cursor={{ stroke: 'rgba(78,205,196,0.3)', strokeWidth: 1 }}
+                    />
+                    <Area
+                      type="monotone" dataKey="count"
+                      stroke="#4ECDC4" strokeWidth={2}
+                      fill="url(#widgetGrad)"
+                      activeDot={{ r: 5, fill: '#4ECDC4', strokeWidth: 0 }}
+                      dot={false}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+
+            {/* Top hashes + referrers */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* Top embedded documents */}
+              <div className="bg-[#0D0D1A] border border-white/[0.06] rounded-2xl p-5">
+                <p className="text-sm font-semibold text-[#F0F0FF] mb-4">
+                  Most Viewed Documents
+                </p>
+                <div className="space-y-3">
+                  {widgetAnalytics.topHashes.map((h, i) => (
+                    <div key={h.hash} className="flex items-center gap-3">
+                      <span className="text-xs font-bold text-[#44445A] w-5 text-right flex-shrink-0">
+                        {i + 1}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-[#F0F0FF] truncate">
+                          {h.metadata || `${h.hash.slice(0, 16)}...`}
+                        </p>
+                        <p className="text-[10px] text-[#44445A] font-mono">
+                          {h.hash.slice(0, 12)}...
+                        </p>
+                      </div>
+                      <span className="text-xs font-bold text-[#6C63FF] flex-shrink-0">
+                        {h.widgetViewCount.toLocaleString()}
+                      </span>
+                    </div>
+                  ))}
+                  {widgetAnalytics.topHashes.length === 0 && (
+                    <p className="text-xs text-[#44445A] text-center py-4">
+                      No embedded documents yet
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Top referrer domains */}
+              <div className="bg-[#0D0D1A] border border-white/[0.06] rounded-2xl p-5">
+                <p className="text-sm font-semibold text-[#F0F0FF] mb-4">
+                  Embedding Sites
+                </p>
+                <div className="space-y-3">
+                  {widgetAnalytics.topReferrers.map((r) => {
+                    const maxCount = widgetAnalytics.topReferrers[0]?.count || 1
+                    const pct = (r.count / maxCount) * 100
+                    return (
+                      <div key={r.domain}>
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-xs text-[#F0F0FF] font-mono truncate max-w-[200px]">
+                            {r.domain}
+                          </span>
+                          <span className="text-xs font-bold text-[#4ECDC4]">
+                            {r.count}
+                          </span>
+                        </div>
+                        <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-[#4ECDC4] rounded-full"
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                      </div>
+                    )
+                  })}
+                  {widgetAnalytics.topReferrers.length === 0 && (
+                    <p className="text-xs text-[#44445A] text-center py-4">
+                      No referrer data yet
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 };

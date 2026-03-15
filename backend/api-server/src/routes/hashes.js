@@ -1032,6 +1032,109 @@ router.post('/:hash/widget-view', async (req, res) => {
   }
 })
 
+// GET /api/hashes/widget-analytics — embed widget analytics for org
+router.get('/widget-analytics', authenticate, async (req, res) => {
+  try {
+    const organizationId = req.organization?.id
+    if (!organizationId) {
+      return res.status(400).json({ error: 'No organization linked' })
+    }
+
+    const { from, to } = req.query
+    const dateWhere = {}
+    if (from) dateWhere.gte = new Date(from)
+    if (to) dateWhere.lte = new Date(to)
+    const hasDateFilter = Object.keys(dateWhere).length > 0
+
+    // Get all widget events from audit log
+    const widgetEvents = await prisma.auditLog.findMany({
+      where: {
+        organizationId,
+        category: 'widget',
+        ...(hasDateFilter && { createdAt: dateWhere })
+      },
+      select: {
+        action: true,
+        metadata: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 10000,
+    })
+
+    // Aggregate stats
+    const views = widgetEvents.filter(e => e.action === 'WIDGET_VIEW')
+    const attempts = widgetEvents.filter(e => e.action === 'WIDGET_VERIFY_ATTEMPT')
+    const completions = widgetEvents.filter(e => e.action === 'WIDGET_VERIFY_COMPLETE')
+    const authentic = completions.filter(e => e.metadata?.authentic === true)
+    const mismatch = completions.filter(e => e.metadata?.authentic === false)
+
+    // Total widget view count from HashRecord
+    const totalViewCount = await prisma.hashRecord.aggregate({
+      where: { organizationId },
+      _sum: { widgetViewCount: true }
+    })
+
+    // Top embedded hashes
+    const topHashes = await prisma.hashRecord.findMany({
+      where: {
+        organizationId,
+        widgetViewCount: { gt: 0 }
+      },
+      orderBy: { widgetViewCount: 'desc' },
+      take: 10,
+      select: {
+        hash: true,
+        metadata: true,
+        widgetViewCount: true,
+        status: true,
+      }
+    })
+
+    // Referrer domains breakdown
+    const referrerCounts = widgetEvents.reduce((acc, e) => {
+      const domain = e.metadata?.referrerDomain
+      if (domain) acc[domain] = (acc[domain] || 0) + 1
+      return acc
+    }, {})
+    const topReferrers = Object.entries(referrerCounts)
+      .map(([domain, count]) => ({ domain, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10)
+
+    // Daily views for chart
+    const dailyViews = views.reduce((acc, e) => {
+      const day = e.createdAt.toISOString().split('T')[0]
+      acc[day] = (acc[day] || 0) + 1
+      return acc
+    }, {})
+
+    res.json({
+      summary: {
+        totalViews: totalViewCount._sum.widgetViewCount || 0,
+        verifyAttempts: attempts.length,
+        verifyCompletions: completions.length,
+        authenticResults: authentic.length,
+        mismatchResults: mismatch.length,
+        conversionRate: views.length > 0
+          ? ((completions.length / views.length) * 100).toFixed(1)
+          : '0',
+        authenticRate: completions.length > 0
+          ? ((authentic.length / completions.length) * 100).toFixed(1)
+          : '0',
+      },
+      topHashes,
+      topReferrers,
+      dailyViews: Object.entries(dailyViews)
+        .map(([date, count]) => ({ date, count }))
+        .sort((a, b) => a.date.localeCompare(b.date)),
+    })
+  } catch (err) {
+    console.error('[WIDGET] analytics error:', err)
+    res.status(500).json({ error: 'Failed to fetch widget analytics' })
+  }
+})
+
 /**
  * @route GET /api/hashes/:hash
  * @description Get detail for a specific hash.
