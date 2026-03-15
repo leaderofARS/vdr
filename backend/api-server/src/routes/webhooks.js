@@ -16,7 +16,7 @@ const router = express.Router();
 const webhookSchema = z.object({
     url: z.string().url().regex(/^https:\/\//, "Webhook URL must be HTTPS"),
     events: z.array(z.enum(["anchor_success", "anchor_failed", "hash_revoked"])).min(1),
-    secret: z.string().min(16).max(128)
+    secret: z.string().min(16).max(128).optional()
 });
 
 /**
@@ -29,7 +29,20 @@ router.get('/', authenticate, async (req, res, next) => {
             return res.status(403).json({ error: 'Institutional Context Required' });
         }
 
-        const webhooks = await webhookService.listWebhooks(req.organization.id);
+        const constPrisma = require('../config/database');
+        const webhooks = await constPrisma.webhook.findMany({
+          where: { organizationId: req.organization.id },
+          select: {
+            id: true,
+            url: true,
+            events: true,
+            active: true,
+            failureCount: true,
+            lastTriggeredAt: true,
+            createdAt: true,
+            // secret: false — never return
+          }
+        });
         res.json({ webhooks });
     } catch (error) {
         next(error);
@@ -46,10 +59,24 @@ router.post('/', authenticate, requireRole('admin'), validateInput(webhookSchema
             return res.status(403).json({ error: 'Institutional Context Required' });
         }
 
-        const { url, events, secret } = req.body;
-        const webhook = await webhookService.registerWebhook(req.organization.id, { url, events, secret });
+        let { url, events, secret } = req.body;
+        const crypto = require('crypto');
+        const webhookSecret = secret || crypto.randomBytes(32).toString('hex');
+                        
+        const webhook = await webhookService.registerWebhook(req.organization.id, { url, events, secret: webhookSecret });
 
-        res.status(201).json({ success: true, webhook });
+        res.status(201).json({ 
+            success: true, 
+            webhook: {
+                id: webhook.id,
+                url: webhook.url,
+                events: webhook.events,
+                active: webhook.active,
+                createdAt: webhook.createdAt,
+            },
+            secret: webhookSecret,
+            warning: 'Store this secret securely. It is used to verify webhook signatures and will never be shown again.',
+        });
     } catch (error) {
         if (error.message.includes('Webhook URL') || error.message.includes('Invalid events') || error.message.includes('Secret must be')) {
             return res.status(400).json({ error: error.message });
@@ -158,5 +185,68 @@ router.get('/:id/logs', authenticate, async (req, res, next) => {
         next(error);
     }
 });
+
+// GET /api/webhooks/:id/deliveries — delivery history for a webhook
+router.get('/:id/deliveries', authenticate, async (req, res) => {
+  try {
+    const constPrisma = require('../config/database');
+    const organizationId = req.organization?.id
+    const webhook = await constPrisma.webhook.findFirst({
+      where: { id: req.params.id, organizationId }
+    })
+    if (!webhook) return res.status(404).json({ error: 'Webhook not found' })
+
+    const deliveries = await constPrisma.webhookDelivery.findMany({
+      where: { webhookId: req.params.id },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+      select: {
+        id: true,
+        eventType: true,
+        eventId: true,
+        status: true,
+        httpStatus: true,
+        responseBody: true,
+        attemptCount: true,
+        nextRetryAt: true,
+        deliveredAt: true,
+        failedAt: true,
+        createdAt: true,
+      }
+    })
+
+    res.json({
+      webhookId: req.params.id,
+      deliveries,
+      total: deliveries.length,
+    })
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch deliveries' })
+  }
+})
+
+// POST /api/webhooks/:id/enable — re-enable a disabled webhook
+router.post('/:id/enable', authenticate, requireRole('admin'), async (req, res) => {
+  try {
+    const constPrisma = require('../config/database');
+    const organizationId = req.organization?.id
+    const webhook = await constPrisma.webhook.findFirst({
+      where: { id: req.params.id, organizationId }
+    })
+    if (!webhook) return res.status(404).json({ error: 'Webhook not found' })
+
+    const updated = await constPrisma.webhook.update({
+      where: { id: req.params.id },
+      data: {
+        active: true,
+        disabledAt: null,
+        failureCount: 0,
+      }
+    })
+    res.json({ webhook: updated })
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to enable webhook' })
+  }
+})
 
 module.exports = router;

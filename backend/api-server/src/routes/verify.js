@@ -12,6 +12,8 @@ const prisma = require('../config/database')
 const crypto = require('crypto')
 const multer = require('multer')
 const { idempotencyMiddleware } = require('../middleware/idempotency')
+const { fireWebhookEvent } = require('../services/webhookService')
+const { logAudit, AUDIT_ACTIONS } = require('../utils/auditLogger')
 
 // multer — memory storage, max 100MB, for optional file upload
 const upload = multer({
@@ -72,6 +74,31 @@ router.post('/', idempotencyMiddleware, upload.single('file'), async (req, res) 
     }
 
     if (record.status === 'REVOKED') {
+      if (record && record.organizationId) {
+        fireWebhookEvent(record.organizationId, 'verification.performed', {
+          hash,
+          authentic: false,
+          status: record.status,
+          verifiedAt: verified_at,
+          metadata: record.metadata,
+          txSignature: record.txSignature,
+        }).catch(console.error)
+
+        checkForAnomaly(record, record.organizationId).catch(console.error)
+      }
+
+      logAudit({
+        organizationId: record.organizationId,
+        action: AUDIT_ACTIONS.HASH_VERIFIED || 'HASH_VERIFIED',
+        category: 'hash',
+        metadata: {
+          hash: record.hash,
+          authentic: false,
+          status: record.status,
+        },
+        req,
+      }).catch(console.error)
+
       return res.status(200).json({
         authentic: false,
         status: 'REVOKED',
@@ -102,6 +129,31 @@ router.post('/', idempotencyMiddleware, upload.single('file'), async (req, res) 
     }
 
     const authentic = record.status === 'CONFIRMED'
+
+    if (record && record.organizationId) {
+      fireWebhookEvent(record.organizationId, 'verification.performed', {
+        hash,
+        authentic: authentic,
+        status: record.status,
+        verifiedAt: verified_at,
+        metadata: record.metadata,
+        txSignature: record.txSignature,
+      }).catch(console.error)
+
+      checkForAnomaly(record, record.organizationId).catch(console.error)
+    }
+
+    logAudit({
+      organizationId: record.organizationId,
+      action: AUDIT_ACTIONS.HASH_VERIFIED || 'HASH_VERIFIED',
+      category: 'hash',
+      metadata: {
+        hash: record.hash,
+        authentic,
+        status: record.status,
+      },
+      req,
+    }).catch(console.error)
 
     return res.status(200).json({
       authentic,
@@ -141,6 +193,39 @@ router.post('/', idempotencyMiddleware, upload.single('file'), async (req, res) 
     })
   }
 })
+
+async function checkForAnomaly(record, organizationId) {
+  try {
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000)
+
+    // Count recent verifications — use audit log if available
+    const recentCount = await prisma.auditLog.count({
+      where: {
+        organizationId: record.organizationId,
+        action: 'HASH_VERIFIED',
+        metadata: { path: ['hash'], equals: record.hash },
+        createdAt: { gte: oneHourAgo },
+      }
+    }).catch(() => 0)
+
+    const ANOMALY_THRESHOLD = 10
+
+    if (recentCount >= ANOMALY_THRESHOLD) {
+      await fireWebhookEvent(record.organizationId, 'anomaly.detected', {
+        hash: record.hash,
+        metadata: record.metadata,
+        anomalyType: 'high_verification_frequency',
+        verificationCount: recentCount,
+        windowMinutes: 60,
+        threshold: ANOMALY_THRESHOLD,
+        detectedAt: new Date().toISOString(),
+      })
+    }
+  } catch (err) {
+    // Never throw — anomaly detection is non-critical
+    console.error('[ANOMALY] detection error:', err.message)
+  }
+}
 
 // POST /api/verify/batch — verify up to 500 hashes at once
 router.post('/batch', async (req, res) => {

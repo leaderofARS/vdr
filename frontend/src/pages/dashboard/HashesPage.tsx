@@ -245,6 +245,48 @@ export const HashesPage: React.FC = () => {
     toast.success(`${label} copied`);
   };
 
+  // Download Certificate
+  const handleDownloadCertificate = async (hash: string) => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL || 'https://api.sipheron.com'}/api/hashes/${hash}/certificate?download=true`,
+        {
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            ...(localStorage.getItem('sipheron_api_key')
+              ? { 'x-api-key': localStorage.getItem('sipheron_api_key') as string }
+              : {}),
+          },
+        }
+      )
+
+      if (!response.ok) {
+        let errorMsg = 'Certificate generation failed'
+        try {
+          const errData = await response.json()
+          if (errData.error) errorMsg = errData.error
+        } catch (e) {
+          // ignore parsing error if not json
+        }
+        throw new Error(errorMsg)
+      }
+
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `sipheron-certificate-${hash.slice(0, 8)}.pdf`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } catch (err: any) {
+      console.error('Certificate download failed:', err)
+      toast.error(err.message || 'Failed to download certificate')
+    }
+  }
+
   // Handle file hash computed
   const handleHashComputed = (hash: string | null, filename: string | null) => {
     setFileHash(hash);
@@ -545,6 +587,13 @@ export const HashesPage: React.FC = () => {
                           >
                             <Copy className="w-4 h-4 mr-2" />
                             Copy Link
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="cursor-pointer text-[#F0F0FF] focus:bg-white/[0.03]"
+                            onClick={() => handleDownloadCertificate(hash.hash)}
+                          >
+                            <Download className="w-4 h-4 mr-2 text-[#6C63FF]" />
+                            Download Certificate
                           </DropdownMenuItem>
                           {hash.status !== 'revoked' && (
                             <>

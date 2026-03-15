@@ -47,6 +47,18 @@ const ENDPOINTS = [
     ]
   },
   {
+    id: 'certificate',
+    name: 'Generate Certificate',
+    method: 'GET',
+    path: '/api/hashes/:hash/certificate',
+    description: 'Generate a notarization PDF certificate for an anchored document',
+    defaultBody: null,
+    params: [
+      { name: 'hash', type: 'string', required: true, description: 'SHA-256 hash' },
+      { name: 'download', type: 'boolean', required: false, description: 'Set to true to force download' }
+    ]
+  },
+  {
     id: 'list',
     name: 'List Hashes',
     method: 'GET',

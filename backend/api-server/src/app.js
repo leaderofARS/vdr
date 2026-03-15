@@ -269,3 +269,8 @@ const { cleanupExpiredRecords } = require('./middleware/idempotency')
 setInterval(cleanupExpiredRecords, 60 * 60 * 1000)
 // Also run on startup
 cleanupExpiredRecords().catch(console.error)
+
+const { processPendingRetries } = require('./services/webhookService')
+// Start webhook retry processor — run every 60 seconds
+setInterval(processPendingRetries, 60 * 1000)
+processPendingRetries().catch(console.error) // run on startup

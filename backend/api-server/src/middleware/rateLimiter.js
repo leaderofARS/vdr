@@ -7,6 +7,7 @@
 const { rateLimit, ipKeyGenerator } = require('express-rate-limit');
 const { RedisStore } = require('rate-limit-redis');
 const redisClient = require('../services/redis');
+const { fireWebhookEvent } = require('../services/webhookService');
 
 // Disable rate limiting in test environment
 if (process.env.NODE_ENV === 'test') {
@@ -222,6 +223,17 @@ async function monthlyQuotaMiddleware(req, res, next) {
     if (used >= limit) {
       const retryAfter = Math.max(1, Math.ceil((resetDate.getTime() - now.getTime()) / 1000));
       res.setHeader('Retry-After', retryAfter.toString());
+      
+      // Before returning 429 for quota exceeded:
+      // Fire quota.exceeded event (do not await — non-blocking)
+      fireWebhookEvent(freshOrg.id, 'quota.exceeded', {
+        organizationId: freshOrg.id,
+        plan: freshOrg.plan,
+        limit,
+        used,
+        resetAt: resetDate.toISOString(),
+      }).catch(console.error)
+
       return res.status(429).json({
         error: 'MONTHLY_QUOTA_EXCEEDED',
         message: `Monthly anchor limit of ${limit} reached for the ${freshOrg.plan} plan`,
@@ -319,6 +331,23 @@ async function sendQuotaAlert(org, percentage, used, limit) {
       where: { id: org.id },
       data: updateData
     })
+
+    // Fire quota.warning webhook event
+    await fireWebhookEvent(org.id, 'quota.warning', {
+      organizationId: org.id,
+      organizationName: org.name,
+      plan: org.plan,
+      threshold: percentage,  // 80 or 95
+      used,
+      limit,
+      remaining: limit - used,
+      percentUsed: ((used / limit) * 100).toFixed(1),
+      resetAt: new Date(
+        new Date().getFullYear(),
+        new Date().getMonth() + 1,
+        1
+      ).toISOString(),
+    }).catch(console.error)
   } catch (err) {
     console.error('[QUOTA] alert email error:', err)
   }

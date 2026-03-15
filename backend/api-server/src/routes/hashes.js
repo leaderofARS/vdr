@@ -13,6 +13,8 @@ const webhookService = require('../services/webhookService');
 const { logAudit, AUDIT_ACTIONS } = require('../utils/auditLogger');
 const { monthlyQuotaMiddleware, incrementAnchorUsage } = require('../middleware/rateLimiter');
 const { idempotencyMiddleware } = require('../middleware/idempotency');
+const { fireWebhookEvent } = require('../services/webhookService');
+const { generateCertificate } = require('../services/certificateService');
 
 const router = express.Router();
 
@@ -278,45 +280,106 @@ router.post('/', authenticate, monthlyQuotaMiddleware, idempotencyMiddleware, as
             return res.status(409).json({ error: 'Hash already registered by your organization' });
         }
 
-        // 2. Perform Solana transaction
-        const { tx, owner, pdaAddress, blockNumber, blockTimestamp } = await solanaService.registerHash(hash, metadata, 0);
-
-        // 3. Increment Anchor Usage AFTER confirmation
-        await incrementAnchorUsage(organizationId);
-
-        // 4. Create PENDING record in DB so UI can show it immediately
-        const record = await prisma.hashRecord.create({
+        // 2. Create PENDING record in DB so UI can show it immediately
+        let record = await prisma.hashRecord.create({
             data: {
                 hash,
                 metadata,
                 organizationId,
                 status: 'PENDING',
-                txSignature: tx,
-                ownerWallet: owner,
-                pdaAddress: pdaAddress,
+                ownerWallet: 'pending',
+                pdaAddress: 'pending',
+                txSignature: 'pending',
                 timestamp: Math.floor(Date.now() / 1000),
-                blockNumber: blockNumber || null,
-                blockTimestamp: blockTimestamp || null,
                 fileSize: fileSize ? BigInt(fileSize) : null,
                 mimeType: mimeType || null,
                 tags: tags || [],
             }
         });
 
-        await logAudit({
-            organizationId,
-            userId: req.user?.id,
-            action: AUDIT_ACTIONS.HASH_ANCHORED,
-            category: 'hash',
-            metadata: { hash: hash.slice(0, 16) + '...', metadata },
-            req
-        });
+        // After prisma.hashRecord.create — fire anchor.created
+        // Do NOT await — non-blocking
+        fireWebhookEvent(organizationId, 'anchor.created', {
+          hash: record.hash,
+          metadata: record.metadata,
+          status: 'PENDING',
+          fileSize: record.fileSize?.toString() || null,
+          mimeType: record.mimeType || null,
+          tags: record.tags || [],
+          createdAt: record.createdAt,
+          organizationId,
+        }).catch(console.error);
 
-        res.status(201).json({
-            success: true,
-            hash: record.hash,
-            txSignature: tx
-        });
+        try {
+            // 3. Perform Solana transaction
+            const { tx, owner, pdaAddress, blockNumber, blockTimestamp } = await solanaService.registerHash(hash, metadata, 0);
+
+            // 4. Update to CONFIRMED
+            record = await prisma.hashRecord.update({
+                where: { id: record.id },
+                data: {
+                    status: 'CONFIRMED',
+                    txSignature: tx,
+                    ownerWallet: owner,
+                    pdaAddress: pdaAddress,
+                    blockNumber: blockNumber || null,
+                    blockTimestamp: blockTimestamp || null,
+                }
+            });
+
+            // 5. Increment Anchor Usage AFTER confirmation
+            await incrementAnchorUsage(organizationId);
+
+            // After status updated to CONFIRMED — fire anchor.confirmed
+            fireWebhookEvent(organizationId, 'anchor.confirmed', {
+              hash: record.hash,
+              metadata: record.metadata,
+              status: 'CONFIRMED',
+              txSignature: record.txSignature,
+              blockNumber: record.blockNumber?.toString(),
+              blockTimestamp: record.blockTimestamp,
+              explorerUrl: record.txSignature
+                ? `https://explorer.solana.com/tx/${record.txSignature}?cluster=devnet`
+                : null,
+              confirmedAt: new Date().toISOString(),
+              organizationId,
+            }).catch(console.error);
+
+            await logAudit({
+                organizationId,
+                userId: req.user?.id,
+                action: AUDIT_ACTIONS.HASH_ANCHORED,
+                category: 'hash',
+                metadata: { hash: hash.slice(0, 16) + '...', metadata },
+                req
+            });
+
+            res.status(201).json({
+                success: true,
+                hash: record.hash,
+                txSignature: tx
+            });
+
+        } catch (txError) {
+            // Update to FAILED
+            record = await prisma.hashRecord.update({
+                where: { id: record.id },
+                data: { status: 'FAILED' }
+            });
+
+            // After status updated to FAILED — fire anchor.failed
+            fireWebhookEvent(organizationId, 'anchor.failed', {
+              hash: record.hash,
+              metadata: record.metadata,
+              status: 'FAILED',
+              error: txError.message || 'Blockchain transaction failed',
+              failedAt: new Date().toISOString(),
+              organizationId,
+            }).catch(console.error);
+
+            throw txError;
+        }
+
     } catch (err) {
         console.error('[HASHES] anchor error:', err);
         if (err.message?.includes('already in use')) {
@@ -443,6 +506,141 @@ router.post('/bulk-verify', authenticate, async (req, res) => {
         res.status(500).json({ error: 'Bulk verification failed' });
     }
 });
+
+/**
+ * @route GET /api/hashes/:hash/certificate
+ * @description Generate and download PDF certificate. Also accessible as GET /v1/anchors/:id/certificate
+ */
+router.get('/:hash/certificate', authenticate, async (req, res) => {
+  try {
+    const organizationId = req.organization?.id
+    const { hash } = req.params
+    const { download } = req.query // ?download=true forces file download
+
+    // Fetch full record with organization details
+    const record = await prisma.hashRecord.findFirst({
+      where: { hash, organizationId },
+      include: {
+        organization: {
+          select: {
+            id: true,
+            name: true,
+            website: true,
+            address: true,
+            logoUrl: true,
+          }
+        }
+      }
+    })
+
+    if (!record) {
+      return res.status(404).json({ error: 'Hash record not found' })
+    }
+
+    // Generate PDF
+    const pdfBuffer = await generateCertificate(record)
+
+    // Update certificate generation stats
+    await prisma.hashRecord.update({
+      where: { id: record.id },
+      data: {
+        certificateGeneratedAt: record.certificateGeneratedAt || new Date(),
+        certificateCount: { increment: 1 },
+      }
+    })
+
+    // Fire certificate.generated webhook event
+    const { fireWebhookEvent } = require('../services/webhookService')
+    fireWebhookEvent(organizationId, 'certificate.generated', {
+      hash: record.hash,
+      metadata: record.metadata,
+      status: record.status,
+      certificateCount: (record.certificateCount || 0) + 1,
+      generatedAt: new Date().toISOString(),
+      generatedBy: req.user?.id || null,
+      organizationId,
+    }).catch(console.error)
+
+    // Log to audit
+    const { logAudit } = require('../utils/auditLogger')
+    logAudit({
+      organizationId,
+      userId: req.user?.id,
+      action: 'CERTIFICATE_GENERATED',
+      category: 'hash',
+      metadata: {
+        hash: hash.slice(0, 16) + '...',
+        metadata: record.metadata,
+      },
+      req,
+    }).catch(console.error)
+
+    // Set response headers
+    const filename = `sipheron-certificate-${hash.slice(0, 8)}.pdf`
+    res.setHeader('Content-Type', 'application/pdf')
+    res.setHeader('Content-Length', pdfBuffer.length)
+
+    if (download === 'true') {
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="${filename}"`
+      )
+    } else {
+      res.setHeader(
+        'Content-Disposition',
+        `inline; filename="${filename}"`
+      )
+    }
+
+    res.send(pdfBuffer)
+  } catch (err) {
+    console.error('[CERTIFICATE] generation error:', err)
+    res.status(500).json({
+      error: 'Certificate generation failed',
+      message: err.message,
+    })
+  }
+})
+
+// GET /api/hashes/:hash/certificate/public — public certificate (no auth)
+// Anyone with the hash can download the certificate
+router.get('/:hash/certificate/public', async (req, res) => {
+  try {
+    const { hash } = req.params
+    const { download } = req.query
+
+    const record = await prisma.hashRecord.findUnique({
+      where: { hash },
+      include: {
+        organization: {
+          select: { id: true, name: true, website: true }
+        }
+      }
+    })
+
+    if (!record) {
+      return res.status(404).json({ error: 'Hash record not found' })
+    }
+
+    const pdfBuffer = await generateCertificate(record)
+
+    const filename = `sipheron-certificate-${hash.slice(0, 8)}.pdf`
+    res.setHeader('Content-Type', 'application/pdf')
+    res.setHeader('Content-Length', pdfBuffer.length)
+    res.setHeader(
+      'Content-Disposition',
+      download === 'true'
+        ? `attachment; filename="${filename}"`
+        : `inline; filename="${filename}"`
+    )
+    res.setHeader('Cache-Control', 'public, max-age=300')
+
+    res.send(pdfBuffer)
+  } catch (err) {
+    console.error('[CERTIFICATE] public generation error:', err)
+    res.status(500).json({ error: 'Certificate generation failed' })
+  }
+})
 
 /**
  * @route GET /api/hashes/:hash/status

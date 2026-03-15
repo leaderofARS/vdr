@@ -36,6 +36,7 @@ model Organization {
   records       HashRecord[]
   notifications Notification[]
   webhooks      Webhook[]
+  webhookDeliveries WebhookDelivery[]
   members       OrgMember[]
   invites       OrgInvite[]
   auditLogs     AuditLog[]
@@ -48,6 +49,10 @@ model Organization {
   usageResetAt      DateTime @default(now())      // when monthly usage resets
   quotaAlertSent80  Boolean  @default(false)      // 80% alert sent this month
   quotaAlertSent95  Boolean  @default(false)      // 95% alert sent this month
+
+  logoUrl        String?   // org logo URL for white-label certificates
+  website        String?   // org website shown on certificate
+  address        String?   // org address shown on certificate
 
   createdAt DateTime @default(now())
 }
@@ -96,6 +101,8 @@ model HashRecord {
   tags           String[]  // Array of user-defined tags
   revokedBy      String?   // User ID who revoked
   revocationNote String?   // Reason for revocation
+  certificateGeneratedAt DateTime?  // when certificate was first generated
+  certificateCount       Int        @default(0) // how many times generated
   @@index([organizationId])
 }
 
@@ -136,12 +143,40 @@ model Webhook {
   secret          String // HMAC signing secret
   events          String[] // ["anchor_success", "anchor_failed", "hash_revoked"]
   isActive        Boolean   @default(true)
+  active          Boolean   @default(true)
   createdAt       DateTime  @default(now())
   lastTriggeredAt DateTime?
   failureCount    Int       @default(0)
+  disabledAt      DateTime?
 
   organization Organization @relation(fields: [organizationId], references: [id])
   logs         WebhookLog[]
+  deliveries   WebhookDelivery[]
+}
+
+model WebhookDelivery {
+  id              String   @id @default(uuid())
+  webhookId       String
+  organizationId  String
+  eventType       String               // e.g. anchor.confirmed
+  eventId         String               // unique ID for this event instance
+  payload         Json                 // full event payload sent
+  status          String   @default("pending")  // pending|delivered|failed|retrying
+  httpStatus      Int?                 // response status code from customer endpoint
+  responseBody    String?  @db.Text    // response body from customer endpoint (truncated to 1000 chars)
+  attemptCount    Int      @default(0) // how many delivery attempts made
+  nextRetryAt     DateTime?            // when next retry is scheduled
+  deliveredAt     DateTime?            // when first successful delivery happened
+  failedAt        DateTime?            // when permanently marked as failed
+  createdAt       DateTime @default(now())
+  webhook         Webhook  @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([webhookId])
+  @@index([organizationId])
+  @@index([status])
+  @@index([nextRetryAt])
+  @@index([eventType])
 }
 
 model WebhookLog {

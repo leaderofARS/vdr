@@ -257,6 +257,30 @@ export const VerifyPage: React.FC = () => {
               )}
             </div>
           )}
+
+          {isVerified && result?.record && (
+            <div className="mt-8 flex flex-col items-center sm:items-start text-center sm:text-left">
+              <a
+                href={`${API_BASE}/api/hashes/${result.record.hash}/certificate/public?download=true`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center w-full sm:w-auto gap-2 px-6 py-3
+                           bg-[#6C63FF] hover:bg-[#5B52E8] text-white
+                           text-sm font-semibold rounded-xl transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0
+                       012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0
+                       01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Download Verification Certificate
+              </a>
+              <p className="text-xs text-[#44445A] mt-3">
+                PDF certificate with blockchain proof · No account required
+              </p>
+            </div>
+          )}
         </div>
 
         {/* ── Verify Your Document ── */}
