@@ -826,7 +826,7 @@ router.get('/:hash/certificate/public', async (req, res) => {
       where: { hash },
       include: {
         organization: {
-          select: { id: true, name: true, website: true }
+          select: { id: true, name: true, website: true, logoUrl: true }
         }
       }
     })

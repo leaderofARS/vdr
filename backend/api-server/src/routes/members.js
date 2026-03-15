@@ -42,10 +42,10 @@ router.get('/', authenticate, async (req, res) => {
         const org = await prisma.organization.findUnique({
             where: { id: organizationId },
             include: {
-                owner: { select: { id: true, email: true, name: true, createdAt: true } },
+                owner: { select: { id: true, email: true, name: true, createdAt: true, lastActiveAt: true } },
                 members: {
                     include: {
-                        user: { select: { id: true, email: true, name: true, createdAt: true } }
+                        user: { select: { id: true, email: true, name: true, createdAt: true, lastActiveAt: true } }
                     },
                     orderBy: { joinedAt: 'asc' }
                 }
@@ -75,9 +75,62 @@ router.get('/', authenticate, async (req, res) => {
                 isOwner: false
             }));
 
+        const membersList = [ownerEntry, ...memberList];
+        const userIds = membersList.map(m => m.userId || m.id).filter(Boolean);
+
+        const [anchorCounts, keysByUser] = await Promise.all([
+            prisma.hashRecord.groupBy({
+                by: ['userId'],
+                where: {
+                    organizationId,
+                    userId: { in: userIds }
+                },
+                _count: { id: true }
+            }),
+            prisma.apiKey.findMany({
+                where: {
+                    organizationId,
+                    userId: { in: userIds },
+                    revoked: false
+                },
+                select: {
+                    id: true,
+                    name: true,
+                    scope: true,
+                    createdAt: true,
+                    lastUsedAt: true,
+                    userId: true
+                }
+            })
+        ]);
+
+        const anchorMap = Object.fromEntries(anchorCounts.map(a => [a.userId, a._count.id]));
+        const keysMap = keysByUser.reduce((acc, key) => {
+            if (!acc[key.userId]) acc[key.userId] = [];
+            acc[key.userId].push({
+                id: key.id,
+                name: key.name,
+                scope: key.scope,
+                createdAt: key.createdAt,
+                lastUsedAt: key.lastUsedAt
+            });
+            return acc;
+        }, {});
+
+        const enrichedMembers = membersList.map(member => {
+            const uid = member.userId || member.id;
+            const userObj = member.isOwner ? org.owner : org.members.find(m => m.userId === uid)?.user;
+            return {
+                ...member,
+                anchorsCount: anchorMap[uid] || 0,
+                apiKeys: keysMap[uid] || [],
+                lastActiveAt: userObj?.lastActiveAt || null
+            };
+        });
+
         res.json({
-            members: [ownerEntry, ...memberList],
-            total: 1 + memberList.length
+            members: enrichedMembers,
+            total: enrichedMembers.length
         });
     } catch (err) {
         console.error('[MEMBERS] list error:', err);
@@ -355,6 +408,22 @@ router.delete('/:memberId', authenticate, requireRole('admin'), async (req, res)
         }
         if (callerRole === 'admin' && member.role === 'admin') {
             return res.status(403).json({ error: 'Admins cannot remove other admins' });
+        }
+
+        if (member.userId) {
+            const revokedKeys = await prisma.apiKey.updateMany({
+                where: {
+                    organizationId,
+                    userId: member.userId,
+                    revoked: false
+                },
+                data: {
+                    revoked: true,
+                    revokedAt: new Date(),
+                    revokedReason: 'Member removed from organization'
+                }
+            });
+            console.log(`[MEMBERS] Revoked ${revokedKeys.count} API keys for removed member ${member.userId}`);
         }
 
         await prisma.orgMember.delete({ where: { id: memberId } });

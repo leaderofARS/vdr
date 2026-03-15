@@ -55,6 +55,7 @@ const webhooksRoute = require("./routes/webhooks");
 const usageRoute = require("./routes/usage");
 const keysRoute = require("./routes/keys");
 const membersRouter = require('./routes/members');
+const rolesRouter = require('./routes/roles');
 const auditRouter = require('./routes/audit');
 const statsRouter = require('./routes/stats');
 const usageLogger = require("./middleware/usageLogger");
@@ -225,6 +226,7 @@ app.use("/api/notifications", notificationsRoute);
 app.use("/api/webhooks", webhooksRoute);
 app.use('/api/usage', usageRoute);
 app.use('/api/members', membersRouter);
+app.use('/api/roles', rolesRouter);
 app.use('/api/audit', auditRouter);
 app.use('/api/stats', statsRouter);
 // app.use("/api", usageLogger); // Removed from here and moved before routes

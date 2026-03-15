@@ -72,6 +72,7 @@ import {
   AnalyticsPage,
   ApiKeysPage as DashboardApiKeysPage,
   TeamPage,
+  RolesPage,
   SettingsPage,
   BillingPage,
   NotificationsPage,
@@ -223,6 +224,7 @@ const AppRoutes: FC = () => {
         <Route path="analytics" element={<AnalyticsPage />} />
         <Route path="keys" element={<DashboardApiKeysPage />} />
         <Route path="team" element={<TeamPage />} />
+        <Route path="roles" element={<RolesPage />} />
         <Route path="webhooks" element={<WebhooksPage />} />
         <Route path="audit" element={<AuditPage />} />
         <Route path="playground" element={<PlaygroundPage />} />

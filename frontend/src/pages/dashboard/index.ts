@@ -5,6 +5,7 @@ export { BulkVerifyPage } from './BulkVerifyPage';
 export { AnalyticsPage } from './AnalyticsPage';
 export { ApiKeysPage } from './ApiKeysPage';
 export { TeamPage } from './TeamPage';
+export { default as RolesPage } from './RolesPage';
 export { SettingsPage } from './SettingsPage';
 export { BillingPage } from './BillingPage';
 export { PlaceholderPage } from './PlaceholderPage';

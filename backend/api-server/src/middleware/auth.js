@@ -73,6 +73,7 @@ const authenticate = async (req, res, next) => {
 
                     if (org?.ownerId === req.user.id) {
                         req.user.orgRole = 'owner';
+                        req.user.customPermissions = [];
                     } else {
                         const member = await prisma.orgMember.findUnique({
                             where: {
@@ -81,14 +82,34 @@ const authenticate = async (req, res, next) => {
                                     userId: req.user.id
                                 }
                             },
-                            select: { role: true }
+                            select: { role: true, customRoleId: true }
                         });
                         req.user.orgRole = member?.role || 'member';
+
+                        if (member?.role === 'custom' && member?.customRoleId) {
+                            const customRole = await prisma.customRole.findUnique({
+                                where: { id: member.customRoleId },
+                                select: { permissions: true }
+                            }).catch(() => null);
+                            req.user.customPermissions = customRole?.permissions || [];
+                        } else {
+                            req.user.customPermissions = [];
+                        }
                     }
                 } catch (err) {
                     req.user.orgRole = 'member';
+                    req.user.customPermissions = [];
                 }
             }
+
+            setImmediate(() => {
+                if (req.user && req.user.id) {
+                    prisma.user.update({
+                        where: { id: req.user.id },
+                        data: { lastActiveAt: new Date() }
+                    }).catch(() => {});
+                }
+            });
 
             return next();
         }
@@ -132,6 +153,7 @@ const authenticate = async (req, res, next) => {
 
                     if (org?.ownerId === req.user.id) {
                         req.user.orgRole = 'owner';
+                        req.user.customPermissions = [];
                     } else {
                         const member = await prisma.orgMember.findUnique({
                             where: {
@@ -140,14 +162,34 @@ const authenticate = async (req, res, next) => {
                                     userId: req.user.id
                                 }
                             },
-                            select: { role: true }
+                            select: { role: true, customRoleId: true }
                         });
                         req.user.orgRole = member?.role || 'member';
+
+                        if (member?.role === 'custom' && member?.customRoleId) {
+                            const customRole = await prisma.customRole.findUnique({
+                                where: { id: member.customRoleId },
+                                select: { permissions: true }
+                            }).catch(() => null);
+                            req.user.customPermissions = customRole?.permissions || [];
+                        } else {
+                            req.user.customPermissions = [];
+                        }
                     }
                 } catch (err) {
                     req.user.orgRole = 'member';
+                    req.user.customPermissions = [];
                 }
             }
+
+            setImmediate(() => {
+                if (req.user && req.user.id) {
+                    prisma.user.update({
+                        where: { id: req.user.id },
+                        data: { lastActiveAt: new Date() }
+                    }).catch(() => {});
+                }
+            });
 
             return next();
         }

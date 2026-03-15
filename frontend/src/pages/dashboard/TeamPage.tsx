@@ -14,11 +14,20 @@ interface TeamMember {
   id: string;
   name: string;
   email: string;
-  role: 'owner' | 'admin' | 'member' | 'viewer';
+  role: string | 'owner' | 'admin' | 'member' | 'viewer';
   avatar?: string;
   joinedAt: string;
   isOwner?: boolean;
   lastActive?: string;
+  lastActiveAt?: string | null;
+  anchorsCount?: number;
+  apiKeys?: {
+    id: string;
+    name: string;
+    scope: string;
+    createdAt: string;
+    lastUsedAt?: string | null;
+  }[];
 }
 
 interface PendingInvite {
@@ -60,6 +69,17 @@ const getTimeAgo = (dateString: string): string => {
   return date.toLocaleDateString();
 };
 
+function timeAgo(date: string): string {
+  const secs = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
+  if (secs < 60) return `${secs}s ago`;
+  if (secs < 3600) return `${Math.floor(secs / 60)}m ago`;
+  if (secs < 86400) return `${Math.floor(secs / 3600)}h ago`;
+  if (secs < 86400 * 7) return `${Math.floor(secs / 86400)}d ago`;
+  return new Date(date).toLocaleDateString('en-US', {
+    month: 'short', day: 'numeric'
+  });
+}
+
 // Calculate expires in from expiresAt
 const getExpiresIn = (expiresAt: string): string => {
   const date = new Date(expiresAt);
@@ -81,6 +101,7 @@ export const TeamPage: React.FC = () => {
   const [isInviting, setIsInviting] = useState(false);
   const [isCancelling, setIsCancelling] = useState<string | null>(null);
   const [isRemoving, setIsRemoving] = useState<string | null>(null);
+  const [expandedMember, setExpandedMember] = useState<string | null>(null);
 
   // Fetch members and invites
   const fetchData = useCallback(async () => {
@@ -98,7 +119,7 @@ export const TeamPage: React.FC = () => {
       const processedMembers = fetchedMembers.map((member: TeamMember) => ({
         ...member,
         avatar: getInitials(member.name || member.email),
-        lastActive: getTimeAgo(member.joinedAt),
+        lastActive: member.lastActiveAt ? timeAgo(member.lastActiveAt) : 'Never active',
       }));
 
       // Process invites to add expiresIn
@@ -365,15 +386,103 @@ export const TeamPage: React.FC = () => {
             <div className="mt-4 pt-4 border-t border-white/[0.06]">
               <div className="flex items-center justify-between">
                 <div>
-                  <span className={`text-[10px] px-1.5 py-0.5 rounded border ${roleColors[member.role]}`}>
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded border ${roleColors[member.role] || 'bg-white/10 text-white/70 border-white/20'}`}>
                     {member.role.toUpperCase()}
                   </span>
                 </div>
-                <div className="text-right">
-                  <div className="text-[10px] text-sipheron-text-muted">Last active</div>
-                  <div className="text-xs text-sipheron-text-secondary">{member.lastActive}</div>
+              </div>
+
+              {/* Member stats row */}
+              <div className="flex flex-wrap items-center gap-4 mt-2">
+
+                {/* Last active */}
+                <div className="flex items-center gap-1.5">
+                  <div className={`w-2 h-2 rounded-full ${
+                    member.lastActiveAt &&
+                    Date.now() - new Date(member.lastActiveAt).getTime() < 24 * 60 * 60 * 1000
+                      ? 'bg-[#00D97E]'       // active in last 24h — green
+                      : member.lastActiveAt &&
+                        Date.now() - new Date(member.lastActiveAt).getTime() < 7 * 24 * 60 * 60 * 1000
+                        ? 'bg-[#FFD93D]'     // active in last 7d — yellow
+                        : 'bg-[#44445A]'     // inactive — gray
+                  }`} />
+                  <span className="text-[10px] text-[#8888AA]">
+                    {member.lastActiveAt
+                      ? `Active ${timeAgo(member.lastActiveAt)}`
+                      : 'Never active'}
+                  </span>
+                </div>
+
+                {/* Anchor count */}
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] text-[#8888AA]">
+                    <span className="text-[#F0F0FF] font-semibold">
+                      {(member.anchorsCount || 0).toLocaleString()}
+                    </span>
+                    {' '}anchors
+                  </span>
+                </div>
+
+                {/* API keys count */}
+                {member.apiKeys && member.apiKeys.length > 0 && (
+                  <div 
+                    className="flex items-center gap-1.5 cursor-pointer hover:bg-white/5 rounded px-1 -mx-1 transition-colors"
+                    onClick={() => setExpandedMember(expandedMember === member.id ? null : member.id)}
+                  >
+                    <span className="text-[10px] text-[#8888AA]">
+                      <span className="text-[#F0F0FF] font-semibold">
+                        {member.apiKeys.length}
+                      </span>
+                      {' '}API {member.apiKeys.length === 1 ? 'key' : 'keys'}
+                    </span>
+                  </div>
+                )}
+
+                {/* Member since */}
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] text-[#44445A]">
+                    Joined {member.joinedAt
+                      ? new Date(member.joinedAt).toLocaleDateString('en-US', {
+                          month: 'short', year: 'numeric'
+                        })
+                      : '—'}
+                  </span>
                 </div>
               </div>
+
+              {/* API Keys expandable section — shown on click/hover */}
+              {member.apiKeys && member.apiKeys.length > 0 && expandedMember === member.id && (
+                <div className="mt-3 bg-black/40 border border-white/[0.06]
+                                rounded-xl p-3 space-y-2">
+                  <p className="text-[10px] text-[#44445A] uppercase tracking-widest
+                                 font-bold">
+                    API Keys
+                  </p>
+                  {member.apiKeys.map(key => (
+                    <div key={key.id}
+                      className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2">
+                        <span className={`text-[10px] font-bold px-1.5 py-0.5
+                                           rounded border ${
+                          key.scope === 'admin'
+                            ? 'text-red-400 bg-red-400/10 border-red-400/20'
+                            : key.scope === 'write'
+                              ? 'text-blue-400 bg-blue-400/10 border-blue-400/20'
+                              : 'text-gray-400 bg-gray-400/10 border-gray-400/10'
+                        }`}>
+                          {key.scope.toUpperCase()}
+                        </span>
+                        <span className="text-xs text-[#F0F0FF]">{key.name}</span>
+                      </div>
+                      <span className="text-[10px] text-[#44445A]">
+                        {key.lastUsedAt
+                          ? `Used ${timeAgo(key.lastUsedAt)}`
+                          : 'Never used'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         ))}

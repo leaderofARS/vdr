@@ -25,6 +25,7 @@ import {
   ChevronRight,
   Settings2,
   LogOut,
+  Shield,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -54,6 +55,7 @@ const navSections: NavSection[] = [
     items: [
       { icon: Key, label: 'API Keys', href: '/dashboard/keys' },
       { icon: Users, label: 'Team', href: '/dashboard/team' },
+      { icon: Shield, label: 'Roles & Permissions', href: '/dashboard/roles' },
       { icon: Webhook, label: 'Webhooks', href: '/dashboard/webhooks' },
       { icon: ClipboardList, label: 'Audit Log', href: '/dashboard/audit' },
     ],
