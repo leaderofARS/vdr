@@ -10,6 +10,7 @@ const webhookService = require('../services/webhookService');
 const { z } = require('zod');
 const { validateInput } = require('../middleware/security');
 const { requireRole } = require('../middleware/rbac');
+const { logAudit, AUDIT_ACTIONS } = require('../utils/auditLogger');
 
 const router = express.Router();
 
@@ -65,6 +66,15 @@ router.post('/', authenticate, requireRole('admin'), validateInput(webhookSchema
                         
         const webhook = await webhookService.registerWebhook(req.organization.id, { url, events, secret: webhookSecret });
 
+        logAudit({
+          organizationId: req.organization.id,
+          userId: req.user?.id,
+          action: AUDIT_ACTIONS.WEBHOOK_CREATED,
+          category: 'webhook',
+          metadata: { webhookId: webhook.id, url: webhook.url, events: webhook.events },
+          req,
+        }).catch(console.error);
+
         res.status(201).json({ 
             success: true, 
             webhook: {
@@ -96,6 +106,16 @@ router.delete('/:id', authenticate, requireRole('admin'), async (req, res, next)
         }
 
         const deleted = await webhookService.deleteWebhook(req.organization.id, req.params.id);
+
+        logAudit({
+          organizationId: req.organization.id,
+          userId: req.user?.id,
+          action: AUDIT_ACTIONS.WEBHOOK_DELETED,
+          category: 'webhook',
+          metadata: { webhookId: req.params.id },
+          req,
+        }).catch(console.error);
+
         res.json({ success: true, count: deleted.count });
     } catch (error) {
         next(error);
@@ -144,6 +164,16 @@ router.patch('/:id', authenticate, requireRole('admin'), async (req, res) => {
         updatedAt: new Date(),
       }
     })
+
+    logAudit({
+      organizationId,
+      userId: req.user?.id,
+      action: AUDIT_ACTIONS.WEBHOOK_UPDATED,
+      category: 'webhook',
+      metadata: { webhookId: req.params.id, changes: { url, events, active } },
+      req,
+    }).catch(console.error);
+
     res.json({ webhook: updated })
   } catch (err) {
     res.status(500).json({ error: 'Failed to update webhook' })
@@ -243,6 +273,16 @@ router.post('/:id/enable', authenticate, requireRole('admin'), async (req, res) 
         failureCount: 0,
       }
     })
+
+    logAudit({
+      organizationId,
+      userId: req.user?.id,
+      action: AUDIT_ACTIONS.WEBHOOK_ENABLED,
+      category: 'webhook',
+      metadata: { webhookId: req.params.id },
+      req,
+    }).catch(console.error);
+
     res.json({ webhook: updated })
   } catch (err) {
     res.status(500).json({ error: 'Failed to enable webhook' })

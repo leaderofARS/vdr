@@ -146,6 +146,7 @@ export const AuditPage: React.FC = () => {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [liveMode, setLiveMode] = useState(false);
   const [newEntries, setNewEntries] = useState(0);
+  const [retention, setRetention] = useState<{ plan: string; retentionDays: number; retentionCutoff: string; upgradeUrl: string } | null>(null);
 
   const fetchLogs = useCallback(async (silent = false) => {
     if (!silent) {
@@ -182,6 +183,7 @@ export const AuditPage: React.FC = () => {
       setLogs(newLogs);
       setTotal(responseData.total || 0);
       setPages(responseData.pages || 1);
+      if (responseData.retention) setRetention(responseData.retention);
 
       // Fetch stats separately - don't fail if this errors
       try {
@@ -259,6 +261,29 @@ export const AuditPage: React.FC = () => {
     URL.revokeObjectURL(url);
     toast.success('Audit logs exported');
   };
+
+  const handleExportJSON = async () => {
+    try {
+      const params = new URLSearchParams({ format: 'json' })
+      if (filters.from) params.set('from', filters.from)
+      if (filters.to) params.set('to', filters.to)
+      if (filters.category) params.set('category', filters.category)
+
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/audit/export?${params}`,
+        { credentials: 'include' }
+      )
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `sipheron-audit-${Date.now()}.json`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      console.error('JSON export failed:', err)
+    }
+  }
 
   const filteredLogs = logs.filter(log => {
     if (!filters.search) return true;
@@ -359,6 +384,40 @@ export const AuditPage: React.FC = () => {
           <div>
             <p className="font-medium">{error}</p>
           </div>
+        </div>
+      )}
+
+      {/* Retention Banner */}
+      {retention && (
+        <div className="bg-[#13131F] border border-white/[0.06] rounded-xl
+                        px-4 py-3 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <svg className="w-4 h-4 text-[#8888AA]" fill="none"
+                 viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p className="text-xs text-[#8888AA]">
+              Showing <span className="text-[#F0F0FF] font-medium">
+                {retention.retentionDays} days
+              </span> of audit history on your{' '}
+              <span className="capitalize font-medium text-[#F0F0FF]">
+                {retention.plan}
+              </span> plan
+              {retention.plan === 'free' && (
+                <span> · Upgrade for 1-year (Business) or 7-year (Enterprise) retention</span>
+              )}
+            </p>
+          </div>
+          {retention.plan !== 'enterprise' && (
+            <a
+              href="/dashboard/billing"
+              className="text-xs text-[#6C63FF] hover:text-[#4ECDC4]
+                         transition-colors flex-shrink-0 font-medium"
+            >
+              Upgrade →
+            </a>
+          )}
         </div>
       )}
 
@@ -472,26 +531,36 @@ export const AuditPage: React.FC = () => {
           />
 
           {/* Reset & Export */}
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col gap-2">
             <Button
               variant="outline"
               onClick={resetFilters}
-              className="flex-1 border-white/[0.06] text-sipheron-text-muted"
+              className="border-white/[0.06] text-sipheron-text-muted"
               size="sm"
             >
               <RotateCcw className="w-4 h-4 mr-1" />
-              Reset
+              Reset Filters
             </Button>
-            <Button
-              variant="outline"
-              onClick={exportLogs}
-              disabled={logs.length === 0}
-              className="flex-1 border-white/[0.06] text-sipheron-text-muted"
-              size="sm"
-            >
-              <Download className="w-4 h-4 mr-1" />
-              Export
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                onClick={exportLogs}
+                disabled={logs.length === 0}
+                className="flex-1 border-white/[0.06] text-sipheron-text-muted text-xs"
+                size="sm"
+              >
+                <Download className="w-3 h-3 mr-1" /> CSV
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleExportJSON}
+                disabled={logs.length === 0}
+                className="flex-1 border-white/[0.06] text-sipheron-text-muted text-xs"
+                size="sm"
+              >
+                <Download className="w-3 h-3 mr-1" /> JSON
+              </Button>
+            </div>
           </div>
         </div>
       </div>

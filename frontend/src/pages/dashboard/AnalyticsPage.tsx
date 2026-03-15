@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   XAxis,
   YAxis,
@@ -140,6 +141,21 @@ export const AnalyticsPage: React.FC = () => {
   const [hashes, setHashes] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
 
+  const [breakdown, setBreakdown] = useState<{
+    byMimeType: { mimeType: string; count: number; label: string }[]
+    byUser: { userId: string; count: number; user: { email: string; name?: string } }[]
+    byStatus: { status: string; count: number }[]
+    verificationActivity: { date: string; count: number }[]
+  } | null>(null)
+
+  // Chart filter — when user clicks chart segment, filter hashes list
+  const [chartFilter, setChartFilter] = useState<{
+    type: 'mimeType' | 'userId' | 'status' | null
+    value: string
+  }>({ type: null, value: '' })
+
+  const navigate = useNavigate();
+
   // Fetch analytics data
   const fetchData = useCallback(async (isBackground = false) => {
     if (!isBackground) setLoading(true);
@@ -177,7 +193,15 @@ export const AnalyticsPage: React.FC = () => {
   // Fetch data on mount and when date range changes
   useEffect(() => {
     fetchData();
-  }, [fetchData]);
+
+    let periodDays = 30;
+    if(dateRange !== 'ALL') periodDays = parseInt(dateRange.replace('D', ''));
+    else periodDays = 365;
+    const from = new Date(Date.now() - periodDays * 24 * 60 * 60 * 1000).toISOString();
+    api.get(`/api/usage/breakdown?from=${from}`)
+      .then(res => setBreakdown(res.data))
+      .catch(console.error)
+  }, [fetchData, dateRange]);
 
   // Auto-refresh interval
   useEffect(() => {
@@ -1204,6 +1228,243 @@ export const AnalyticsPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* ── Document Type Breakdown ── */}
+      {breakdown && breakdown.byMimeType.length > 0 && (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+        {/* MIME type bar chart */}
+        <div className="bg-[#0D0D1A] border border-white/[0.06] rounded-2xl p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <p className="text-sm font-semibold text-[#F0F0FF]">
+                Document Types
+              </p>
+              <p className="text-xs text-[#8888AA] mt-0.5">
+                By MIME type · click to filter
+              </p>
+            </div>
+            {chartFilter.type === 'mimeType' && (
+              <button
+                onClick={() => setChartFilter({ type: null, value: '' })}
+                className="text-xs text-[#FF4757] hover:text-[#FF6B7A]"
+              >
+                Clear filter
+              </button>
+            )}
+          </div>
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart
+              data={breakdown.byMimeType}
+              layout="vertical"
+              margin={{ top: 0, right: 20, left: 10, bottom: 0 }}
+            >
+              <CartesianGrid strokeDasharray="3 3"
+                stroke="rgba(255,255,255,0.05)" horizontal={false} />
+              <XAxis
+                type="number"
+                tick={{ fill: '#44445A', fontSize: 10 }}
+                tickLine={false} axisLine={false}
+              />
+              <YAxis
+                type="category" dataKey="label"
+                tick={{ fill: '#8888AA', fontSize: 11 }}
+                tickLine={false} axisLine={false} width={50}
+              />
+              <Tooltip
+                contentStyle={{
+                  background: '#13131F',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  borderRadius: '10px',
+                  color: '#F0F0FF', fontSize: 12,
+                }}
+              />
+              <Bar
+                dataKey="count"
+                fill="#6C63FF"
+                radius={[0, 4, 4, 0]}
+                cursor="pointer"
+                onClick={(data) => setChartFilter({
+                  type: 'mimeType', value: data.mimeType
+                })}
+              >
+                {breakdown.byMimeType.map((entry, index) => (
+                  <Cell
+                    key={index}
+                    fill={chartFilter.type === 'mimeType' &&
+                          chartFilter.value === entry.mimeType
+                      ? '#4ECDC4' : '#6C63FF'}
+                    opacity={chartFilter.type === 'mimeType' &&
+                             chartFilter.value !== entry.mimeType ? 0.4 : 1}
+                  />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Team member activity */}
+        <div className="bg-[#0D0D1A] border border-white/[0.06] rounded-2xl p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <p className="text-sm font-semibold text-[#F0F0FF]">
+                Team Activity
+              </p>
+              <p className="text-xs text-[#8888AA] mt-0.5">
+                Anchors per member · click to filter
+              </p>
+            </div>
+            {chartFilter.type === 'userId' && (
+              <button
+                onClick={() => setChartFilter({ type: null, value: '' })}
+                className="text-xs text-[#FF4757] hover:text-[#FF6B7A]"
+              >
+                Clear filter
+              </button>
+            )}
+          </div>
+          <div className="space-y-3">
+            {breakdown.byUser.map((u) => {
+              const maxCount = Math.max(...breakdown.byUser.map(x => x.count))
+              const pct = maxCount > 0 ? (u.count / maxCount) * 100 : 0
+              const isSelected = chartFilter.type === 'userId' &&
+                                 chartFilter.value === u.userId
+              return (
+                <div
+                  key={u.userId}
+                  onClick={() => setChartFilter(
+                    isSelected
+                      ? { type: null, value: '' }
+                      : { type: 'userId', value: u.userId }
+                  )}
+                  className={`cursor-pointer rounded-xl p-3 transition-all ${
+                    isSelected
+                      ? 'bg-[#6C63FF]/20 border border-[#6C63FF]/40'
+                      : 'hover:bg-white/5 border border-transparent'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1.5">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-[#6C63FF]/30
+                                      flex items-center justify-center text-[10px]
+                                      font-bold text-[#6C63FF]">
+                        {u.user.name ? u.user.name[0].toUpperCase() : u.user.email[0].toUpperCase()}
+                      </div>
+                      <span className="text-xs text-[#F0F0FF] font-medium">
+                        {u.user.name || u.user.email}
+                      </span>
+                    </div>
+                    <span className="text-xs font-bold text-[#6C63FF]">
+                      {u.count}
+                    </span>
+                  </div>
+                  <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-[#6C63FF] rounded-full transition-all"
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+      )}
+
+      {/* ── Verification Activity Chart ── */}
+      {breakdown && breakdown.verificationActivity.length > 0 && (
+      <div className="bg-[#0D0D1A] border border-white/[0.06] rounded-2xl p-5">
+        <p className="text-sm font-semibold text-[#F0F0FF] mb-1">
+          Verification Activity
+        </p>
+        <p className="text-xs text-[#8888AA] mb-5">
+          How often your anchored documents are verified by external parties
+        </p>
+        <ResponsiveContainer width="100%" height={200}>
+          <AreaChart
+            data={breakdown.verificationActivity}
+            margin={{ top: 5, right: 5, left: -20, bottom: 0 }}
+          >
+            <defs>
+              <linearGradient id="verGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#4ECDC4" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="#4ECDC4" stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3"
+              stroke="rgba(255,255,255,0.05)" vertical={false} />
+            <XAxis
+              dataKey="date"
+              tick={{ fill: '#44445A', fontSize: 10 }}
+              tickLine={false} axisLine={false}
+              tickFormatter={d => new Date(d).toLocaleDateString('en-US', {
+                month: 'short', day: 'numeric'
+              })}
+            />
+            <YAxis
+              tick={{ fill: '#44445A', fontSize: 10 }}
+              tickLine={false} axisLine={false}
+            />
+            <Tooltip
+              contentStyle={{
+                background: '#13131F',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '10px', color: '#F0F0FF', fontSize: 12,
+              }}
+              cursor={{ stroke: 'rgba(78,205,196,0.3)', strokeWidth: 1 }}
+            />
+            <Area
+              type="monotone" dataKey="count"
+              stroke="#4ECDC4" strokeWidth={2}
+              fill="url(#verGrad)"
+              activeDot={{ r: 5, fill: '#4ECDC4', strokeWidth: 0 }}
+              dot={false}
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+      )}
+
+      {/* ── Chart filter active banner ── */}
+      {chartFilter.type && (
+      <div className="flex items-center justify-between bg-[#6C63FF]/10
+                      border border-[#6C63FF]/30 rounded-xl px-4 py-3">
+        <p className="text-sm text-[#6C63FF]">
+          Filtering hashes by{' '}
+          {chartFilter.type === 'mimeType' && `document type: ${chartFilter.value}`}
+          {chartFilter.type === 'userId' && 'selected team member'}
+          {chartFilter.type === 'status' && `status: ${chartFilter.value}`}
+        </p>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => {
+              // Navigate to hashes page with filter applied
+              const params = new URLSearchParams()
+              if (chartFilter.type === 'mimeType') {
+                params.set('mimeType', chartFilter.value)
+              } else if (chartFilter.type === 'userId') {
+                params.set('userId', chartFilter.value)
+              } else if (chartFilter.type === 'status') {
+                params.set('status', chartFilter.value)
+              }
+              navigate(`/dashboard/hashes?${params}`)
+            }}
+            className="text-sm text-[#F0F0FF] font-medium hover:text-[#4ECDC4]
+                       transition-colors"
+          >
+            View filtered hashes →
+          </button>
+          <button
+            onClick={() => setChartFilter({ type: null, value: '' })}
+            className="text-xs text-[#44445A] hover:text-[#8888AA]"
+          >
+            Clear
+          </button>
+        </div>
+      </div>
+      )}
+
     </div>
   );
 };

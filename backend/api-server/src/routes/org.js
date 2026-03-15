@@ -11,6 +11,7 @@ const authenticate = require('../middleware/auth');
 const walletMonitor = require('../services/walletMonitor');
 const { z } = require('zod');
 const { validateInput } = require('../middleware/security');
+const { logAudit, AUDIT_ACTIONS } = require('../utils/auditLogger');
 
 const router = express.Router();
 
@@ -103,6 +104,15 @@ router.put('/', authenticate, validateInput(orgUpdateSchema), async (req, res, n
             where: { id: org.id },
             data: { name }
         });
+
+        logAudit({
+          organizationId: org.id,
+          userId: req.user?.id,
+          action: AUDIT_ACTIONS.ORG_UPDATED,
+          category: 'org',
+          metadata: { changes: Object.keys(req.body) },
+          req,
+        }).catch(console.error);
 
         res.json({
             id: updated.id,

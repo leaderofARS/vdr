@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
   Search,
@@ -55,6 +55,8 @@ const mapStatus = (status: string): import('@/components/shared').StatusType => 
 
 export const HashesPage: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
   // State
   const [hashes, setHashes] = useState<HashRecord[]>([])
   const [page, setPage] = useState(1)
@@ -103,6 +105,17 @@ export const HashesPage: React.FC = () => {
       .then(res => setMembers(res.data.members || res.data || []))
       .catch(() => {})
   }, [])
+
+  // Initialize filters from URL params on mount:
+  useEffect(() => {
+    const mimeType = searchParams.get('mimeType')
+    const userId = searchParams.get('userId')
+    const status = searchParams.get('status')
+    if (mimeType) setFilterMimeType(mimeType)
+    if (userId) setFilterUserId(userId)
+    if (status) setFilterStatus(status)
+  }, [searchParams]) // run once on mount or when params change, but typically we only care about mount unless user navigates back to same page with different params
+
 
   const fetchHashes = useCallback(async () => {
     setLoading(true)

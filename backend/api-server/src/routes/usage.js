@@ -295,4 +295,115 @@ router.get('/report', authenticate, async (req, res, next) => {
     }
 });
 
+// GET /api/usage/breakdown — document type + team member breakdown
+router.get('/breakdown', authenticate, async (req, res) => {
+  try {
+    const organizationId = req.organization?.id
+    const { from, to } = req.query
+
+    const dateWhere = {}
+    if (from) dateWhere.gte = new Date(from)
+    if (to) dateWhere.lte = new Date(to)
+
+    const where = {
+      organizationId,
+      ...(Object.keys(dateWhere).length > 0 && { createdAt: dateWhere })
+    }
+
+    // Document type breakdown by MIME type
+    const byMimeType = await prisma.hashRecord.groupBy({
+      by: ['mimeType'],
+      where: { ...where, mimeType: { not: null } },
+      _count: { id: true },
+      orderBy: { _count: { id: 'desc' } },
+      take: 10,
+    })
+
+    // Team member activity
+    const byUser = await prisma.hashRecord.groupBy({
+      by: ['userId'],
+      where: { ...where, userId: { not: null } },
+      _count: { id: true },
+      orderBy: { _count: { id: 'desc' } },
+      take: 10,
+    })
+
+    // Enrich user data
+    const userIds = byUser.map(u => u.userId).filter(Boolean)
+    const users = userIds.length > 0
+      ? await prisma.user.findMany({
+          where: { id: { in: userIds } },
+          select: { id: true, email: true, name: true }
+        })
+      : []
+    const userMap = Object.fromEntries(users.map(u => [u.id, u]))
+
+    // Status distribution
+    const byStatus = await prisma.hashRecord.groupBy({
+      by: ['status'],
+      where,
+      _count: { id: true },
+    })
+
+    // Verification activity — count HASH_VERIFIED audit events per day
+    const verificationActivity = await prisma.auditLog.findMany({
+      where: {
+        organizationId,
+        action: 'HASH_VERIFIED',
+        ...(Object.keys(dateWhere).length > 0 && { createdAt: dateWhere })
+      },
+      select: { createdAt: true },
+      orderBy: { createdAt: 'asc' },
+    })
+
+    // Group verification activity by day
+    const verByDay = verificationActivity.reduce((acc, v) => {
+      const day = v.createdAt.toISOString().split('T')[0]
+      acc[day] = (acc[day] || 0) + 1
+      return acc
+    }, {})
+
+    res.json({
+      byMimeType: byMimeType.map(m => ({
+        mimeType: m.mimeType || 'unknown',
+        count: m._count.id,
+        label: formatMimeType(m.mimeType),
+      })),
+      byUser: byUser.map(u => ({
+        userId: u.userId,
+        count: u._count.id,
+        user: userMap[u.userId] || { email: 'Unknown', name: null },
+      })),
+      byStatus: byStatus.map(s => ({
+        status: s.status,
+        count: s._count.id,
+      })),
+      verificationActivity: Object.entries(verByDay).map(([date, count]) => ({
+        date, count
+      })),
+    })
+  } catch (err) {
+    console.error('[USAGE] breakdown error:', err)
+    res.status(500).json({ error: 'Failed to fetch breakdown' })
+  }
+})
+
+function formatMimeType(mime) {
+  if (!mime) return 'Unknown'
+  const map = {
+    'application/pdf': 'PDF',
+    'application/msword': 'Word',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'Word',
+    'application/vnd.ms-excel': 'Excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'Excel',
+    'image/png': 'PNG',
+    'image/jpeg': 'JPEG',
+    'image/jpg': 'JPEG',
+    'text/plain': 'Text',
+    'application/zip': 'ZIP',
+    'application/json': 'JSON',
+  }
+  return map[mime] || mime.split('/')[1]?.toUpperCase() || mime
+}
+
 module.exports = router;
