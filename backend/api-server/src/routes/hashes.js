@@ -11,6 +11,8 @@ const authenticate = require('../middleware/auth');
 const { requireRole } = require('../middleware/rbac');
 const webhookService = require('../services/webhookService');
 const { logAudit, AUDIT_ACTIONS } = require('../utils/auditLogger');
+const { monthlyQuotaMiddleware, incrementAnchorUsage } = require('../middleware/rateLimiter');
+const { idempotencyMiddleware } = require('../middleware/idempotency');
 
 const router = express.Router();
 
@@ -254,7 +256,7 @@ router.get('/pending', authenticate, async (req, res) => {
  * @route POST /api/hashes
  * @description Anchor a single document hash (Internal Dashboard use)
  */
-router.post('/', authenticate, async (req, res, next) => {
+router.post('/', authenticate, monthlyQuotaMiddleware, idempotencyMiddleware, async (req, res, next) => {
     try {
         const { hash, metadata = "", fileSize, mimeType, tags } = req.body;
         const organizationId = req.organization?.id;
@@ -279,7 +281,10 @@ router.post('/', authenticate, async (req, res, next) => {
         // 2. Perform Solana transaction
         const { tx, owner, pdaAddress, blockNumber, blockTimestamp } = await solanaService.registerHash(hash, metadata, 0);
 
-        // 3. Create PENDING record in DB so UI can show it immediately
+        // 3. Increment Anchor Usage AFTER confirmation
+        await incrementAnchorUsage(organizationId);
+
+        // 4. Create PENDING record in DB so UI can show it immediately
         const record = await prisma.hashRecord.create({
             data: {
                 hash,
@@ -440,6 +445,49 @@ router.post('/bulk-verify', authenticate, async (req, res) => {
 });
 
 /**
+ * @route GET /api/hashes/:hash/status
+ * @description Dedicated status check. Also accessible as GET /v1/anchors/:id/status
+ */
+router.get('/:hash/status', authenticate, async (req, res) => {
+  try {
+    const organizationId = req.organization?.id
+    const { hash } = req.params
+
+    const record = await prisma.hashRecord.findFirst({
+      where: { hash, organizationId },
+      select: {
+        hash: true,
+        status: true,
+        txSignature: true,
+        blockNumber: true,
+        blockTimestamp: true,
+        createdAt: true,
+      }
+    })
+
+    if (!record) {
+      return res.status(404).json({ error: 'Hash not found' })
+    }
+
+    res.json({
+      hash: record.hash,
+      status: record.status,
+      confirmed: record.status === 'CONFIRMED',
+      txSignature: record.txSignature,
+      blockNumber: record.blockNumber?.toString(),
+      blockTimestamp: record.blockTimestamp,
+      explorerUrl: record.txSignature
+        ? `https://explorer.solana.com/tx/${record.txSignature}?cluster=devnet`
+        : null,
+      checkedAt: new Date().toISOString(),
+    })
+  } catch (err) {
+    console.error('[HASHES] status error:', err)
+    res.status(500).json({ error: 'Failed to fetch status' })
+  }
+})
+
+/**
  * @route GET /api/hashes/:hash
  * @description Get detail for a specific hash.
  */
@@ -490,6 +538,81 @@ router.post('/revoke', authenticate, requireRole('admin'), async (req, res, next
 
         if (!hash) {
             return res.status(400).json({ error: 'Hash is required for revocation' });
+        }
+
+        if (!req.organization) {
+            return res.status(403).json({ error: 'Unauthorized: No institutional context found' });
+        }
+
+        // 1. Look up hash record in Prisma
+        const record = await prisma.hashRecord.findFirst({
+            where: {
+                hash,
+                organizationId: req.organization.id
+            }
+        });
+
+        if (!record) {
+            return res.status(404).json({ error: 'Hash not found or unauthorized' });
+        }
+
+        if (record.status === 'revoked' || record.isRevoked) {
+            return res.status(400).json({ error: 'Hash proof has already been revoked' });
+        }
+
+        // 2. Transact on Solana
+        const { tx } = await solanaService.revokeHash(hash);
+
+        // 3. Update local database
+        await prisma.hashRecord.update({
+            where: { id: record.id },
+            data: {
+                status: 'revoked',
+                revokedAt: new Date(),
+                isRevoked: true,
+                revokedBy: req.user?.id || null,
+                revocationNote: req.body?.reason || null
+            }
+        });
+
+        await logAudit({
+            organizationId: req.organization.id,
+            userId: req.user?.id,
+            action: AUDIT_ACTIONS.HASH_REVOKED,
+            category: 'hash',
+            metadata: { hash: hash.slice(0, 16) + '...' },
+            req
+        });
+
+        // 4. Trigger Webhook
+        await webhookService.triggerWebhook(req.organization.id, 'hash_revoked', {
+            hash,
+            txSignature: tx,
+            revokedAt: new Date().toISOString()
+        });
+
+        res.json({
+            success: true,
+            txSignature: tx,
+            message: "Hash proof revoked successfully on Solana blockchain"
+        });
+    } catch (error) {
+        console.error('[Registry] Revocation failed:', error.message);
+        next(error);
+    }
+});
+
+/**
+ * @route DELETE /api/hashes/:hash
+ * @description Standard REST delete/revoke. Same logic as POST /revoke
+ * @access Private (Institutional API Key required)
+ */
+router.delete('/:hash', authenticate, requireRole('admin'), async (req, res, next) => {
+    try {
+        const { hash } = req.params;
+
+        if (!/^[a-fA-F0-9]{64}$/.test(hash)) {
+            return res.status(400).json({ error: 'Invalid SHA-256 hash format' });
         }
 
         if (!req.organization) {

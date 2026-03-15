@@ -113,6 +113,54 @@ router.delete('/:id', authenticate, requireRole('admin'), async (req, res, next)
 });
 
 /**
+ * @route PATCH /api/keys/:id
+ * @description Update key name or scope.
+ */
+router.patch('/:id', authenticate, requireRole('admin'), async (req, res) => {
+  try {
+    const organizationId = req.organization?.id
+    const { id } = req.params
+    const { name, scope } = req.body
+
+    const validScopes = ['read', 'write', 'admin']
+    if (scope && !validScopes.includes(scope)) {
+      return res.status(400).json({
+        error: `Invalid scope. Must be one of: ${validScopes.join(', ')}`
+      })
+    }
+
+    const existing = await prisma.apiKey.findFirst({
+      where: { id, organizationId }
+    })
+    if (!existing) {
+      return res.status(404).json({ error: 'API key not found' })
+    }
+
+    const updated = await prisma.apiKey.update({
+      where: { id },
+      data: {
+        ...(name && { name }),
+        ...(scope && { scope }),
+        updatedAt: new Date(),
+      },
+      select: {
+        id: true,
+        name: true,
+        scope: true,
+        createdAt: true,
+        updatedAt: true,
+        lastUsedAt: true,
+      }
+    })
+
+    res.json({ key: updated })
+  } catch (err) {
+    console.error('[KEYS] patch error:', err)
+    res.status(500).json({ error: 'Failed to update API key' })
+  }
+})
+
+/**
  * @route POST /api/keys
  * @description Create a new API key for the organization.
  */
@@ -157,10 +205,14 @@ router.post('/', authenticate, requireRole('admin'), validateInput(createKeySche
         });
 
         res.status(201).json({
-            success: true,
-            apiKey: rawKey,
-            id: apiKey.id,
-            message: 'Store this API key securely. It will not be shown again.'
+            key: {
+                id: apiKey.id,
+                name: apiKey.name,
+                scope: apiKey.scope,
+                createdAt: apiKey.createdAt,
+            },
+            rawKey,
+            warning: 'Store this key securely. It will never be shown again.',
         });
     } catch (error) {
         next(error);

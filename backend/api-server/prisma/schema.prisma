@@ -40,6 +40,15 @@ model Organization {
   invites       OrgInvite[]
   auditLogs     AuditLog[]
 
+  // Quota and Plan tracking
+  plan              String   @default("free")     // free | business | enterprise
+  monthlyAnchorLimit Int     @default(100)        // anchors allowed per month
+  apiRateLimit      Int      @default(10)         // requests per second
+  currentMonthUsage Int      @default(0)          // anchors used this month
+  usageResetAt      DateTime @default(now())      // when monthly usage resets
+  quotaAlertSent80  Boolean  @default(false)      // 80% alert sent this month
+  quotaAlertSent95  Boolean  @default(false)      // 95% alert sent this month
+
   createdAt DateTime @default(now())
 }
 
@@ -214,4 +223,20 @@ model AuditLog {
   @@index([organizationId])
   @@index([createdAt])
   @@index([action])
+}
+
+model IdempotencyRecord {
+  id             String   @id @default(uuid())
+  key            String                           // the Idempotency-Key header value
+  organizationId String
+  endpoint       String                           // e.g. POST /api/hashes
+  requestHash    String                           // hash of request body for validation
+  responseStatus Int                              // HTTP status of original response
+  responseBody   Json                             // full response body stored
+  createdAt      DateTime @default(now())
+  expiresAt      DateTime                         // 24 hours after creation
+
+  @@unique([key, organizationId])
+  @@index([organizationId])
+  @@index([expiresAt])
 }

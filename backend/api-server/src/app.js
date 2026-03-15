@@ -11,7 +11,7 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const cookieParser = require("cookie-parser");
 const hpp = require("hpp");
-const { globalLimiter, authLimiter, batchRegisterLimiter, keyCreationLimiter } = require("./middleware/rateLimiter");
+const { globalLimiter, authLimiter, batchRegisterLimiter, keyCreationLimiter, globalRateLimiter } = require("./middleware/rateLimiter");
 const { requireHttps, detectSuspicious, securityHeaders } = require("./middleware/security");
 
 dotenv.config();
@@ -39,6 +39,9 @@ if (process.env.NODE_ENV === 'production' && process.env.DATABASE_URL && !proces
 const registerRoute = require("./routes/register");
 const verifyRoute = require("./routes/verify");
 const recordRoute = require("./routes/record");
+
+// API v1 Router
+const v1Router = require('./routes/v1/index');
 
 // New SipHeron Routes
 const authRoute = require("./routes/auth");
@@ -113,6 +116,13 @@ app.use(detectSuspicious); // Suspicious pattern detection
 app.use(globalLimiter);
 app.use(usageLogger); // Log all requests that have an API key (non-blocking)
 
+// API version headers — added to every response
+app.use((req, res, next) => {
+  res.setHeader('X-API-Version', 'v1')
+  res.setHeader('X-API-Deprecated', 'false')
+  next()
+})
+
 // Double Submit Cookie CSRF logic
 // API key auth assumes no cookies and no CSRF token check (stateless)
 const timingSafeComparePath = require('crypto');
@@ -139,6 +149,7 @@ app.use((req, res, next) => {
             req.path.includes('/auth/forgot-password') ||
             req.path.includes('/auth/reset-password') ||
             req.path === '/register' ||
+            req.path.startsWith('/v1/') ||
             req.path === '/api/webhooks' ||
             req.path.startsWith('/api/keys') ||
             req.path.startsWith('/api/hashes') ||
@@ -169,6 +180,9 @@ app.use((req, res, next) => {
     next();
 });
 
+app.use('/api', globalRateLimiter)
+app.use('/v1', globalRateLimiter)
+
 // Routes
 // Apply authLimiter to root /register endpoint and auth routes
 app.post("/register", authLimiter, registerRoute);
@@ -198,6 +212,9 @@ app.use('/api/stats', statsRouter);
 // app.use("/api", usageLogger); // Removed from here and moved before routes
 
 app.use("/organizations", organizationRoute);
+
+// Mount v1 router
+app.use('/v1', v1Router);
 
 // Root endpoint
 app.get("/", (req, res) => {
@@ -246,3 +263,9 @@ if (require.main === module) {
 }
 
 module.exports = app;
+
+const { cleanupExpiredRecords } = require('./middleware/idempotency')
+// Run cleanup every hour
+setInterval(cleanupExpiredRecords, 60 * 60 * 1000)
+// Also run on startup
+cleanupExpiredRecords().catch(console.error)

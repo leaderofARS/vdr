@@ -76,6 +76,54 @@ router.delete('/:id', authenticate, requireRole('admin'), async (req, res, next)
 });
 
 /**
+ * @route GET /api/webhooks/:id
+ * @description Get single webhook
+ */
+router.get('/:id', authenticate, async (req, res) => {
+  try {
+    const constPrisma = require('../config/database');
+    const organizationId = req.organization?.id
+    const webhook = await constPrisma.webhook.findFirst({
+      where: { id: req.params.id, organizationId }
+    })
+    if (!webhook) return res.status(404).json({ error: 'Webhook not found' })
+    res.json({ webhook })
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch webhook' })
+  }
+})
+
+/**
+ * @route PATCH /api/webhooks/:id
+ * @description Update webhook
+ */
+router.patch('/:id', authenticate, requireRole('admin'), async (req, res) => {
+  try {
+    const constPrisma = require('../config/database');
+    const organizationId = req.organization?.id
+    const { url, events, active } = req.body
+
+    const existing = await constPrisma.webhook.findFirst({
+      where: { id: req.params.id, organizationId }
+    })
+    if (!existing) return res.status(404).json({ error: 'Webhook not found' })
+
+    const updated = await constPrisma.webhook.update({
+      where: { id: req.params.id },
+      data: {
+        ...(url && { url }),
+        ...(events && { events }),
+        ...(typeof active === 'boolean' && { active }),
+        updatedAt: new Date(),
+      }
+    })
+    res.json({ webhook: updated })
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update webhook' })
+  }
+})
+
+/**
  * @route POST /api/webhooks/:id/test
  * @description Send a test payload to the webhook.
  */

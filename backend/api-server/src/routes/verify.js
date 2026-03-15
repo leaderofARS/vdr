@@ -11,6 +11,7 @@ const router = express.Router()
 const prisma = require('../config/database')
 const crypto = require('crypto')
 const multer = require('multer')
+const { idempotencyMiddleware } = require('../middleware/idempotency')
 
 // multer — memory storage, max 100MB, for optional file upload
 const upload = multer({
@@ -20,7 +21,7 @@ const upload = multer({
 
 // POST /api/verify — verify a hash or uploaded file
 // No auth required — public endpoint
-router.post('/', upload.single('file'), async (req, res) => {
+router.post('/', idempotencyMiddleware, upload.single('file'), async (req, res) => {
   try {
     let hash = req.body?.hash
 
@@ -268,5 +269,76 @@ router.post('/batch', async (req, res) => {
     })
   }
 })
+
+// GET /api/verify/:hash — public hash verification
+// Matches GET /v1/verify/:hash
+router.get('/:hash', async (req, res) => {
+  try {
+    const { hash } = req.params;
+    const solanaService = require('../services/solana');
+
+    if (!/^[a-fA-F0-9]{64}$/.test(hash)) {
+        return res.status(400).json({ error: 'Invalid SHA-256 hash format' });
+    }
+
+    // Try DB first
+    const record = await prisma.hashRecord.findUnique({
+        where: { hash },
+        include: { organization: { select: { name: true, id: true } } }
+    });
+
+    const network = process.env.SOLANA_NETWORK || 'devnet';
+
+    if (!record) {
+        // Try Solana directly
+        const solanaData = await solanaService.verifyHash(hash);
+        if (solanaData.exists && solanaData.record) {
+            return res.json({
+                verified: true,
+                record: {
+                    hash: solanaData.record.hash,
+                    metadata: solanaData.record.metadata || '',
+                    status: solanaData.record.status || (solanaData.record.isRevoked ? 'revoked' : 'active'),
+                    registeredAt: solanaData.record.timestamp
+                        ? new Date(solanaData.record.timestamp * 1000).toISOString()
+                        : (solanaData.record.createdAt ? solanaData.record.createdAt.toISOString() : new Date().toISOString()),
+                    revokedAt: solanaData.record.revokedAt ? solanaData.record.revokedAt.toISOString() : null,
+                    expiry: solanaData.record.expiry > 0 ? new Date(solanaData.record.expiry * 1000).toISOString() : null,
+                    txSignature: solanaData.record.txSignature,
+                    pdaAddress: solanaData.record.pdaAddress,
+                    explorerUrl: solanaData.record.txSignature ? `https://explorer.solana.com/tx/${solanaData.record.txSignature}?cluster=${network}` : null,
+                    pdaExplorerUrl: `https://explorer.solana.com/address/${solanaData.record.pdaAddress}?cluster=${network}`
+                },
+                organization: null
+            });
+        }
+        return res.status(404).json({ verified: false, error: 'Hash not found in registry' });
+    }
+
+    res.json({
+        verified: true,
+        record: {
+            hash: record.hash,
+            metadata: record.metadata || '',
+            status: record.status || (record.isRevoked ? 'revoked' : 'active'),
+            registeredAt: record.timestamp
+                ? new Date(record.timestamp * 1000).toISOString()
+                : record.createdAt.toISOString(),
+            revokedAt: record.revokedAt ? record.revokedAt.toISOString() : null,
+            expiry: record.expiry > 0 ? new Date(record.expiry * 1000).toISOString() : null,
+            txSignature: record.txSignature,
+            pdaAddress: record.pdaAddress,
+            explorerUrl: record.txSignature ? `https://explorer.solana.com/tx/${record.txSignature}?cluster=${network}` : null,
+            pdaExplorerUrl: `https://explorer.solana.com/address/${record.pdaAddress}?cluster=${network}`
+        },
+        organization: record.organization
+            ? { name: record.organization.name, id: record.organization.id }
+            : null
+    });
+  } catch (err) {
+    console.error('[VERIFY/GET] error:', err);
+    res.status(500).json({ error: 'Verification failed' });
+  }
+});
 
 module.exports = router

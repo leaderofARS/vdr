@@ -127,6 +127,16 @@ router.get('/', authenticate, async (req, res, next) => {
         // Sum last 7 days for requestsThisWeek
         const requestsThisWeek = chartData.slice(-7).reduce((sum, d) => sum + d.success + d.error, 0);
 
+        const org = await prisma.organization.findUnique({
+          where: { id: orgId },
+          select: {
+            plan: true,
+            monthlyAnchorLimit: true,
+            currentMonthUsage: true,
+            usageResetAt: true,
+          }
+        })
+
         res.json({
             period,
             summary: {
@@ -136,6 +146,20 @@ router.get('/', authenticate, async (req, res, next) => {
                 mostUsedEndpoint,
                 requestsToday,
                 requestsThisWeek
+            },
+            quota: {
+                plan: org.plan,
+                limit: org.monthlyAnchorLimit,
+                used: org.currentMonthUsage,
+                remaining: Math.max(0, org.monthlyAnchorLimit - org.currentMonthUsage),
+                percentUsed: org.monthlyAnchorLimit > 0
+                  ? ((org.currentMonthUsage / org.monthlyAnchorLimit) * 100).toFixed(1)
+                  : '0',
+                resetAt: new Date(
+                  new Date().getFullYear(),
+                  new Date().getMonth() + 1,
+                  1
+                ).toISOString(),
             },
             endpoints,
             apiKeys,
