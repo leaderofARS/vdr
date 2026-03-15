@@ -62,7 +62,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   const fetchRecentHashes = useCallback(async () => {
     try {
       const { data } = await api.get('/api/hashes', { params: { limit: 3 } });
-      const hashes = (data.data || []).slice(0, 3);
+      const hashes = (data.records || data.data || data.hashes || (Array.isArray(data) ? data : [])).slice(0, 3);
       setRecentHashes(hashes);
     } catch {
       // Silently fail - recent hashes are optional

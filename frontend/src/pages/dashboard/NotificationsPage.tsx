@@ -98,7 +98,7 @@ export const NotificationsPage: React.FC = () => {
       if (typeFilter !== 'all') params.type = typeFilter;
 
       const { data } = await api.get('/api/notifications', { params });
-      setNotifications(data.data || []);
+      setNotifications(data.data || data.notifications || (Array.isArray(data) ? data : []));
       setPagination(data.pagination || { page: 1, limit: 20, total: 0, totalPages: 0 });
       setUnreadCount(data.unreadCount || 0);
     } catch (error) {

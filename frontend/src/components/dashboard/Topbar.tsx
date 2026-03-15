@@ -108,7 +108,7 @@ export const Topbar: React.FC = () => {
     setLoadingNotifications(true);
     try {
       const { data } = await api.get('/api/notifications?limit=10');
-      setNotifications(data.data || []);
+      setNotifications(data.data || data.notifications || (Array.isArray(data) ? data : []));
       setUnreadCount(data.unreadCount || 0);
     } catch (error) {
       console.error('Failed to load notifications:', error);

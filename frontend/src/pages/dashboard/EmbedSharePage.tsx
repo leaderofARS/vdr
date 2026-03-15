@@ -72,9 +72,10 @@ export const EmbedSharePage: FC = () => {
         const { data } = await api.get('/api/hashes', {
           params: { page: 1, limit: 50 },
         });
-        setHashes(data.data || []);
-        if (data.data?.length > 0) {
-          setSelectedHash(data.data[0].hash);
+        const hashesData = data.records || data.data || data.hashes || (Array.isArray(data) ? data : []);
+        setHashes(hashesData);
+        if (hashesData.length > 0) {
+          setSelectedHash(hashesData[0].hash);
         }
       } catch (error) {
         console.error('Failed to fetch hashes:', error);

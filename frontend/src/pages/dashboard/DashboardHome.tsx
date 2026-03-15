@@ -205,7 +205,8 @@ export const DashboardHome: FC = () => {
       const { data } = await api.get('/api/hashes', {
         params: { page: 1, limit: 10 },
       });
-      setHashes(data.data || []);
+      const hashesData = data.records || data.data || data.hashes || (Array.isArray(data) ? data : []);
+      setHashes(hashesData);
     } catch (error) {
       console.error('Failed to fetch hashes:', error);
     } finally {
