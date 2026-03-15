@@ -48,75 +48,130 @@ const { parsePagination, buildPaginationResponse, applyPagination } = require('.
  * @route GET /api/hashes
  * @description List all hashes for the organization with pagination and filters.
  */
-router.get('/', authenticate, async (req, res, next) => {
-    try {
-        if (!req.organization) {
-            return res.status(403).json({ error: 'Institutional Context Required' });
-        }
-
-        const { page, limit, sortBy, sortOrder } = parsePagination(
-            req.query,
-            ['registeredAt', 'timestamp', 'status'],
-            'timestamp',
-            10
-        );
-
-        const status = req.query.status;
-        const search = req.query.search;
-
-        const where = {
-            organizationId: req.organization.id,
-            AND: []
-        };
-
-        if (status === 'revoked') {
-            where.AND.push({ OR: [{ status: 'revoked' }, { isRevoked: true }] });
-        } else if (status === 'expired') {
-            where.AND.push({
-                expiry: { gt: 0, lt: Math.floor(Date.now() / 1000) },
-                status: { not: 'revoked' }
-            });
-        } else if (status === 'active') {
-            where.AND.push({ status: 'active', isRevoked: false });
-            where.AND.push({
-                OR: [
-                    { expiry: 0 },
-                    { expiry: { gt: Math.floor(Date.now() / 1000) } }
-                ]
-            });
-        }
-
-        if (search) {
-            where.AND.push({
-                OR: [
-                    { hash: { startsWith: search, mode: 'insensitive' } },
-                    { metadata: { contains: search, mode: 'insensitive' } }
-                ]
-            });
-        }
-
-        if (where.AND.length === 0) delete where.AND;
-
-        const orderField = sortBy === 'registeredAt' ? 'timestamp' : sortBy;
-
-        const [total, records] = await Promise.all([
-            prisma.hashRecord.count({ where }),
-            prisma.hashRecord.findMany(applyPagination({
-                where,
-                orderBy: { [orderField]: sortOrder }
-            }, page, limit))
-        ]);
-
-        res.json(buildPaginationResponse(
-            records.map(formatHashRecord),
-            total,
-            page,
-            limit
-        ));
-    } catch (error) {
-        next(error);
+router.get('/', authenticate, async (req, res) => {
+  try {
+    const organizationId = req.organization?.id
+    if (!organizationId) {
+      return res.status(403).json({ error: 'Institutional Context Required' })
     }
-});
+
+    const {
+      // Pagination
+      page = 1,
+      limit = 50,
+      // Search
+      search,
+      // Filters
+      status,
+      mimeType,
+      tags,         // comma separated: "finance,legal"
+      userId,       // anchored by
+      dateFrom,
+      dateTo,
+      // Sorting
+      sortBy = 'createdAt',   // createdAt | metadata | status | fileSize
+      sortOrder = 'desc',     // asc | desc
+    } = req.query
+
+    // Build where clause
+    const where = { organizationId }
+
+    if (search) {
+      where.metadata = { contains: search, mode: 'insensitive' }
+    }
+    if (status) {
+      // Handle special statuses logic if necessary, otherwise exact match
+      where.status = status
+    }
+    if (mimeType) {
+      where.mimeType = { contains: mimeType, mode: 'insensitive' }
+    }
+    if (tags) {
+      const tagArray = tags.split(',').map(t => t.trim()).filter(Boolean)
+      if (tagArray.length > 0) {
+        where.tags = { hasSome: tagArray }
+      }
+    }
+    if (userId) {
+      where.userId = userId
+    }
+    if (dateFrom || dateTo) {
+      where.createdAt = {}
+      if (dateFrom) where.createdAt.gte = new Date(dateFrom)
+      if (dateTo) where.createdAt.lte = new Date(dateTo)
+    }
+
+    // Build orderBy
+    const validSortFields = ['createdAt', 'metadata', 'status', 'fileSize', 'mimeType', 'timestamp']
+    const safeSort = validSortFields.includes(sortBy) ? sortBy : 'createdAt'
+    const safeOrder = sortOrder === 'asc' ? 'asc' : 'desc'
+    const orderBy = { [safeSort]: safeOrder }
+
+    const skip = (parseInt(page) - 1) * parseInt(limit)
+    const take = Math.min(parseInt(limit), 100) // cap at 100
+
+    const [records, total] = await Promise.all([
+      prisma.hashRecord.findMany({
+        where,
+        orderBy,
+        skip,
+        take,
+        select: {
+          id: true,
+          hash: true,
+          pdaAddress: true,
+          ownerWallet: true,
+          owner: true,
+          organizationId: true,
+          metadata: true,
+          status: true,
+          txSignature: true,
+          blockNumber: true,
+          blockTimestamp: true,
+          createdAt: true,
+          timestamp: true,
+          expiry: true,
+          isRevoked: true,
+          revokedAt: true,
+          fileSize: true,
+          mimeType: true,
+          tags: true,
+          userId: true,
+          certificateCount: true,
+        }
+      }),
+      prisma.hashRecord.count({ where })
+    ])
+
+    // Serialize BigInt fields and format like previous responses
+    const serialized = records.map(r => ({
+      ...formatHashRecord(r), // fallback to old format to not break frontend
+      ...r,
+      blockNumber: r.blockNumber?.toString() || null,
+      fileSize: r.fileSize?.toString() || null,
+    }))
+
+    // Get unique MIME types for filter dropdown
+    const mimeTypes = await prisma.hashRecord.findMany({
+      where: { organizationId, mimeType: { not: null } },
+      select: { mimeType: true },
+      distinct: ['mimeType'],
+    })
+
+    res.json({
+      records: serialized,
+      total,
+      page: parseInt(page),
+      pages: Math.ceil(total / take),
+      filters: {
+        mimeTypes: mimeTypes.map(m => m.mimeType).filter(Boolean),
+      }
+    })
+  } catch (err) {
+    console.error('[HASHES] list error:', err)
+    res.status(500).json({ error: 'Failed to fetch hashes' })
+  }
+})
 /**
  * @route GET /api/hashes/export
  * @description Export all hashes as CSV or JSON
@@ -599,6 +654,60 @@ router.get('/:hash/certificate', authenticate, async (req, res) => {
       error: 'Certificate generation failed',
       message: err.message,
     })
+  }
+})
+
+// POST /api/hashes/bulk-certificates — generate zip of multiple certificates
+// Returns JSON with individual certificate URLs for frontend to download
+router.post('/bulk-certificates', authenticate, async (req, res) => {
+  try {
+    const organizationId = req.organization?.id
+    const { hashes } = req.body
+
+    if (!Array.isArray(hashes) || hashes.length === 0) {
+      return res.status(400).json({ error: 'hashes must be a non-empty array' })
+    }
+    if (hashes.length > 50) {
+      return res.status(400).json({ error: 'Maximum 50 certificates per bulk request' })
+    }
+
+    const records = await prisma.hashRecord.findMany({
+      where: {
+        hash: { in: hashes },
+        organizationId,
+        status: 'CONFIRMED', // only generate for confirmed records
+      },
+      include: { organization: { select: { id: true, name: true, website: true, logoUrl: true, address: true } } }
+    })
+
+    const { generateCertificate } = require('../services/certificateService')
+
+    // Generate all PDFs and return as array of base64 encoded buffers
+    const results = await Promise.allSettled(
+      records.map(async (record) => {
+        const pdfBuffer = await generateCertificate(record)
+        return {
+          hash: record.hash,
+          metadata: record.metadata || 'Untitled',
+          filename: `sipheron-certificate-${record.hash.slice(0, 8)}.pdf`,
+          data: pdfBuffer.toString('base64'),
+          size: pdfBuffer.length,
+        }
+      })
+    )
+
+    const successful = results
+      .filter(r => r.status === 'fulfilled')
+      .map(r => r.value)
+
+    res.json({
+      certificates: successful,
+      total: successful.length,
+      requested: hashes.length,
+    })
+  } catch (err) {
+    console.error('[HASHES] bulk-certificates error:', err)
+    res.status(500).json({ error: 'Bulk certificate generation failed' })
   }
 })
 

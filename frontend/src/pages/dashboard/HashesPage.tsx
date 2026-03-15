@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
   Search,
-  Filter,
   Copy,
   ExternalLink,
   MoreHorizontal,
@@ -42,12 +41,7 @@ interface HashRecord {
   pdaExplorerUrl: string;
 }
 
-interface PaginationData {
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
-}
+
 
 // Map backend status to StatusBadge type
 const mapStatus = (status: string): import('@/components/shared').StatusType => {
@@ -61,20 +55,36 @@ const mapStatus = (status: string): import('@/components/shared').StatusType => 
 
 export const HashesPage: React.FC = () => {
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
-
   // State
-  const [hashes, setHashes] = useState<HashRecord[]>([]);
-  const [pagination, setPagination] = useState<PaginationData>({
-    page: 1,
-    limit: 10,
-    total: 0,
-    totalPages: 0,
-  });
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
-  const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || 'all');
-  const [selectedHashes, setSelectedHashes] = useState<string[]>([]);
+  const [hashes, setHashes] = useState<HashRecord[]>([])
+  const [page, setPage] = useState(1)
+  const [pages, setPages] = useState(1)
+  const [total, setTotal] = useState(0)
+  const [loading, setLoading] = useState(true)
+
+  // Filter state
+  const [search, setSearch] = useState('')
+  const [filterStatus, setFilterStatus] = useState('')
+  const [filterMimeType, setFilterMimeType] = useState('')
+  const [filterTags, setFilterTags] = useState('')
+  const [filterUserId, setFilterUserId] = useState('')
+  const [filterDateFrom, setFilterDateFrom] = useState('')
+  const [filterDateTo, setFilterDateTo] = useState('')
+
+  // Sort state
+  const [sortBy, setSortBy] = useState('createdAt')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+
+  // Bulk select state
+  const [selectedHashes, setSelectedHashes] = useState<Set<string>>(new Set())
+  const [bulkLoading, setBulkLoading] = useState(false)
+
+  // Filter options from API
+  const [availableMimeTypes, setAvailableMimeTypes] = useState<string[]>([])
+
+  // Members list for "anchored by" filter
+  const [members, setMembers] = useState<{id: string; email: string; name?: string}[]>([])
+
   const [revokeModalOpen, setRevokeModalOpen] = useState(false);
   const [hashToRevoke, setHashToRevoke] = useState<HashRecord | null>(null);
   const [revokeConfirmText, setRevokeConfirmText] = useState('');
@@ -88,105 +98,147 @@ export const HashesPage: React.FC = () => {
   const [anchoring, setAnchoring] = useState(false);
   const [anchorMetadata, setAnchorMetadata] = useState('');
 
-  // Get page from URL
-  const currentPage = parseInt(searchParams.get('page') || '1', 10);
-
-  // Fetch hashes
-  const fetchHashes = useCallback(async () => {
-    setLoading(true);
-    try {
-      const params: Record<string, string | number> = {
-        page: currentPage,
-        limit: 10,
-      };
-      if (searchQuery) params.search = searchQuery;
-      if (statusFilter !== 'all') params.status = statusFilter;
-
-      const { data } = await api.get('/api/hashes', { params });
-      setHashes(data.data || []);
-      setPagination(data.pagination || { page: 1, limit: 10, total: 0, totalPages: 0 });
-    } catch (error) {
-      console.error('Failed to fetch hashes:', error);
-      toast.error('Failed to load hashes');
-    } finally {
-      setLoading(false);
-    }
-  }, [currentPage, searchQuery, statusFilter]);
-
-  // Initial fetch and when params change
   useEffect(() => {
-    fetchHashes();
-  }, [fetchHashes]);
+    api.get('/api/members')
+      .then(res => setMembers(res.data.members || res.data || []))
+      .catch(() => {})
+  }, [])
+
+  const fetchHashes = useCallback(async () => {
+    setLoading(true)
+    try {
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: '50',
+        sortBy,
+        sortOrder,
+        ...(search && { search }),
+        ...(filterStatus && { status: filterStatus }),
+        ...(filterMimeType && { mimeType: filterMimeType }),
+        ...(filterTags && { tags: filterTags }),
+        ...(filterUserId && { userId: filterUserId }),
+        ...(filterDateFrom && { dateFrom: filterDateFrom }),
+        ...(filterDateTo && { dateTo: filterDateTo }),
+      })
+      const res = await api.get(`/api/hashes?${params}`)
+      setHashes(res.data.records || res.data.hashes || res.data || [])
+      setTotal(res.data.total || 0)
+      setPages(res.data.pages || 1)
+      if (res.data.filters?.mimeTypes) {
+        setAvailableMimeTypes(res.data.filters.mimeTypes)
+      }
+    } catch (err) {
+      console.error('Failed to fetch hashes:', err)
+      toast.error('Failed to load hashes')
+    } finally {
+      setLoading(false)
+    }
+  }, [page, search, filterStatus, filterMimeType, filterTags,
+      filterUserId, filterDateFrom, filterDateTo, sortBy, sortOrder])
+
+  // Debounce search
+  useEffect(() => {
+    const timer = setTimeout(() => fetchHashes(), 300)
+    return () => clearTimeout(timer)
+  }, [fetchHashes])
 
   // Polling for pending hashes
   const { isPolling, startPolling } = usePendingHashes({
     onConfirmed: () => {
-      toast.success('Hash confirmed on Solana!');
-      fetchHashes();
+      toast.success('Hash confirmed on Solana!')
+      fetchHashes()
     },
     onRefresh: () => fetchHashes(),
-  });
+  })
 
   // Start polling when there are pending hashes
   useEffect(() => {
-    const hasPending = hashes.some((h) => h.status === 'PENDING');
-    if (hasPending) startPolling();
-  }, [hashes, startPolling]);
+    const hasPending = hashes.some((h) => h.status === 'PENDING')
+    if (hasPending) startPolling()
+  }, [hashes, startPolling])
 
   // Listen for open-anchor-modal event from CommandPalette
   useEffect(() => {
     const handleOpenAnchor = () => {
-      setAnchorModalOpen(true);
+      setAnchorModalOpen(true)
       // Also set a dummy fileHash to trigger the modal state
-      setFileHash('pending');
-      setFileName('New Document');
-    };
-    window.addEventListener('open-anchor-modal', handleOpenAnchor);
-    return () => window.removeEventListener('open-anchor-modal', handleOpenAnchor);
-  }, []);
+      setFileHash('pending')
+      setFileName('New Document')
+    }
+    window.addEventListener('open-anchor-modal', handleOpenAnchor)
+    return () => window.removeEventListener('open-anchor-modal', handleOpenAnchor)
+  }, [])
 
-  // Update URL when filters change
-  const updateFilters = (newSearch: string, newStatus: string) => {
-    const params: Record<string, string> = {};
-    if (newSearch) params.search = newSearch;
-    if (newStatus !== 'all') params.status = newStatus;
-    params.page = '1';
-    setSearchParams(params);
-  };
-
-  const handleSearchChange = (value: string) => {
-    setSearchQuery(value);
-    updateFilters(value, statusFilter);
-  };
-
-  const handleStatusChange = (value: string) => {
-    setStatusFilter(value);
-    updateFilters(searchQuery, value);
-  };
-
-  const handlePageChange = (page: number) => {
-    const params: Record<string, string> = {};
-    if (searchQuery) params.search = searchQuery;
-    if (statusFilter !== 'all') params.status = statusFilter;
-    params.page = page.toString();
-    setSearchParams(params);
-    setSelectedHashes([]);
-  };
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage)
+    setSelectedHashes(new Set())
+  }
 
   // Selection handlers
   const toggleSelection = (hash: string) => {
-    setSelectedHashes((prev) =>
-      prev.includes(hash) ? prev.filter((h) => h !== hash) : [...prev, hash]
-    );
-  };
+    const next = new Set(selectedHashes)
+    if (next.has(hash)) next.delete(hash)
+    else next.add(hash)
+    setSelectedHashes(next)
+  }
 
   const selectAll = () => {
-    if (selectedHashes.length === hashes.length) {
-      setSelectedHashes([]);
+    if (selectedHashes.size === hashes.length && hashes.length > 0) {
+      setSelectedHashes(new Set())
     } else {
-      setSelectedHashes(hashes.map((h) => h.hash));
+      setSelectedHashes(new Set(hashes.map((h: HashRecord) => h.hash)))
     }
-  };
+  }
+
+  // Bulk certificate download
+  const handleBulkCertificates = async () => {
+    if (selectedHashes.size === 0) return
+    setBulkLoading(true)
+    try {
+      const res = await api.post('/api/hashes/bulk-certificates', {
+        hashes: Array.from(selectedHashes)
+      })
+      const certs = res.data.certificates || []
+      // Download each certificate
+      for (const cert of certs) {
+        const binary = atob(cert.data)
+        const bytes = new Uint8Array(binary.length)
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
+        const blob = new Blob([bytes], { type: 'application/pdf' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = cert.filename
+        a.click()
+        URL.revokeObjectURL(url)
+        await new Promise(r => setTimeout(r, 200)) // small delay between downloads
+      }
+      setSelectedHashes(new Set())
+    } catch (err) {
+      console.error('Bulk certificate failed:', err)
+      toast.error('Bulk certificate generation failed')
+    } finally {
+      setBulkLoading(false)
+    }
+  }
+
+  // Sort handler
+  const handleSort = (field: string) => {
+    if (sortBy === field) {
+      setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortBy(field)
+      setSortOrder('desc')
+    }
+    setPage(1)
+  }
+
+  // Sort indicator component
+  const SortIndicator = ({ field }: { field: string }) => (
+    <span className="ml-1 text-[#44445A]">
+      {sortBy === field ? (sortOrder === 'asc' ? '↑' : '↓') : '↕'}
+    </span>
+  )
 
   // Revoke handler
   const openRevokeModal = (hash: HashRecord) => {
@@ -324,10 +376,10 @@ export const HashesPage: React.FC = () => {
 
   // Status counts
   const statusCounts = {
-    total: pagination.total,
+    total,
     confirmed: hashes.filter((h) => h.status === 'active' || h.status === 'CONFIRMED').length,
     pending: hashes.filter((h) => h.status === 'PENDING').length,
-    revoked: hashes.filter((h) => h.status === 'revoked').length,
+    revoked: hashes.filter((h) => h.status === 'revoked' || h.status === 'REVOKED').length,
   };
 
   // QR Code URL
@@ -422,32 +474,111 @@ export const HashesPage: React.FC = () => {
         />
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-sipheron-text-muted" />
+      {/* Filter bar */}
+      <div className="bg-[#0D0D1A] border border-white/[0.06] rounded-2xl p-4 space-y-3">
+        {/* Search + quick filters row */}
+        <div className="flex flex-wrap gap-3">
+          {/* Search */}
+          <div className="flex-1 min-w-[200px] relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#44445A]" />
+            <input
+              type="text"
+              value={search}
+              onChange={e => { setSearch(e.target.value); setPage(1) }}
+              placeholder="Search by document name..."
+              className="w-full pl-9 pr-4 py-2 bg-black/40 border border-white/10
+                         rounded-xl text-sm text-[#F0F0FF] placeholder-[#44445A]
+                         focus:outline-none focus:border-[#6C63FF]"
+            />
+          </div>
+
+          {/* Status filter */}
+          <select
+            value={filterStatus}
+            onChange={e => { setFilterStatus(e.target.value); setPage(1) }}
+            className="bg-black/40 border border-white/10 rounded-xl px-3 py-2
+                       text-sm text-[#F0F0FF] focus:outline-none focus:border-[#6C63FF]"
+          >
+            <option value="">All statuses</option>
+            <option value="CONFIRMED">Confirmed</option>
+            <option value="PENDING">Pending</option>
+            <option value="FAILED">Failed</option>
+            <option value="REVOKED">Revoked</option>
+          </select>
+
+          {/* MIME type filter */}
+          {availableMimeTypes.length > 0 && (
+            <select
+              value={filterMimeType}
+              onChange={e => { setFilterMimeType(e.target.value); setPage(1) }}
+              className="bg-black/40 border border-white/10 rounded-xl px-3 py-2
+                         text-sm text-[#F0F0FF] focus:outline-none focus:border-[#6C63FF]"
+            >
+              <option value="">All types</option>
+              {availableMimeTypes.map((m: string) => (
+                <option key={m} value={m}>{m}</option>
+              ))}
+            </select>
+          )}
+
+          {/* Anchored by filter */}
+          {members.length > 0 && (
+            <select
+              value={filterUserId}
+              onChange={e => { setFilterUserId(e.target.value); setPage(1) }}
+              className="bg-black/40 border border-white/10 rounded-xl px-3 py-2
+                         text-sm text-[#F0F0FF] focus:outline-none focus:border-[#6C63FF]"
+            >
+              <option value="">All members</option>
+              {members.map(m => (
+                <option key={m.id} value={m.id}>
+                  {m.name || m.email}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+
+        {/* Date range + tags row */}
+        <div className="flex flex-wrap gap-3">
+          <input
+            type="date"
+            value={filterDateFrom}
+            onChange={e => { setFilterDateFrom(e.target.value); setPage(1) }}
+            className="bg-black/40 border border-white/10 rounded-xl px-3 py-2
+                       text-sm text-[#F0F0FF] focus:outline-none focus:border-[#6C63FF]"
+          />
+          <span className="flex items-center text-[#44445A] text-sm">to</span>
+          <input
+            type="date"
+            value={filterDateTo}
+            onChange={e => { setFilterDateTo(e.target.value); setPage(1) }}
+            className="bg-black/40 border border-white/10 rounded-xl px-3 py-2
+                       text-sm text-[#F0F0FF] focus:outline-none focus:border-[#6C63FF]"
+          />
           <input
             type="text"
-            placeholder="Search by hash or metadata..."
-            value={searchQuery}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 rounded-lg bg-sipheron-surface border border-white/[0.06] text-sipheron-text-primary placeholder:text-sipheron-text-muted focus:border-sipheron-purple focus:ring-2 focus:ring-sipheron-purple/20 transition-all"
+            value={filterTags}
+            onChange={e => { setFilterTags(e.target.value); setPage(1) }}
+            placeholder="Tags (comma separated)"
+            className="flex-1 min-w-[160px] bg-black/40 border border-white/10
+                       rounded-xl px-3 py-2 text-sm text-[#F0F0FF]
+                       placeholder-[#44445A] focus:outline-none focus:border-[#6C63FF]"
           />
-        </div>
-        <div className="flex gap-2">
-          <select
-            value={statusFilter}
-            onChange={(e) => handleStatusChange(e.target.value)}
-            className="px-4 py-2 rounded-lg bg-sipheron-surface border border-white/[0.06] text-sipheron-text-primary focus:border-sipheron-purple focus:ring-2 focus:ring-sipheron-purple/20 transition-all"
-          >
-            <option value="all">All Status</option>
-            <option value="active">Active</option>
-            <option value="revoked">Revoked</option>
-          </select>
-          <button className="px-4 py-2 rounded-lg bg-sipheron-surface border border-white/[0.06] text-sipheron-text-secondary hover:bg-white/[0.03] transition-colors flex items-center gap-2">
-            <Filter className="w-4 h-4" />
-            Filters
-          </button>
+          {/* Clear filters button */}
+          {(search || filterStatus || filterMimeType || filterTags ||
+            filterUserId || filterDateFrom || filterDateTo) && (
+            <button
+              onClick={() => {
+                setSearch(''); setFilterStatus(''); setFilterMimeType('')
+                setFilterTags(''); setFilterUserId('')
+                setFilterDateFrom(''); setFilterDateTo(''); setPage(1)
+              }}
+              className="text-xs text-[#FF4757] hover:text-[#FF6B7A] transition-colors px-2"
+            >
+              Clear filters
+            </button>
+          )}
         </div>
       </div>
 
@@ -459,24 +590,36 @@ export const HashesPage: React.FC = () => {
               <tr className="border-b border-white/[0.06] bg-white/[0.02]">
                 <th className="px-4 py-3 w-10">
                   <button onClick={selectAll} className="flex items-center justify-center">
-                    {selectedHashes.length === hashes.length && hashes.length > 0 ? (
+                    {selectedHashes.size === hashes.length && hashes.length > 0 ? (
                       <CheckSquare className="w-4 h-4 text-sipheron-purple" />
                     ) : (
                       <div className="w-4 h-4 rounded border border-sipheron-text-muted" />
                     )}
                   </button>
                 </th>
-                <th className="text-left text-xs text-sipheron-text-muted font-medium px-4 py-3">
-                  Document
+                <th
+                  onClick={() => handleSort('metadata')}
+                  className="text-left text-xs text-sipheron-text-muted font-medium px-4 py-3 cursor-pointer hover:text-[#F0F0FF] select-none"
+                >
+                  Document <SortIndicator field="metadata" />
                 </th>
-                <th className="text-left text-xs text-sipheron-text-muted font-medium px-4 py-3">
-                  Hash
+                <th
+                  onClick={() => handleSort('hash')}
+                  className="text-left text-xs text-sipheron-text-muted font-medium px-4 py-3 cursor-pointer hover:text-[#F0F0FF] select-none"
+                >
+                  Hash <SortIndicator field="hash" />
                 </th>
-                <th className="text-left text-xs text-sipheron-text-muted font-medium px-4 py-3">
-                  Status
+                <th
+                  onClick={() => handleSort('status')}
+                  className="text-left text-xs text-sipheron-text-muted font-medium px-4 py-3 cursor-pointer hover:text-[#F0F0FF] select-none"
+                >
+                  Status <SortIndicator field="status" />
                 </th>
-                <th className="text-left text-xs text-sipheron-text-muted font-medium px-4 py-3">
-                  Date
+                <th
+                  onClick={() => handleSort('createdAt')}
+                  className="text-left text-xs text-sipheron-text-muted font-medium px-4 py-3 cursor-pointer hover:text-[#F0F0FF] select-none"
+                >
+                  Date <SortIndicator field="createdAt" />
                 </th>
                 <th className="text-left text-xs text-sipheron-text-muted font-medium px-4 py-3">
                   Actions
@@ -508,7 +651,7 @@ export const HashesPage: React.FC = () => {
                         onClick={() => toggleSelection(hash.hash)}
                         className="flex items-center justify-center"
                       >
-                        {selectedHashes.includes(hash.hash) ? (
+                        {selectedHashes.has(hash.hash) ? (
                           <CheckSquare className="w-4 h-4 text-sipheron-purple" />
                         ) : (
                           <div className="w-4 h-4 rounded border border-sipheron-text-muted" />
@@ -623,7 +766,7 @@ export const HashesPage: React.FC = () => {
                         No hashes found
                       </h3>
                       <p className="text-sm text-sipheron-text-muted mb-4">
-                        {searchQuery || statusFilter !== 'all'
+                        {search || filterStatus || filterMimeType || filterTags || filterUserId || filterDateFrom || filterDateTo
                           ? 'Try adjusting your search or filters'
                           : 'No documents have been anchored yet'}
                       </p>
@@ -636,23 +779,23 @@ export const HashesPage: React.FC = () => {
         </div>
 
         {/* Pagination */}
-        {!loading && pagination.totalPages > 1 && (
+        {!loading && pages > 1 && (
           <div className="flex items-center justify-between px-4 py-3 border-t border-white/[0.06]">
             <span className="text-xs text-sipheron-text-muted">
-              Page {pagination.page} of {pagination.totalPages} ({pagination.total} total)
+              Page {page} of {pages} ({total} total)
             </span>
             <div className="flex items-center gap-2">
               <button
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage <= 1}
+                onClick={() => handlePageChange(page - 1)}
+                disabled={page <= 1}
                 className="px-3 py-1.5 rounded-lg bg-white/[0.03] text-sipheron-text-muted text-xs hover:bg-white/[0.05] transition-colors disabled:opacity-50 flex items-center gap-1"
               >
                 <ChevronLeft className="w-3 h-3" />
                 Previous
               </button>
               <button
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage >= pagination.totalPages}
+                onClick={() => handlePageChange(page + 1)}
+                disabled={page >= pages}
                 className="px-3 py-1.5 rounded-lg bg-white/[0.03] text-sipheron-text-muted text-xs hover:bg-white/[0.05] transition-colors disabled:opacity-50 flex items-center gap-1"
               >
                 Next
@@ -664,23 +807,31 @@ export const HashesPage: React.FC = () => {
       </div>
 
       {/* Bulk Action Bar */}
-      {selectedHashes.length > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-4 px-6 py-3 rounded-xl bg-sipheron-surface border border-sipheron-purple/30 shadow-lg shadow-sipheron-purple/10 animate-slide-up z-40">
-          <span className="text-sm text-sipheron-text-primary">
-            {selectedHashes.length} selected
+      {selectedHashes.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50
+                        bg-[#13131F] border border-[#6C63FF]/40 rounded-2xl
+                        px-5 py-3 flex items-center gap-4 shadow-2xl
+                        shadow-[#6C63FF]/20">
+          <span className="text-sm font-semibold text-[#F0F0FF]">
+            {selectedHashes.size} selected
           </span>
-          <div className="h-4 w-px bg-white/[0.1]" />
+          <div className="w-px h-4 bg-white/10" />
           <button
-            onClick={() => handleExport('csv')}
-            className="text-sm text-sipheron-text-secondary hover:text-sipheron-text-primary transition-colors"
+            onClick={handleBulkCertificates}
+            disabled={bulkLoading}
+            className="flex items-center gap-2 text-sm text-[#6C63FF]
+                       hover:text-[#F0F0FF] transition-colors font-medium
+                       disabled:opacity-50"
           >
-            Export
+            {bulkLoading
+              ? 'Generating...'
+              : `Download ${selectedHashes.size} Certificate${selectedHashes.size > 1 ? 's' : ''}`}
           </button>
           <button
-            onClick={() => setSelectedHashes([])}
-            className="p-1 rounded hover:bg-white/[0.05] text-sipheron-text-muted"
+            onClick={() => setSelectedHashes(new Set())}
+            className="text-xs text-[#44445A] hover:text-[#8888AA] transition-colors"
           >
-            <X className="w-4 h-4" />
+            Clear
           </button>
         </div>
       )}
