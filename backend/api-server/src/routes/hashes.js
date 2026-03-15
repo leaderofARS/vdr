@@ -685,45 +685,117 @@ router.get('/:hash/status', authenticate, async (req, res) => {
   }
 })
 
+// GET /api/hashes/:hash/verifications — verification event history
+router.get('/:hash/verifications', authenticate, async (req, res) => {
+  try {
+    const organizationId = req.organization?.id
+    const { hash } = req.params
+
+    // Verify the hash belongs to this org
+    const record = await prisma.hashRecord.findFirst({
+      where: { hash, organizationId },
+      select: { id: true, hash: true }
+    })
+    if (!record) {
+      return res.status(404).json({ error: 'Hash not found' })
+    }
+
+    // Get verification events from audit log
+    const verifications = await prisma.auditLog.findMany({
+      where: {
+        organizationId,
+        action: 'HASH_VERIFIED',
+        metadata: {
+          path: ['hash'],
+          string_contains: hash.slice(0, 16),
+        }
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+      select: {
+        id: true,
+        action: true,
+        metadata: true,
+        ipAddress: true,
+        userAgent: true,
+        createdAt: true,
+        userId: true,
+      }
+    })
+
+    // Enrich with user data
+    const userIds = [...new Set(
+      verifications.map(v => v.userId).filter(Boolean)
+    )]
+    const users = userIds.length > 0
+      ? await prisma.user.findMany({
+          where: { id: { in: userIds } },
+          select: { id: true, email: true, name: true }
+        })
+      : []
+    const userMap = Object.fromEntries(users.map(u => [u.id, u]))
+
+    const enriched = verifications.map(v => ({
+      ...v,
+      authentic: v.metadata?.authentic ?? null,
+      verifiedBy: v.userId ? userMap[v.userId] || null : null,
+    }))
+
+    res.json({
+      hash,
+      verifications: enriched,
+      total: enriched.length,
+    })
+  } catch (err) {
+    console.error('[HASHES] verifications error:', err)
+    res.status(500).json({ error: 'Failed to fetch verification history' })
+  }
+})
+
 /**
  * @route GET /api/hashes/:hash
  * @description Get detail for a specific hash.
  */
-router.get('/:hash', authenticate, async (req, res, next) => {
-    try {
-        const { hash } = req.params;
+router.get('/:hash', authenticate, async (req, res) => {
+  try {
+    const organizationId = req.organization?.id
+    const { hash } = req.params
 
-        if (!/^[a-fA-F0-9]{64}$/.test(hash)) {
-            return res.status(400).json({ error: 'Invalid SHA-256 hash format' });
+    const record = await prisma.hashRecord.findFirst({
+      where: { hash, organizationId },
+      include: {
+        organization: {
+          select: { id: true, name: true, plan: true }
         }
+      }
+    })
 
-        if (!req.organization) {
-            return res.status(403).json({ error: 'Institutional Context Required' });
-        }
-
-        // 1. Try Prisma first
-        let record = await prisma.hashRecord.findFirst({
-            where: {
-                hash,
-                organizationId: req.organization.id
-            }
-        });
-
-        // 2. If not in DB, try Solana directly
-        if (!record) {
-            const solanaData = await solanaService.verifyHash(hash);
-            if (solanaData.exists && solanaData.record) {
-                // Return solana record directly (formatted)
-                return res.json(formatHashRecord(solanaData.record));
-            }
-            return res.status(404).json({ error: 'Hash not found in registry or unauthorized' });
-        }
-
-        res.json(formatHashRecord(record));
-    } catch (error) {
-        next(error);
+    if (!record) {
+      return res.status(404).json({ error: 'Hash record not found' })
     }
-});
+
+    // Get who anchored it
+    let anchoredBy = null
+    if (record.userId) {
+      anchoredBy = await prisma.user.findUnique({
+        where: { id: record.userId },
+        select: { id: true, email: true, name: true }
+      }).catch(() => null)
+    }
+
+    res.json({
+      record: {
+        ...record,
+        blockNumber: record.blockNumber?.toString() || null,
+        fileSize: record.fileSize?.toString() || null,
+        anchoredBy,
+      }
+    })
+  } catch (err) {
+    console.error('[HASHES] detail error:', err)
+    res.status(500).json({ error: 'Failed to fetch hash record' })
+  }
+})
 
 /**
  * @route POST /api/hashes/revoke
