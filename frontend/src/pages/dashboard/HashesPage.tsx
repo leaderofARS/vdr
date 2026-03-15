@@ -39,6 +39,7 @@ interface HashRecord {
   txSignature: string;
   explorerUrl: string;
   pdaExplorerUrl: string;
+  fileSize?: string | number | null;
 }
 
 
@@ -634,6 +635,12 @@ export const HashesPage: React.FC = () => {
                 >
                   Date <SortIndicator field="createdAt" />
                 </th>
+                <th
+                  onClick={() => handleSort('fileSize')}
+                  className="text-left text-xs text-sipheron-text-muted font-medium px-4 py-3 cursor-pointer hover:text-[#F0F0FF] select-none"
+                >
+                  Size <SortIndicator field="fileSize" />
+                </th>
                 <th className="text-left text-xs text-sipheron-text-muted font-medium px-4 py-3">
                   Actions
                 </th>
@@ -695,6 +702,11 @@ export const HashesPage: React.FC = () => {
                     <td className="px-4 py-4">
                       <span className="text-xs text-sipheron-text-muted">
                         {new Date(hash.registeredAt).toLocaleDateString()}
+                      </span>
+                    </td>
+                    <td className="px-4 py-4">
+                      <span className="text-xs text-sipheron-text-muted whitespace-nowrap">
+                        {hash.fileSize ? (Number(hash.fileSize) > 1024 * 1024 ? `${(Number(hash.fileSize) / (1024 * 1024)).toFixed(1)} MB` : `${Math.round(Number(hash.fileSize) / 1024)} KB`) : '—'}
                       </span>
                     </td>
                     <td className="px-4 py-4">
