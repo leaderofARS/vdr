@@ -6,42 +6,267 @@
  * @author SipHeron Platform
  */
 
-const solanaService = require("../services/solana");
+const express = require('express')
+const router = express.Router()
+const prisma = require('../config/database')
+const crypto = require('crypto')
+const multer = require('multer')
 
-module.exports = async (req, res, next) => {
-    try {
-        const { hash } = req.body;
+// multer — memory storage, max 100MB, for optional file upload
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 100 * 1024 * 1024 }
+})
 
-        const hexRegex = /^[a-fA-F0-9]{64}$/;
-        if (!hash || !hexRegex.test(hash)) {
-            return res.status(400).json({ success: false, error: "Invalid SHA-256 hash provided. Must be a 64-character hex string" });
-        }
+// POST /api/verify — verify a hash or uploaded file
+// No auth required — public endpoint
+router.post('/', upload.single('file'), async (req, res) => {
+  try {
+    let hash = req.body?.hash
 
-        const verification = await solanaService.verifyHash(hash);
-
-        if (verification.valid) {
-            const { record } = verification;
-            res.status(200).json({
-                verified: true,
-                record: {
-                    hash: record.hash,
-                    owner: record.owner,
-                    timestamp: record.timestamp,
-                    registeredAt: new Date(record.timestamp * 1000).toISOString(),
-                    metadata: record.metadata,
-                    pdaAddress: record.pdaAddress,
-                    expiry: record.expiry || 0,
-                    isRevoked: record.isRevoked || false
-                }
-            });
-        } else {
-            res.status(200).json({
-                verified: false,
-                hash,
-                reason: verification.reason || "Hash not found in registry"
-            });
-        }
-    } catch (err) {
-        next(err);
+    // If file uploaded, compute hash server-side
+    if (req.file && !hash) {
+      hash = crypto
+        .createHash('sha256')
+        .update(req.file.buffer)
+        .digest('hex')
     }
-};
+
+    if (!hash) {
+      return res.status(400).json({
+        authentic: false,
+        error: 'Provide either a hash string or a file to verify',
+        verified_at: new Date().toISOString(),
+      })
+    }
+
+    // Normalize hash
+    hash = hash.trim().toLowerCase()
+
+    if (!/^[a-f0-9]{64}$/.test(hash)) {
+      return res.status(400).json({
+        authentic: false,
+        error: 'Invalid hash format — must be 64 hex characters (SHA-256)',
+        verified_at: new Date().toISOString(),
+      })
+    }
+
+    const record = await prisma.hashRecord.findUnique({
+      where: { hash },
+      include: {
+        organization: { select: { name: true, id: true } }
+      }
+    })
+
+    const verified_at = new Date().toISOString()
+
+    if (!record) {
+      return res.status(404).json({
+        authentic: false,
+        error: 'NOT_FOUND',
+        message: 'No anchor record found for this hash',
+        hash,
+        verified_at,
+      })
+    }
+
+    if (record.status === 'REVOKED') {
+      return res.status(200).json({
+        authentic: false,
+        status: 'REVOKED',
+        message: 'This document has been revoked',
+        hash,
+        verified_at,
+        anchor: {
+          id: record.id,
+          hash: record.hash,
+          metadata: record.metadata,
+          status: record.status,
+          createdAt: record.createdAt,
+          blockTimestamp: record.blockTimestamp,
+          organizationName: record.organization?.name,
+          revokedAt: record.revokedAt,
+          revokedBy: record.revokedBy,
+          revocationNote: record.revocationNote,
+        },
+        blockchain: {
+          txSignature: record.txSignature,
+          blockNumber: record.blockNumber?.toString(),
+          blockTimestamp: record.blockTimestamp,
+          explorerUrl: record.txSignature
+            ? `https://explorer.solana.com/tx/${record.txSignature}?cluster=devnet`
+            : null,
+        },
+      })
+    }
+
+    const authentic = record.status === 'CONFIRMED'
+
+    return res.status(200).json({
+      authentic,
+      status: record.status,
+      hash,
+      verified_at,
+      anchor: {
+        id: record.id,
+        hash: record.hash,
+        metadata: record.metadata,
+        status: record.status,
+        createdAt: record.createdAt,
+        blockTimestamp: record.blockTimestamp,
+        fileSize: record.fileSize?.toString() || null,
+        mimeType: record.mimeType,
+        tags: record.tags,
+        organizationName: record.organization?.name,
+      },
+      blockchain: {
+        txSignature: record.txSignature,
+        blockNumber: record.blockNumber?.toString(),
+        blockTimestamp: record.blockTimestamp,
+        explorerUrl: record.txSignature
+          ? `https://explorer.solana.com/tx/${record.txSignature}?cluster=devnet`
+          : null,
+        network: 'Solana Devnet',
+        contractAddress: '6ecWPUK87zxwZP2pARJ75wbpCka92mYSGP1szrJxzAwo',
+      },
+    })
+  } catch (err) {
+    console.error('[VERIFY] error:', err)
+    res.status(500).json({
+      authentic: false,
+      error: 'INTERNAL_ERROR',
+      message: 'Verification failed — please try again',
+      verified_at: new Date().toISOString(),
+    })
+  }
+})
+
+// POST /api/verify/batch — verify up to 500 hashes at once
+router.post('/batch', async (req, res) => {
+  try {
+    const { hashes } = req.body
+
+    if (!Array.isArray(hashes) || hashes.length === 0) {
+      return res.status(400).json({
+        error: 'hashes must be a non-empty array',
+        verified_at: new Date().toISOString(),
+      })
+    }
+
+    if (hashes.length > 500) {
+      return res.status(400).json({
+        error: 'Maximum 500 hashes per batch request',
+        verified_at: new Date().toISOString(),
+      })
+    }
+
+    const normalized = hashes.map(h => ({
+      raw: h,
+      hash: typeof h === 'string' ? h.trim().toLowerCase() : null,
+      valid: typeof h === 'string' && /^[a-f0-9]{64}$/i.test(h.trim()),
+    }))
+
+    const validHashes = normalized.filter(h => h.valid).map(h => h.hash)
+
+    const records = await prisma.hashRecord.findMany({
+      where: { hash: { in: validHashes } },
+      select: {
+        hash: true,
+        status: true,
+        metadata: true,
+        createdAt: true,
+        blockTimestamp: true,
+        txSignature: true,
+        blockNumber: true,
+        revokedAt: true,
+        organization: { select: { name: true } },
+      }
+    })
+
+    const recordMap = Object.fromEntries(records.map(r => [r.hash, r]))
+    const verified_at = new Date().toISOString()
+
+    const results = normalized.map(({ raw, hash, valid }) => {
+      if (!valid || !hash) {
+        return {
+          hash: raw,
+          authentic: false,
+          status: 'INVALID',
+          error: 'Invalid hash format',
+          verified_at,
+        }
+      }
+
+      const record = recordMap[hash]
+
+      if (!record) {
+        return {
+          hash,
+          authentic: false,
+          status: 'NOT_FOUND',
+          verified_at,
+        }
+      }
+
+      if (record.status === 'REVOKED') {
+        return {
+          hash,
+          authentic: false,
+          status: 'REVOKED',
+          revokedAt: record.revokedAt,
+          verified_at,
+          anchor: {
+            metadata: record.metadata,
+            createdAt: record.createdAt,
+            organizationName: record.organization?.name,
+          },
+        }
+      }
+
+      return {
+        hash,
+        authentic: record.status === 'CONFIRMED',
+        status: record.status,
+        verified_at,
+        anchor: {
+          metadata: record.metadata,
+          createdAt: record.createdAt,
+          blockTimestamp: record.blockTimestamp,
+          organizationName: record.organization?.name,
+        },
+        blockchain: {
+          txSignature: record.txSignature,
+          blockNumber: record.blockNumber?.toString(),
+          explorerUrl: record.txSignature
+            ? `https://explorer.solana.com/tx/${record.txSignature}?cluster=devnet`
+            : null,
+        },
+      }
+    })
+
+    const summary = {
+      total: results.length,
+      authentic: results.filter(r => r.authentic).length,
+      notFound: results.filter(r => r.status === 'NOT_FOUND').length,
+      revoked: results.filter(r => r.status === 'REVOKED').length,
+      invalid: results.filter(r => r.status === 'INVALID').length,
+      failed: results.filter(r => !r.authentic && r.status === 'CONFIRMED').length,
+    }
+
+    res.json({
+      results,
+      summary,
+      verified_at,
+      batchSize: results.length,
+    })
+  } catch (err) {
+    console.error('[VERIFY/BATCH] error:', err)
+    res.status(500).json({
+      error: 'INTERNAL_ERROR',
+      message: 'Batch verification failed',
+      verified_at: new Date().toISOString(),
+    })
+  }
+})
+
+module.exports = router

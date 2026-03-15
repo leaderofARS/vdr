@@ -24,32 +24,49 @@ export const LiveTerminalDemo: React.FC = () => {
     setIsLoading(true);
     setResult({ status: 'loading' });
 
-    // Simulate API call
-    setTimeout(() => {
-      // Demo logic - specific hash shows found, others show not found
-      if (hashInput === 'a3f4b2c1d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4') {
+    try {
+      const { default: api } = await import('@/utils/api');
+      const res = await api.post('/api/verify', { hash: hashInput });
+      const data = res.data;
+
+      if (data.authentic) {
         setResult({
           status: 'found',
           hash: hashInput,
-          date: '14 Jan 2025',
-          org: 'ARS Labs',
-          tx: '3xK9mPqRsTuVwXyZ123456789',
+          date: new Date(data.anchor?.blockTimestamp || data.anchor?.createdAt || data.verified_at).toLocaleDateString(),
+          org: data.anchor?.organizationName || 'Unknown Organization',
+          tx: data.blockchain?.txSignature,
         });
-      } else if (hashInput === '0000000000000000000000000000000000000000000000000000000000000000') {
+      } else if (data.status === 'REVOKED') {
         setResult({
           status: 'revoked',
           hash: hashInput,
-          message: 'This document\'s verification has been revoked by the issuer.',
+          message: data.message || 'This document\'s verification has been revoked by the issuer.',
         });
       } else {
         setResult({
           status: 'not-found',
           hash: hashInput,
-          message: 'This hash has not been anchored to SipHeron VDR.',
+          message: data.message || 'This hash has not been anchored to SipHeron VDR.',
         });
       }
+    } catch (err: any) {
+      if (err.response?.status === 404) {
+        setResult({
+          status: 'not-found',
+          hash: hashInput,
+          message: 'This hash has not been anchored to SipHeron VDR.',
+        });
+      } else {
+        setResult({
+          status: 'not-found',
+          hash: hashInput,
+          message: 'Error connecting to verification service.',
+        });
+      }
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   const getResultContent = () => {

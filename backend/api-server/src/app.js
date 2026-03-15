@@ -172,7 +172,7 @@ app.use((req, res, next) => {
 // Routes
 // Apply authLimiter to root /register endpoint and auth routes
 app.post("/register", authLimiter, registerRoute);
-app.post("/verify", verifyRoute);
+app.use("/api/verify", verifyRoute);
 app.get("/record/:hash", authenticate, recordRoute);
 
 // Auth routes — apply authLimiter to /auth/*
