@@ -39,20 +39,23 @@ function createAnchorCommand() {
             const spinner = ora("Submitting batch to backend queue...").start();
 
             try {
-                // Formatting payload for batch endpoint
-                const hashesOnly = items.map(i => i.hash);
-                const metadata = `Push Commit: ${items.length} files`;
-
-                const response = await axios.post(`${apiUrl}/api/batch-register`, {
-                    hashes: hashesOnly,
-                    metadata: metadata,
-                    expiry: 0
-                }, {
-                    headers: { 'x-api-key': apiKey }
-                });
+                // Post each hash individually to support per-file metadata
+                for (const staged of items) {
+                    spinner.text = `Anchoring ${staged.file}...`;
+                    await axios.post(`${apiUrl}/api/hashes`, {
+                        hash: staged.hash,
+                        metadata: staged.metadata || require('path').basename(staged.file),
+                        fileSize: staged.fileSize || null,
+                        mimeType: staged.mimeType || null,
+                    }, {
+                        headers: { 
+                            'x-api-key': apiKey,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                }
 
                 spinner.succeed(chalk.green(`Successfully dispatched ${items.length} hashes to the blockchain!`));
-                console.log(`\nJob ID: ${chalk.cyan(response.data.jobId)}`);
                 console.log(chalk.gray(`The SipHeron Indexer is currently mapping these PDAs to the Smart Contract in the background.`));
 
                 // Clear the local queue

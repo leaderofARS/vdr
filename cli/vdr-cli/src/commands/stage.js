@@ -79,7 +79,9 @@ function createStageCommand() {
                         metadata: options.metadata || filename,
                         expiry: parseInt(options.expiry),
                         fileSize: stats.size,
+                        mimeType: path.extname(absolutePath).slice(1) || null,
                         lastModified: stats.mtime.toISOString(),
+                        stagedAt: new Date().toISOString(),
                     }
 
                     const added = addStagedItem(item)

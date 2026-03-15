@@ -27,7 +27,7 @@ function computeFileHash(filePath) {
         }
 
         const hash = crypto.createHash("sha256");
-        const stream = fs.createReadStream(filePath);
+        const stream = fs.createReadStream(filePath, { highWaterMark: 2 * 1024 * 1024 });
 
         stream.on("data", (chunk) => hash.update(chunk));
         stream.on("end", () => resolve(hash.digest("hex")));

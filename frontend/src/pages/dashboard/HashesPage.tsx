@@ -83,6 +83,8 @@ export const HashesPage: React.FC = () => {
   const [anchorModalOpen, setAnchorModalOpen] = useState(false);
   const [fileHash, setFileHash] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
+  const [fileSize, setFileSize] = useState<number | null>(null);
+  const [fileType, setFileType] = useState<string | null>(null);
   const [anchoring, setAnchoring] = useState(false);
   const [anchorMetadata, setAnchorMetadata] = useState('');
 
@@ -261,6 +263,8 @@ export const HashesPage: React.FC = () => {
       await api.post('/api/hashes', {
         hash: fileHash,
         metadata: anchorMetadata.trim() || fileName,
+        fileSize,
+        mimeType: fileType,
       });
       toast.success('Document anchored successfully');
       setAnchorModalOpen(false);
@@ -362,7 +366,18 @@ export const HashesPage: React.FC = () => {
             </p>
           </div>
         </div>
-        <FileUploader onHashComputed={handleHashComputed} />
+        <FileUploader 
+          onHashComputed={handleHashComputed} 
+          onFileSelect={(file) => {
+            if (file) {
+              setFileSize(file.size);
+              setFileType(file.type || null);
+            } else {
+              setFileSize(null);
+              setFileType(null);
+            }
+          }}
+        />
       </div>
 
       {/* Filters */}

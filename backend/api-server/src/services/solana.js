@@ -11,7 +11,57 @@ const anchor = require("@coral-xyz/anchor");
 const bs58 = require("bs58");
 const vaultService = require("./vault");
 
+async function withRetry(fn, maxAttempts = 3, baseDelayMs = 1000) {
+  let lastError;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastError = err;
+      if (attempt === maxAttempts) break;
+      const delay = baseDelayMs * Math.pow(2, attempt - 1);
+      console.warn(`[ANCHOR] Attempt ${attempt} failed, retrying in ${delay}ms:`, err.message);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+  throw lastError;
+}
+
 let connection, wallet, provider, program, programId, protocolConfigPda;
+
+const RPC_ENDPOINTS = [
+  process.env.SOLANA_RPC_URL || 'https://api.devnet.solana.com',
+  process.env.SOLANA_RPC_URL_2 || 'https://devnet.helius-rpc.com/?api-key=free',
+  'https://api.devnet.solana.com',
+].filter((url, index, arr) => arr.indexOf(url) === index);
+
+let currentRpcIndex = 0;
+
+function getConnectionWithFailover() {
+  return {
+    async execute(fn) {
+      for (let i = 0; i < RPC_ENDPOINTS.length; i++) {
+        const idx = (currentRpcIndex + i) % RPC_ENDPOINTS.length;
+        try {
+          const conn = new Connection(RPC_ENDPOINTS[idx], 'confirmed');
+          const result = await fn(conn);
+          currentRpcIndex = idx;
+          if (connection && connection.rpcEndpoint !== RPC_ENDPOINTS[idx]) {
+              connection = conn;
+              if (wallet) {
+                  provider = new anchor.AnchorProvider(connection, new anchor.Wallet(wallet), { commitment: "confirmed" });
+                  program = new anchor.Program(require("./vdr_contract.json"), programId, provider);
+              }
+          }
+          return result;
+        } catch (err) {
+          console.warn(`[RPC] Endpoint ${RPC_ENDPOINTS[idx]} failed:`, err.message);
+          if (i === RPC_ENDPOINTS.length - 1) throw err;
+        }
+      }
+    }
+  };
+}
 
 async function initialize() {
     try {
@@ -22,23 +72,22 @@ async function initialize() {
         if (!walletPrivateKey) throw new Error('WALLET_PRIVATE_KEY not found in Vault or environment');
         if (!programIdStr) throw new Error('PROGRAM_ID not found in Vault or environment');
 
-        connection = new Connection(solanaRpcUrl, "confirmed");
-
         const secretKey = Uint8Array.from(JSON.parse(walletPrivateKey));
         wallet = Keypair.fromSecretKey(secretKey);
-
-        provider = new anchor.AnchorProvider(connection, new anchor.Wallet(wallet), {
-            commitment: "confirmed",
-        });
-
-        const idl = require("./vdr_contract.json");
         programId = new PublicKey(programIdStr);
-        program = new anchor.Program(idl, programId, provider);
 
-        [protocolConfigPda] = PublicKey.findProgramAddressSync(
-            [Buffer.from("protocol_config")],
-            programId
-        );
+        await getConnectionWithFailover().execute(async (conn) => {
+            connection = conn;
+            provider = new anchor.AnchorProvider(connection, new anchor.Wallet(wallet), {
+                commitment: "confirmed",
+            });
+            const idl = require("./vdr_contract.json");
+            program = new anchor.Program(idl, programId, provider);
+            [protocolConfigPda] = PublicKey.findProgramAddressSync(
+                [Buffer.from("protocol_config")],
+                programId
+            );
+        });
 
         console.log('[Solana] Service initialized successfully');
         console.log('[Solana] Wallet:', wallet.publicKey.toBase58());
@@ -88,7 +137,7 @@ async function registerHash(hexHash, metadata = "", expiry = 0) {
     const config = await program.account.protocolConfig.fetchNullable(protocolConfigPda);
     if (!config) throw new Error("VDR Protocol is not initialized");
 
-    const txPromise = program.methods
+    const txPromise = withRetry(() => program.methods
         .registerHash(
             hashArray,                      // [u8; 32] — plain number array
             metadata,                       // String
@@ -102,7 +151,7 @@ async function registerHash(hexHash, metadata = "", expiry = 0) {
             owner: wallet.publicKey,
             systemProgram: SystemProgram.programId,
         })
-        .rpc();
+        .rpc());
 
     const timeoutPromise = new Promise((_, reject) =>
         setTimeout(() => reject(new Error("Transaction timeout: no confirmation in 60s")), 60000)
@@ -115,7 +164,24 @@ async function registerHash(hexHash, metadata = "", expiry = 0) {
         throw new Error("Invalid transaction signature format received");
     }
 
-    return { tx, owner: wallet.publicKey.toBase58(), pdaAddress: pdaAddress.toBase58() };
+    let blockNumber = null;
+    let blockTimestamp = null;
+    try {
+        const txDetails = await connection.getTransaction(tx, {
+            commitment: 'confirmed',
+            maxSupportedTransactionVersion: 0,
+        });
+        if (txDetails) {
+            blockNumber = txDetails.slot ? BigInt(txDetails.slot) : null;
+            blockTimestamp = txDetails.blockTime
+              ? new Date(txDetails.blockTime * 1000)
+              : null;
+        }
+    } catch (blockErr) {
+        console.error('[ANCHOR] Failed to fetch block data:', blockErr.message);
+    }
+
+    return { tx, owner: wallet.publicKey.toBase58(), pdaAddress: pdaAddress.toBase58(), blockNumber, blockTimestamp };
 }
 
 /**

@@ -80,6 +80,13 @@ model HashRecord {
 
   createdAt DateTime @default(now())
 
+  blockNumber    BigInt?   // Solana block/slot number
+  blockTimestamp DateTime? // Timestamp from Solana block
+  fileSize       BigInt?   // File size in bytes
+  mimeType       String?   // MIME type e.g. application/pdf
+  tags           String[]  // Array of user-defined tags
+  revokedBy      String?   // User ID who revoked
+  revocationNote String?   // Reason for revocation
   @@index([organizationId])
 }
 

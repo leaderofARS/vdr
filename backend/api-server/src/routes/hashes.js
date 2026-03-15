@@ -256,7 +256,7 @@ router.get('/pending', authenticate, async (req, res) => {
  */
 router.post('/', authenticate, async (req, res, next) => {
     try {
-        const { hash, metadata = "" } = req.body;
+        const { hash, metadata = "", fileSize, mimeType, tags } = req.body;
         const organizationId = req.organization?.id;
 
         if (!/^[a-fA-F0-9]{64}$/.test(hash)) {
@@ -277,7 +277,7 @@ router.post('/', authenticate, async (req, res, next) => {
         }
 
         // 2. Perform Solana transaction
-        const { tx, owner, pdaAddress } = await solanaService.registerHash(hash, metadata, 0);
+        const { tx, owner, pdaAddress, blockNumber, blockTimestamp } = await solanaService.registerHash(hash, metadata, 0);
 
         // 3. Create PENDING record in DB so UI can show it immediately
         const record = await prisma.hashRecord.create({
@@ -289,7 +289,12 @@ router.post('/', authenticate, async (req, res, next) => {
                 txSignature: tx,
                 ownerWallet: owner,
                 pdaAddress: pdaAddress,
-                timestamp: Math.floor(Date.now() / 1000)
+                timestamp: Math.floor(Date.now() / 1000),
+                blockNumber: blockNumber || null,
+                blockTimestamp: blockTimestamp || null,
+                fileSize: fileSize ? BigInt(fileSize) : null,
+                mimeType: mimeType || null,
+                tags: tags || [],
             }
         });
 
@@ -516,7 +521,9 @@ router.post('/revoke', authenticate, requireRole('admin'), async (req, res, next
             data: {
                 status: 'revoked',
                 revokedAt: new Date(),
-                isRevoked: true
+                isRevoked: true,
+                revokedBy: req.user?.id || null,
+                revocationNote: req.body?.reason || null
             }
         });
 
